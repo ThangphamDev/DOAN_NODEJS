@@ -1,6 +1,7 @@
 const authService = require("@/services/authService");
 const { authenticate } = require("@/middleware/auth");
 const { sendSuccess } = require("@/utils/response");
+const { runInTransaction } = require("@/utils/transaction");
 
 class AuthController {
 	constructor(service) {
@@ -12,7 +13,7 @@ class AuthController {
 
 	async register(req, res, next) {
 		try {
-			const result = await this.service.register(req.body);
+			const result = await runInTransaction((tx) => this.service.register(req.body, { transaction: tx }));
 			return sendSuccess(res, {
 				status: result.status,
 				message: result.data?.message || "Success",

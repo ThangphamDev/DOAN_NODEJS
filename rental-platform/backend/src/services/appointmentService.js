@@ -8,7 +8,7 @@ class AppointmentService {
     this.roomRepository = roomRepo;
   }
 
-  async createAppointment({ userId, roomId, scheduledAt, note }) {
+  async createAppointment({ userId, roomId, scheduledAt, note }, options = {}) {
     if (!scheduledAt) {
       return { status: 400, data: { message: "scheduledAt is required" } };
     }
@@ -24,7 +24,7 @@ class AppointmentService {
       landlordId: room.landlordId,
       scheduledAt,
       note,
-    });
+    }, options);
 
     return { status: 201, data: appointment };
   }
@@ -44,7 +44,7 @@ class AppointmentService {
     return appointments;
   }
 
-  async updateAppointmentStatus({ appointmentId, landlordId, status }) {
+  async updateAppointmentStatus({ appointmentId, landlordId, status }, options = {}) {
     const appointment = await this.repository.getById(appointmentId);
 
     if (!appointment) {
@@ -59,7 +59,7 @@ class AppointmentService {
       return { status: 400, data: { message: "Invalid status" } };
     }
 
-    await this.repository.updateById(appointmentId, { status });
+    await this.repository.updateById(appointmentId, { status }, options);
 
     const updatedAppointment = await this.repository.getById(appointmentId);
 

@@ -6,7 +6,7 @@ class ChatService {
     this.repository = repository;
   }
 
-  async sendMessage({ senderId, receiverId, roomId, content }) {
+  async sendMessage({ senderId, receiverId, roomId, content }, options = {}) {
     if (!receiverId || !content) {
       return { status: 400, data: { message: "receiverId and content are required" } };
     }
@@ -16,7 +16,7 @@ class ChatService {
       receiverId,
       roomId: roomId || null,
       content,
-    });
+    }, options);
 
     return { status: 201, data: message };
   }

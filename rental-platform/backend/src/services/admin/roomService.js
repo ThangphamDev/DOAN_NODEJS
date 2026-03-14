@@ -22,14 +22,14 @@ class AdminRoomService {
     return rooms;
   }
 
-  async deleteViolationRoom(roomId) {
+  async deleteViolationRoom(roomId, options = {}) {
     const room = await this.repository.getById(roomId);
 
     if (!room || room.status === "deleted") {
       return { status: 404, data: { message: "Room not found" } };
     }
 
-    await this.repository.updateById(roomId, { status: "deleted" });
+    await this.repository.updateById(roomId, { status: "deleted" }, options);
     return { status: 200, data: { message: "Room removed" } };
   }
 }

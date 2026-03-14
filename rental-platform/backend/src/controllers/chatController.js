@@ -2,6 +2,7 @@ const chatService = require("@/services/chatService");
 const { authenticate } = require("@/middleware/auth");
 const authorize = require("@/middleware/authorize");
 const { sendSuccess } = require("@/utils/response");
+const { runInTransaction } = require("@/utils/transaction");
 
 class ChatController {
 	constructor(service) {
@@ -13,12 +14,17 @@ class ChatController {
 	async sendMessage(req, res, next) {
 		try {
 			const receiverId = req.body.receiverId;
-			const result = await this.service.sendMessage({
-				senderId: req.user.id,
-				receiverId,
-				roomId: req.body.roomId,
-				content: req.body.content,
-			});
+			const result = await runInTransaction((tx) =>
+				this.service.sendMessage(
+					{
+						senderId: req.user.id,
+						receiverId,
+						roomId: req.body.roomId,
+						content: req.body.content,
+					},
+					{ transaction: tx }
+				)
+			);
 
 			if (result.status !== 201) {
 				return sendSuccess(res, {

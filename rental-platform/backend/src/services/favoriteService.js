@@ -8,7 +8,7 @@ class FavoriteService {
     this.roomRepository = roomRepo;
   }
 
-  async toggleFavorite({ userId, roomId }) {
+  async toggleFavorite({ userId, roomId }, options = {}) {
     const room = await this.roomRepository.getById(roomId);
     if (!room || room.status === "deleted") {
       return { status: 404, data: { message: "Room not found" } };
@@ -19,11 +19,11 @@ class FavoriteService {
     });
 
     if (existing) {
-      await this.repository.deleteById(existing.id);
+      await this.repository.deleteById(existing.id, options);
       return { status: 200, data: { message: "Removed from favorites" } };
     }
 
-    await this.repository.insert({ userId, roomId });
+    await this.repository.insert({ userId, roomId }, options);
     return { status: 201, data: { message: "Added to favorites" } };
   }
 

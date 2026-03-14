@@ -13,12 +13,12 @@ class AppointmentRepository {
     return this.appointmentEntity.findAll(query);
   }
 
-  insert(payload) {
-    return this.appointmentEntity.create(payload);
+  insert(payload, options = {}) {
+    return this.appointmentEntity.create(payload, options);
   }
 
-  updateById(id, payload) {
-    return this.appointmentEntity.update(payload, { where: { id } });
+  updateById(id, payload, options = {}) {
+    return this.appointmentEntity.update(payload, { where: { id }, ...options });
   }
 }
 

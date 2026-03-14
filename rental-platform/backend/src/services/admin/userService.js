@@ -14,7 +14,7 @@ class AdminUserService {
     return users;
   }
 
-  async lockUser(userId) {
+  async lockUser(userId, options = {}) {
     const user = await this.repository.getById(userId);
 
     if (!user) {
@@ -25,7 +25,7 @@ class AdminUserService {
       return { status: 400, data: { message: "Cannot lock admin" } };
     }
 
-    await this.repository.updateById(userId, { isActive: false });
+    await this.repository.updateById(userId, { isActive: false }, options);
 
     return { status: 200, data: { message: "User locked" } };
   }

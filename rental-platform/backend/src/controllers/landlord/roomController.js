@@ -3,6 +3,7 @@ const { authenticate } = require("@/middleware/auth");
 const authorize = require("@/middleware/authorize");
 const upload = require("@/utils/upload");
 const { sendSuccess } = require("@/utils/response");
+const { runInTransaction } = require("@/utils/transaction");
 
 class LandlordRoomController {
   constructor(service) {
@@ -14,11 +15,16 @@ class LandlordRoomController {
 
   async createRoom(req, res, next) {
     try {
-      const result = await this.service.createRoom({
-        userId: req.user.id,
-        body: req.body,
-        files: req.files,
-      });
+      const result = await runInTransaction((tx) =>
+        this.service.createRoom(
+          {
+            userId: req.user.id,
+            body: req.body,
+            files: req.files,
+          },
+          { transaction: tx }
+        )
+      );
       return sendSuccess(res, {
         status: result.status,
         message: result.data?.message || "Success",
@@ -31,11 +37,16 @@ class LandlordRoomController {
 
   async updateRoom(req, res, next) {
     try {
-      const result = await this.service.updateRoom({
-        roomId: req.params.id,
-        userId: req.user.id,
-        body: req.body,
-      });
+      const result = await runInTransaction((tx) =>
+        this.service.updateRoom(
+          {
+            roomId: req.params.id,
+            userId: req.user.id,
+            body: req.body,
+          },
+          { transaction: tx }
+        )
+      );
       return sendSuccess(res, {
         status: result.status,
         message: result.data?.message || "Success",
@@ -48,11 +59,16 @@ class LandlordRoomController {
 
   async removeRoom(req, res, next) {
     try {
-      const result = await this.service.removeRoom({
-        roomId: req.params.id,
-        userId: req.user.id,
-        role: req.user.role,
-      });
+      const result = await runInTransaction((tx) =>
+        this.service.removeRoom(
+          {
+            roomId: req.params.id,
+            userId: req.user.id,
+            role: req.user.role,
+          },
+          { transaction: tx }
+        )
+      );
       return sendSuccess(res, {
         status: result.status,
         message: result.data?.message || "Success",

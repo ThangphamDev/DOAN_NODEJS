@@ -2,6 +2,7 @@ const appointmentService = require("@/services/appointmentService");
 const { authenticate } = require("@/middleware/auth");
 const authorize = require("@/middleware/authorize");
 const { sendSuccess } = require("@/utils/response");
+const { runInTransaction } = require("@/utils/transaction");
 
 class AppointmentController {
 	constructor(service) {
@@ -12,12 +13,17 @@ class AppointmentController {
 
 	async createAppointment(req, res, next) {
 		try {
-			const result = await this.service.createAppointment({
-				userId: req.user.id,
-				roomId: Number(req.params.roomId),
-				scheduledAt: req.body.scheduledAt,
-				note: req.body.note,
-			});
+			const result = await runInTransaction((tx) =>
+				this.service.createAppointment(
+					{
+						userId: req.user.id,
+						roomId: Number(req.params.roomId),
+						scheduledAt: req.body.scheduledAt,
+						note: req.body.note,
+					},
+					{ transaction: tx }
+				)
+			);
 			return sendSuccess(res, {
 				status: result.status,
 				message: result.data?.message || "Success",

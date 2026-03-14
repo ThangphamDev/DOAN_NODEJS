@@ -2,6 +2,7 @@ const reviewService = require("@/services/reviewService");
 const { authenticate } = require("@/middleware/auth");
 const authorize = require("@/middleware/authorize");
 const { sendSuccess } = require("@/utils/response");
+const { runInTransaction } = require("@/utils/transaction");
 
 class ReviewController {
 	constructor(service) {
@@ -12,12 +13,17 @@ class ReviewController {
 
 	async createReview(req, res, next) {
 		try {
-			const result = await this.service.createReview({
-				userId: req.user.id,
-				roomId: Number(req.params.roomId),
-				rating: req.body.rating,
-				content: req.body.content,
-			});
+			const result = await runInTransaction((tx) =>
+				this.service.createReview(
+					{
+						userId: req.user.id,
+						roomId: Number(req.params.roomId),
+						rating: req.body.rating,
+						content: req.body.content,
+					},
+					{ transaction: tx }
+				)
+			);
 			return sendSuccess(res, {
 				status: result.status,
 				message: result.data?.message || "Success",

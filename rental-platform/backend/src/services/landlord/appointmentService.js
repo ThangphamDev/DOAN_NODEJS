@@ -5,12 +5,12 @@ class LandlordAppointmentService {
     this.service = service;
   }
 
-  updateAppointmentStatus({ appointmentId, landlordId, status }) {
+  updateAppointmentStatus({ appointmentId, landlordId, status }, options = {}) {
     return this.service.updateAppointmentStatus({
       appointmentId,
       landlordId,
       status,
-    });
+    }, options);
   }
 }
 

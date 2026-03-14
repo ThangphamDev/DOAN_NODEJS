@@ -2,6 +2,7 @@ const userService = require("@/services/admin/userService");
 const { authenticate } = require("@/middleware/auth");
 const authorize = require("@/middleware/authorize");
 const { sendSuccess } = require("@/utils/response");
+const { runInTransaction } = require("@/utils/transaction");
 
 class AdminUserController {
   constructor(service) {
@@ -21,7 +22,9 @@ class AdminUserController {
 
   async lockUser(req, res, next) {
     try {
-      const result = await this.service.lockUser(req.params.id);
+      const result = await runInTransaction((tx) =>
+        this.service.lockUser(req.params.id, { transaction: tx })
+      );
       return sendSuccess(res, {
         status: result.status,
         message: result.data?.message || "Success",

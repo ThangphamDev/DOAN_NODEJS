@@ -13,12 +13,12 @@ class FavoriteRepository {
     return this.favoriteEntity.findAll(query);
   }
 
-  insert(payload) {
-    return this.favoriteEntity.create(payload);
+  insert(payload, options = {}) {
+    return this.favoriteEntity.create(payload, options);
   }
 
-  deleteById(id) {
-    return this.favoriteEntity.destroy({ where: { id } });
+  deleteById(id, options = {}) {
+    return this.favoriteEntity.destroy({ where: { id }, ...options });
   }
 }
 

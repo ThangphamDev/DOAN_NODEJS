@@ -2,6 +2,7 @@ const roomService = require("@/services/admin/roomService");
 const { authenticate } = require("@/middleware/auth");
 const authorize = require("@/middleware/authorize");
 const { sendSuccess } = require("@/utils/response");
+const { runInTransaction } = require("@/utils/transaction");
 
 class AdminRoomController {
   constructor(service) {
@@ -21,7 +22,9 @@ class AdminRoomController {
 
   async deleteViolationRoom(req, res, next) {
     try {
-      const result = await this.service.deleteViolationRoom(req.params.id);
+      const result = await runInTransaction((tx) =>
+        this.service.deleteViolationRoom(req.params.id, { transaction: tx })
+      );
       return sendSuccess(res, {
         status: result.status,
         message: result.data?.message || "Success",

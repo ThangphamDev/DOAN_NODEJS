@@ -8,7 +8,7 @@ class ReviewService {
     this.roomRepository = roomRepo;
   }
 
-  async createReview({ userId, roomId, rating, content }) {
+  async createReview({ userId, roomId, rating, content }, options = {}) {
     if (!rating) {
       return { status: 400, data: { message: "Rating is required" } };
     }
@@ -28,7 +28,7 @@ class ReviewService {
       roomId,
       rating,
       content,
-    });
+    }, options);
 
     return { status: 201, data: review };
   }

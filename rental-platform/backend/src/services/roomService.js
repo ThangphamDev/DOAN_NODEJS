@@ -1,5 +1,5 @@
 const { Op } = require("sequelize");
-const { sequelize, RoomImage, User, Review } = require("@/entities");
+const { RoomImage, User, Review } = require("@/entities");
 const { toRoomListModel } = require("@/models");
 const roomRepository = require("@/repositories/roomRepository");
 
@@ -63,53 +63,49 @@ class RoomService {
     return { status: 200, data: room };
   }
 
-  async reportRoom(id) {
+  async reportRoom(id, options = {}) {
     const room = await this.repository.getById(id);
 
     if (!room || room.status === "deleted") {
       return { status: 404, data: { message: "Room not found" } };
     }
 
-    await this.repository.incrementById(id, "reportedCount", 1);
+    await this.repository.incrementById(id, "reportedCount", 1, options);
 
     return { status: 200, data: { message: "Room reported" } };
   }
 
-  async createRoom({ userId, body, files }) {
+  async createRoom({ userId, body, files }, options = {}) {
     const { title, description, price, area, address } = body;
 
     if (!title || !price || !area || !address) {
       return { status: 400, data: { message: "Missing required fields" } };
     }
 
-    const room = await sequelize.transaction(async (transaction) => {
-      const insertedRoom = await this.repository.insert(
-        {
-          landlordId: userId,
-          title,
-          description,
-          price,
-          area,
-          address,
-        },
-        { transaction }
-      );
+    const room = await this.repository.insert(
+      {
+        landlordId: userId,
+        title,
+        description,
+        price,
+        area,
+        address,
+      },
+      options
+    );
 
-      if (files?.length) {
-        const images = files.map((file) => ({
-          roomId: insertedRoom.id,
-          imageUrl: `/uploads/${file.filename}`,
-        }));
-        await this.repository.insertImages(images, { transaction });
-      }
-
-      return insertedRoom;
-    });
+    if (files?.length) {
+      const images = files.map((file) => ({
+        roomId: room.id,
+        imageUrl: `/uploads/${file.filename}`,
+      }));
+      await this.repository.insertImages(images, options);
+    }
 
     return { status: 201, data: { message: "Room created", roomId: room.id } };
   }
 
-  async updateRoom({ roomId, userId, body }) {
+  async updateRoom({ roomId, userId, body }, options = {}) {
     const room = await this.repository.getById(roomId);
 
     if (!room || room.status === "deleted") {
@@ -121,14 +117,14 @@ class RoomService {
     }
 
     const { title, description, price, area, address, status } = body;
-    await this.repository.updateById(roomId, { title, description, price, area, address, status });
+    await this.repository.updateById(roomId, { title, description, price, area, address, status }, options);
 
     const updatedRoom = await this.repository.getById(roomId);
 
     return { status: 200, data: { message: "Room updated", room: updatedRoom } };
   }
 
-  async removeRoom({ roomId, userId, role }) {
+  async removeRoom({ roomId, userId, role }, options = {}) {
     const room = await this.repository.getById(roomId);
 
     if (!room || room.status === "deleted") {
@@ -139,7 +135,7 @@ class RoomService {
       return { status: 403, data: { message: "Forbidden" } };
     }
 
-    await this.repository.updateById(roomId, { status: "deleted" });
+    await this.repository.updateById(roomId, { status: "deleted" }, options);
 
     return { status: 200, data: { message: "Room deleted" } };
   }

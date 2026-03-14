@@ -2,6 +2,7 @@ const roomService = require("@/services/roomService");
 const { authenticate } = require("@/middleware/auth");
 const authorize = require("@/middleware/authorize");
 const { sendSuccess } = require("@/utils/response");
+const { runInTransaction } = require("@/utils/transaction");
 
 class RoomController {
 	constructor(service) {
@@ -35,7 +36,9 @@ class RoomController {
 
 	async reportRoom(req, res, next) {
 		try {
-			const result = await this.service.reportRoom(req.params.id);
+			const result = await runInTransaction((tx) =>
+				this.service.reportRoom(req.params.id, { transaction: tx })
+			);
 			return sendSuccess(res, {
 				status: result.status,
 				message: result.data?.message || "Success",

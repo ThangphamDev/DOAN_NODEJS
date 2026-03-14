@@ -13,8 +13,8 @@ class ReviewRepository {
     return this.reviewEntity.findAll(query);
   }
 
-  insert(payload) {
-    return this.reviewEntity.create(payload);
+  insert(payload, options = {}) {
+    return this.reviewEntity.create(payload, options);
   }
 }
 

@@ -9,7 +9,7 @@ class AuthService {
     this.repository = repository;
   }
 
-  async register({ fullName, email, password, role = "customer", phone, area }) {
+  async register({ fullName, email, password, role = "customer", phone, area }, options = {}) {
     if (!fullName || !email || !password) {
       return { status: 400, data: { message: "Missing required fields" } };
     }
@@ -39,7 +39,7 @@ class AuthService {
       role,
       phone,
       area,
-    });
+    }, options);
 
     const token = signToken({ id: user.id, role: user.role });
 

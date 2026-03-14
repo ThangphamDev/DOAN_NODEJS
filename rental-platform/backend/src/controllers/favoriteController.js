@@ -2,6 +2,7 @@ const favoriteService = require("@/services/favoriteService");
 const { authenticate } = require("@/middleware/auth");
 const authorize = require("@/middleware/authorize");
 const { sendSuccess } = require("@/utils/response");
+const { runInTransaction } = require("@/utils/transaction");
 
 class FavoriteController {
 	constructor(service) {
@@ -12,10 +13,15 @@ class FavoriteController {
 
 	async toggleFavorite(req, res, next) {
 		try {
-			const result = await this.service.toggleFavorite({
-				userId: req.user.id,
-				roomId: Number(req.params.roomId),
-			});
+			const result = await runInTransaction((tx) =>
+				this.service.toggleFavorite(
+					{
+						userId: req.user.id,
+						roomId: Number(req.params.roomId),
+					},
+					{ transaction: tx }
+				)
+			);
 			return sendSuccess(res, {
 				status: result.status,
 				message: result.data?.message || "Success",

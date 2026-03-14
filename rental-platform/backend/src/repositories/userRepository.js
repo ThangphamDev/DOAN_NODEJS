@@ -9,8 +9,8 @@ class UserRepository {
     return this.userEntity.findOne(query);
   }
 
-  insert(payload) {
-    return this.userEntity.create(payload);
+  insert(payload, options = {}) {
+    return this.userEntity.create(payload, options);
   }
 
   getById(id) {
@@ -21,8 +21,8 @@ class UserRepository {
     return this.userEntity.findAll(query);
   }
 
-  updateById(id, payload) {
-    return this.userEntity.update(payload, { where: { id } });
+  updateById(id, payload, options = {}) {
+    return this.userEntity.update(payload, { where: { id }, ...options });
   }
 }
 
