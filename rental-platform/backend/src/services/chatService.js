@@ -1,5 +1,6 @@
 const { Op } = require("sequelize");
 const messageRepository = require("@/repositories/messageRepository");
+const ApiError = require("@/utils/ApiError");
 
 class ChatService {
   constructor(repository) {
@@ -8,7 +9,7 @@ class ChatService {
 
   async sendMessage({ senderId, receiverId, roomId, content }, options = {}) {
     if (!receiverId || !content) {
-      return { status: 400, data: { message: "receiverId and content are required" } };
+      throw new ApiError(400, "receiverId and content are required");
     }
 
     const message = await this.repository.insert({
@@ -18,7 +19,7 @@ class ChatService {
       content,
     }, options);
 
-    return { status: 201, data: message };
+    return message;
   }
 
   async getConversation({ userId, peerId, roomId }) {

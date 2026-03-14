@@ -13,7 +13,7 @@ class FavoriteController {
 
 	async toggleFavorite(req, res, next) {
 		try {
-			const result = await runInTransaction((tx) =>
+			const data = await runInTransaction((tx) =>
 				this.service.toggleFavorite(
 					{
 						userId: req.user.id,
@@ -22,11 +22,7 @@ class FavoriteController {
 					{ transaction: tx }
 				)
 			);
-			return sendSuccess(res, {
-				status: result.status,
-				message: result.data?.message || "Success",
-				data: result.data,
-			});
+			return sendSuccess(res, { data });
 		} catch (error) {
 			return next(error);
 		}
@@ -34,8 +30,8 @@ class FavoriteController {
 
 	async myFavorites(req, res, next) {
 		try {
-			const favorites = await this.service.getMyFavorites(req.user.id);
-			return sendSuccess(res, { data: favorites });
+			const data = await this.service.getMyFavorites(req.user.id);
+			return sendSuccess(res, { data });
 		} catch (error) {
 			return next(error);
 		}

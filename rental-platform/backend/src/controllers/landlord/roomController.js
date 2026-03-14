@@ -15,7 +15,7 @@ class LandlordRoomController {
 
   async createRoom(req, res, next) {
     try {
-      const result = await runInTransaction((tx) =>
+      const data = await runInTransaction((tx) =>
         this.service.createRoom(
           {
             userId: req.user.id,
@@ -25,11 +25,7 @@ class LandlordRoomController {
           { transaction: tx }
         )
       );
-      return sendSuccess(res, {
-        status: result.status,
-        message: result.data?.message || "Success",
-        data: result.data,
-      });
+      return sendSuccess(res, { status: 201, data });
     } catch (error) {
       return next(error);
     }
@@ -37,7 +33,7 @@ class LandlordRoomController {
 
   async updateRoom(req, res, next) {
     try {
-      const result = await runInTransaction((tx) =>
+      const data = await runInTransaction((tx) =>
         this.service.updateRoom(
           {
             roomId: req.params.id,
@@ -47,11 +43,7 @@ class LandlordRoomController {
           { transaction: tx }
         )
       );
-      return sendSuccess(res, {
-        status: result.status,
-        message: result.data?.message || "Success",
-        data: result.data,
-      });
+      return sendSuccess(res, { data });
     } catch (error) {
       return next(error);
     }
@@ -59,7 +51,7 @@ class LandlordRoomController {
 
   async removeRoom(req, res, next) {
     try {
-      const result = await runInTransaction((tx) =>
+      const data = await runInTransaction((tx) =>
         this.service.removeRoom(
           {
             roomId: req.params.id,
@@ -69,11 +61,7 @@ class LandlordRoomController {
           { transaction: tx }
         )
       );
-      return sendSuccess(res, {
-        status: result.status,
-        message: result.data?.message || "Success",
-        data: result.data,
-      });
+      return sendSuccess(res, { data });
     } catch (error) {
       return next(error);
     }

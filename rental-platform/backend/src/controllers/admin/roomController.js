@@ -22,14 +22,10 @@ class AdminRoomController {
 
   async deleteViolationRoom(req, res, next) {
     try {
-      const result = await runInTransaction((tx) =>
+      const data = await runInTransaction((tx) =>
         this.service.deleteViolationRoom(req.params.id, { transaction: tx })
       );
-      return sendSuccess(res, {
-        status: result.status,
-        message: result.data?.message || "Success",
-        data: result.data,
-      });
+      return sendSuccess(res, { data });
     } catch (error) {
       return next(error);
     }

@@ -14,11 +14,11 @@ class ChatController {
 	async sendMessage(req, res, next) {
 		try {
 			const receiverId = req.body.receiverId;
-			const result = await runInTransaction((tx) =>
+			const message = await runInTransaction((tx) =>
 				this.service.sendMessage(
 					{
 						senderId: req.user.id,
-						receiverId,
+						receiverI: receiverId,
 						roomId: req.body.roomId,
 						content: req.body.content,
 					},
@@ -26,25 +26,11 @@ class ChatController {
 				)
 			);
 
-			if (result.status !== 201) {
-				return sendSuccess(res, {
-					status: result.status,
-					message: result.data?.message || "Success",
-					data: result.data,
-				});
-			}
-
-			const message = result.data;
 			const io = req.app.get("io");
-
 			io.to(`user:${receiverId}`).emit("chat:new", message);
 			io.to(`user:${req.user.id}`).emit("chat:new", message);
 
-			return sendSuccess(res, {
-				status: result.status,
-				message: result.data?.message || "Success",
-				data: result.data,
-			});
+			return sendSuccess(res, { status: 201, data: message });
 		} catch (error) {
 			return next(error);
 		}

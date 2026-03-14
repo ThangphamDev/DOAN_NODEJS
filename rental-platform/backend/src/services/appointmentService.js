@@ -1,6 +1,7 @@
 const { Room, User } = require("@/entities");
 const appointmentRepository = require("@/repositories/appointmentRepository");
 const roomRepository = require("@/repositories/roomRepository");
+const ApiError = require("@/utils/ApiError");
 
 class AppointmentService {
   constructor(repository, roomRepo) {
@@ -10,12 +11,12 @@ class AppointmentService {
 
   async createAppointment({ userId, roomId, scheduledAt, note }, options = {}) {
     if (!scheduledAt) {
-      return { status: 400, data: { message: "scheduledAt is required" } };
+      throw new ApiError(400, "scheduledAt is required");
     }
 
     const room = await this.roomRepository.getById(roomId);
     if (!room || room.status !== "active") {
-      return { status: 404, data: { message: "Room not found" } };
+      throw new ApiError(404, "Room not found");
     }
 
     const appointment = await this.repository.insert({
@@ -26,13 +27,13 @@ class AppointmentService {
       note,
     }, options);
 
-    return { status: 201, data: appointment };
+    return appointment;
   }
 
   async listMyAppointments({ userId, role }) {
     const where = role === "landlord" ? { landlordId: userId } : { customerId: userId };
 
-    const appointments = await this.repository.getList({
+    return this.repository.getList({
       where,
       include: [
         { model: Room, as: "room", attributes: ["id", "title", "address", "price"] },
@@ -40,30 +41,28 @@ class AppointmentService {
       ],
       order: [["scheduledAt", "DESC"]],
     });
-
-    return appointments;
   }
 
   async updateAppointmentStatus({ appointmentId, landlordId, status }, options = {}) {
     const appointment = await this.repository.getById(appointmentId);
 
     if (!appointment) {
-      return { status: 404, data: { message: "Appointment not found" } };
+      throw new ApiError(404, "Appointment not found");
     }
 
     if (appointment.landlordId !== landlordId) {
-      return { status: 403, data: { message: "Forbidden" } };
+      throw new ApiError(403, "Forbidden");
     }
 
     if (!["approved", "rejected", "cancelled"].includes(status)) {
-      return { status: 400, data: { message: "Invalid status" } };
+      throw new ApiError(400, "Invalid status");
     }
 
     await this.repository.updateById(appointmentId, { status }, options);
 
     const updatedAppointment = await this.repository.getById(appointmentId);
 
-    return { status: 200, data: { message: "Appointment updated", appointment: updatedAppointment } };
+    return { message: "Appointment updated", appointment: updatedAppointment };
   }
 }
 

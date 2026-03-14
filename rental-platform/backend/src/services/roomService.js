@@ -2,6 +2,7 @@ const { Op } = require("sequelize");
 const { RoomImage, User, Review } = require("@/entities");
 const { toRoomListModel } = require("@/models");
 const roomRepository = require("@/repositories/roomRepository");
+const ApiError = require("@/utils/ApiError");
 
 class RoomService {
   constructor(repository) {
@@ -17,12 +18,8 @@ class RoomService {
 
     if (minPrice || maxPrice) {
       where.price = {};
-      if (minPrice) {
-        where.price[Op.gte] = Number(minPrice);
-      }
-      if (maxPrice) {
-        where.price[Op.lte] = Number(maxPrice);
-      }
+      if (minPrice) where.price[Op.gte] = Number(minPrice);
+      if (maxPrice) where.price[Op.lte] = Number(maxPrice);
     }
 
     const offset = (Number(page) - 1) * Number(limit);
@@ -57,40 +54,33 @@ class RoomService {
     });
 
     if (!room || room.status === "deleted") {
-      return { status: 404, data: { message: "Room not found" } };
+      throw new ApiError(404, "Room not found");
     }
 
-    return { status: 200, data: room };
+    return room;
   }
 
   async reportRoom(id, options = {}) {
     const room = await this.repository.getById(id);
 
     if (!room || room.status === "deleted") {
-      return { status: 404, data: { message: "Room not found" } };
+      throw new ApiError(404, "Room not found");
     }
 
     await this.repository.incrementById(id, "reportedCount", 1, options);
 
-    return { status: 200, data: { message: "Room reported" } };
+    return { message: "Room reported" };
   }
 
   async createRoom({ userId, body, files }, options = {}) {
     const { title, description, price, area, address } = body;
 
     if (!title || !price || !area || !address) {
-      return { status: 400, data: { message: "Missing required fields" } };
+      throw new ApiError(400, "Missing required fields");
     }
 
     const room = await this.repository.insert(
-      {
-        landlordId: userId,
-        title,
-        description,
-        price,
-        area,
-        address,
-      },
+      { landlordId: userId, title, description, price, area, address },
       options
     );
 
@@ -102,42 +92,41 @@ class RoomService {
       await this.repository.insertImages(images, options);
     }
 
-    return { status: 201, data: { message: "Room created", roomId: room.id } };
+    return { message: "Room created", roomId: room.id };
   }
 
   async updateRoom({ roomId, userId, body }, options = {}) {
     const room = await this.repository.getById(roomId);
 
     if (!room || room.status === "deleted") {
-      return { status: 404, data: { message: "Room not found" } };
+      throw new ApiError(404, "Room not found");
     }
 
     if (room.landlordId !== userId) {
-      return { status: 403, data: { message: "Forbidden" } };
+      throw new ApiError(403, "Forbidden");
     }
 
     const { title, description, price, area, address, status } = body;
     await this.repository.updateById(roomId, { title, description, price, area, address, status }, options);
 
     const updatedRoom = await this.repository.getById(roomId);
-
-    return { status: 200, data: { message: "Room updated", room: updatedRoom } };
+    return { message: "Room updated", room: updatedRoom };
   }
 
   async removeRoom({ roomId, userId, role }, options = {}) {
     const room = await this.repository.getById(roomId);
 
     if (!room || room.status === "deleted") {
-      return { status: 404, data: { message: "Room not found" } };
+      throw new ApiError(404, "Room not found");
     }
 
     if (room.landlordId !== userId && role !== "admin") {
-      return { status: 403, data: { message: "Forbidden" } };
+      throw new ApiError(403, "Forbidden");
     }
 
     await this.repository.updateById(roomId, { status: "deleted" }, options);
 
-    return { status: 200, data: { message: "Room deleted" } };
+    return { message: "Room deleted" };
   }
 }
 

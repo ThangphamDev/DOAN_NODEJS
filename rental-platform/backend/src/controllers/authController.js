@@ -13,12 +13,8 @@ class AuthController {
 
 	async register(req, res, next) {
 		try {
-			const result = await runInTransaction((tx) => this.service.register(req.body, { transaction: tx }));
-			return sendSuccess(res, {
-				status: result.status,
-				message: result.data?.message || "Success",
-				data: result.data,
-			});
+			const data = await runInTransaction((tx) => this.service.register(req.body, { transaction: tx }));
+			return sendSuccess(res, { status: 201, data });
 		} catch (error) {
 			return next(error);
 		}
@@ -26,12 +22,8 @@ class AuthController {
 
 	async login(req, res, next) {
 		try {
-			const result = await this.service.login(req.body);
-			return sendSuccess(res, {
-				status: result.status,
-				message: result.data?.message || "Success",
-				data: result.data,
-			});
+			const data = await this.service.login(req.body);
+			return sendSuccess(res, { data });
 		} catch (error) {
 			return next(error);
 		}
@@ -39,12 +31,8 @@ class AuthController {
 
 	async me(req, res, next) {
 		try {
-			const result = await this.service.getMe(req.user.id);
-			return sendSuccess(res, {
-				status: result.status,
-				message: result.data?.message || "Success",
-				data: result.data,
-			});
+			const data = await this.service.getMe(req.user.id);
+			return sendSuccess(res, { data });
 		} catch (error) {
 			return next(error);
 		}

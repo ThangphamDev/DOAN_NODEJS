@@ -13,7 +13,7 @@ class ReviewController {
 
 	async createReview(req, res, next) {
 		try {
-			const result = await runInTransaction((tx) =>
+			const data = await runInTransaction((tx) =>
 				this.service.createReview(
 					{
 						userId: req.user.id,
@@ -24,11 +24,7 @@ class ReviewController {
 					{ transaction: tx }
 				)
 			);
-			return sendSuccess(res, {
-				status: result.status,
-				message: result.data?.message || "Success",
-				data: result.data,
-			});
+			return sendSuccess(res, { status: 201, data });
 		} catch (error) {
 			return next(error);
 		}
@@ -36,8 +32,8 @@ class ReviewController {
 
 	async getRoomReviews(req, res, next) {
 		try {
-			const reviews = await this.service.getRoomReviews(Number(req.params.roomId));
-			return sendSuccess(res, { data: reviews });
+			const data = await this.service.getRoomReviews(Number(req.params.roomId));
+			return sendSuccess(res, { data });
 		} catch (error) {
 			return next(error);
 		}

@@ -13,7 +13,7 @@ class AppointmentController {
 
 	async createAppointment(req, res, next) {
 		try {
-			const result = await runInTransaction((tx) =>
+			const data = await runInTransaction((tx) =>
 				this.service.createAppointment(
 					{
 						userId: req.user.id,
@@ -24,11 +24,7 @@ class AppointmentController {
 					{ transaction: tx }
 				)
 			);
-			return sendSuccess(res, {
-				status: result.status,
-				message: result.data?.message || "Success",
-				data: result.data,
-			});
+			return sendSuccess(res, { status: 201, data });
 		} catch (error) {
 			return next(error);
 		}
@@ -36,11 +32,11 @@ class AppointmentController {
 
 	async listMyAppointments(req, res, next) {
 		try {
-			const appointments = await this.service.listMyAppointments({
+			const data = await this.service.listMyAppointments({
 				userId: req.user.id,
 				role: req.user.role,
 			});
-			return sendSuccess(res, { data: appointments });
+			return sendSuccess(res, { data });
 		} catch (error) {
 			return next(error);
 		}

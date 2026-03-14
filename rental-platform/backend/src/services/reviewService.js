@@ -1,6 +1,7 @@
 const { User } = require("@/entities");
 const reviewRepository = require("@/repositories/reviewRepository");
 const roomRepository = require("@/repositories/roomRepository");
+const ApiError = require("@/utils/ApiError");
 
 class ReviewService {
   constructor(repository, roomRepo) {
@@ -10,17 +11,17 @@ class ReviewService {
 
   async createReview({ userId, roomId, rating, content }, options = {}) {
     if (!rating) {
-      return { status: 400, data: { message: "Rating is required" } };
+      throw new ApiError(400, "Rating is required");
     }
 
     const room = await this.roomRepository.getById(roomId);
     if (!room || room.status === "deleted") {
-      return { status: 404, data: { message: "Room not found" } };
+      throw new ApiError(404, "Room not found");
     }
 
     const existing = await this.repository.getOne({ where: { userId, roomId } });
     if (existing) {
-      return { status: 409, data: { message: "You already reviewed this room" } };
+      throw new ApiError(409, "You already reviewed this room");
     }
 
     const review = await this.repository.insert({
@@ -30,17 +31,15 @@ class ReviewService {
       content,
     }, options);
 
-    return { status: 201, data: review };
+    return review;
   }
 
   async getRoomReviews(roomId) {
-    const reviews = await this.repository.getList({
+    return this.repository.getList({
       where: { roomId },
       include: [{ model: User, as: "reviewer", attributes: ["id", "fullName"] }],
       order: [["createdAt", "DESC"]],
     });
-
-    return reviews;
   }
 }
 

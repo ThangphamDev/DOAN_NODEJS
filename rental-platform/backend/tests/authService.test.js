@@ -9,6 +9,7 @@ jest.mock("@/utils/token", () => ({
 
 const bcrypt = require("bcryptjs");
 const authService = require("@/services/authService");
+const ApiError = require("@/utils/ApiError");
 
 describe("AuthService", () => {
   beforeEach(() => {
@@ -20,35 +21,114 @@ describe("AuthService", () => {
     jest.clearAllMocks();
   });
 
-  test("register returns 409 when email exists", async () => {
-    authService.repository.getOne.mockResolvedValue({ id: 1 });
-
-    const result = await authService.register({
-      fullName: "A",
-      email: "a@test.com",
-      password: "123456",
+  // ─── register ────────────────────────────────────────────────────────────
+  describe("register", () => {
+    test("FAIL – throws 400 when required fields missing", async () => {
+      await expect(
+        authService.register({ email: "a@test.com", password: "123" })
+      ).rejects.toMatchObject({ statusCode: 400 });
     });
 
-    expect(result.status).toBe(409);
+    test("FAIL – throws 400 when role invalid", async () => {
+      authService.repository.getOne.mockResolvedValue(null);
+      await expect(
+        authService.register({ fullName: "A", email: "a@test.com", password: "123", role: "hacker" })
+      ).rejects.toMatchObject({ statusCode: 400 });
+    });
+
+    test("FAIL – throws 409 when email already exists", async () => {
+      authService.repository.getOne.mockResolvedValue({ id: 1 });
+      await expect(
+        authService.register({ fullName: "A", email: "a@test.com", password: "123456" })
+      ).rejects.toMatchObject({ statusCode: 409 });
+      // insert must NOT have been called (simulate rollback gate)
+      expect(authService.repository.insert).not.toHaveBeenCalled();
+    });
+
+    test("ROLLBACK – throws when DB insert fails, insert was attempted", async () => {
+      authService.repository.getOne.mockResolvedValue(null);
+      bcrypt.hash.mockResolvedValue("hashed");
+      authService.repository.insert.mockRejectedValue(new Error("DB error"));
+
+      await expect(
+        authService.register({ fullName: "A", email: "new@test.com", password: "123456" })
+      ).rejects.toThrow("DB error");
+      // insert was called → transaction wrapper (runInTransaction) would rollback
+      expect(authService.repository.insert).toHaveBeenCalledTimes(1);
+    });
+
+    test("PASS – returns token and user on success", async () => {
+      authService.repository.getOne.mockResolvedValue(null);
+      bcrypt.hash.mockResolvedValue("hashed");
+      authService.repository.insert.mockResolvedValue({
+        id: 1, fullName: "A", email: "a@test.com", role: "customer",
+        phone: null, area: null, isActive: true, createdAt: new Date(),
+      });
+
+      const result = await authService.register({
+        fullName: "A", email: "a@test.com", password: "123456",
+      });
+
+      expect(result.token).toBe("mock-token");
+      expect(result.user.email).toBe("a@test.com");
+    });
   });
 
-  test("login returns 200 with token when credentials valid", async () => {
-    authService.repository.getOne.mockResolvedValue({
-      id: 1,
-      role: "customer",
-      isActive: true,
-      passwordHash: "hashed",
-      fullName: "User",
-      email: "u@test.com",
-    });
-    bcrypt.compare.mockResolvedValue(true);
-
-    const result = await authService.login({
-      email: "u@test.com",
-      password: "123456",
+  // ─── login ────────────────────────────────────────────────────────────────
+  describe("login", () => {
+    test("FAIL – throws 400 when fields missing", async () => {
+      await expect(authService.login({ email: "a@test.com" })).rejects.toMatchObject({ statusCode: 400 });
     });
 
-    expect(result.status).toBe(200);
-    expect(result.data.token).toBe("mock-token");
+    test("FAIL – throws 401 when user not found", async () => {
+      authService.repository.getOne.mockResolvedValue(null);
+      await expect(authService.login({ email: "x@test.com", password: "123" }))
+        .rejects.toMatchObject({ statusCode: 401 });
+    });
+
+    test("FAIL – throws 401 when account inactive", async () => {
+      authService.repository.getOne.mockResolvedValue({ id: 1, isActive: false });
+      await expect(authService.login({ email: "x@test.com", password: "123" }))
+        .rejects.toMatchObject({ statusCode: 401 });
+    });
+
+    test("FAIL – throws 401 when password wrong", async () => {
+      authService.repository.getOne.mockResolvedValue({
+        id: 1, isActive: true, passwordHash: "hashed",
+      });
+      bcrypt.compare.mockResolvedValue(false);
+      await expect(authService.login({ email: "x@test.com", password: "wrong" }))
+        .rejects.toMatchObject({ statusCode: 401 });
+    });
+
+    test("PASS – returns token and user", async () => {
+      authService.repository.getOne.mockResolvedValue({
+        id: 1, role: "customer", isActive: true, passwordHash: "hashed",
+        fullName: "User", email: "u@test.com",
+      });
+      bcrypt.compare.mockResolvedValue(true);
+
+      const result = await authService.login({ email: "u@test.com", password: "123456" });
+
+      expect(result.token).toBe("mock-token");
+      expect(result.user).toBeDefined();
+    });
+  });
+
+  // ─── getMe ────────────────────────────────────────────────────────────────
+  describe("getMe", () => {
+    test("FAIL – throws 404 when user not found", async () => {
+      authService.repository.getById.mockResolvedValue(null);
+      await expect(authService.getMe(999)).rejects.toMatchObject({ statusCode: 404 });
+    });
+
+    test("PASS – returns user data", async () => {
+      authService.repository.getById.mockResolvedValue({
+        id: 1, fullName: "A", email: "a@test.com", role: "customer",
+        phone: null, area: null, isActive: true, createdAt: new Date(),
+      });
+      const result = await authService.getMe(1);
+      expect(result.user.email).toBe("a@test.com");
+    });
   });
 });

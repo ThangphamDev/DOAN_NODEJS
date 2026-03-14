@@ -12,7 +12,7 @@ class LandlordAppointmentController {
 
   async updateAppointmentStatus(req, res, next) {
     try {
-      const result = await runInTransaction((tx) =>
+      const data = await runInTransaction((tx) =>
         this.service.updateAppointmentStatus(
           {
             appointmentId: req.params.id,
@@ -22,11 +22,7 @@ class LandlordAppointmentController {
           { transaction: tx }
         )
       );
-      return sendSuccess(res, {
-        status: result.status,
-        message: result.data?.message || "Success",
-        data: result.data,
-      });
+      return sendSuccess(res, { data });
     } catch (error) {
       return next(error);
     }

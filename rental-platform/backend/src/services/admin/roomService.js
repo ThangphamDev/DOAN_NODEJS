@@ -1,5 +1,6 @@
 const { Op } = require("sequelize");
 const roomRepository = require("@/repositories/roomRepository");
+const ApiError = require("@/utils/ApiError");
 
 class AdminRoomService {
   constructor(repository) {
@@ -7,30 +8,24 @@ class AdminRoomService {
   }
 
   async getReportedRooms() {
-    const rooms = await this.repository.getList({
+    return this.repository.getList({
       where: {
-        reportedCount: {
-          [Op.gt]: 0,
-        },
-        status: {
-          [Op.ne]: "deleted",
-        },
+        reportedCount: { [Op.gt]: 0 },
+        status: { [Op.ne]: "deleted" },
       },
       order: [["reportedCount", "DESC"]],
     });
-
-    return rooms;
   }
 
   async deleteViolationRoom(roomId, options = {}) {
     const room = await this.repository.getById(roomId);
 
     if (!room || room.status === "deleted") {
-      return { status: 404, data: { message: "Room not found" } };
+      throw new ApiError(404, "Room not found");
     }
 
     await this.repository.updateById(roomId, { status: "deleted" }, options);
-    return { status: 200, data: { message: "Room removed" } };
+    return { message: "Room removed" };
   }
 }
 

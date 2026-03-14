@@ -23,12 +23,8 @@ class RoomController {
 
 	async getRoomDetail(req, res, next) {
 		try {
-			const result = await this.service.getRoomDetail(req.params.id);
-			return sendSuccess(res, {
-				status: result.status,
-				message: result.data?.message || "Success",
-				data: result.data,
-			});
+			const data = await this.service.getRoomDetail(req.params.id);
+			return sendSuccess(res, { data });
 		} catch (error) {
 			return next(error);
 		}
@@ -36,14 +32,10 @@ class RoomController {
 
 	async reportRoom(req, res, next) {
 		try {
-			const result = await runInTransaction((tx) =>
+			const data = await runInTransaction((tx) =>
 				this.service.reportRoom(req.params.id, { transaction: tx })
 			);
-			return sendSuccess(res, {
-				status: result.status,
-				message: result.data?.message || "Success",
-				data: result.data,
-			});
+			return sendSuccess(res, { data });
 		} catch (error) {
 			return next(error);
 		}
