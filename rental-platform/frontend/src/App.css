@@ -1,0 +1,79 @@
+.container {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.topbar nav {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.brand {
+  font-weight: 700;
+  text-decoration: none;
+  color: inherit;
+}
+
+.grid-3,
+.grid-2 {
+  display: grid;
+  gap: 10px;
+  margin: 12px 0;
+}
+
+.grid-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.grid-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.form,
+.panel {
+  display: grid;
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.card-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.card {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.chat-box {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  min-height: 220px;
+  padding: 12px;
+  margin: 12px 0;
+}
+
+.mine {
+  text-align: right;
+}
+
+.other {
+  text-align: left;
+}
+
+.error {
+  color: #dc2626;
+}
