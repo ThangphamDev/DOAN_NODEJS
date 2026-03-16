@@ -4,6 +4,8 @@ import { clearToken, getToken, setToken } from "@/utils/storage";
 
 const AuthContext = createContext(null);
 
+const getPayloadData = (response) => response?.data?.data ?? response?.data ?? {};
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -16,8 +18,9 @@ export const AuthProvider = ({ children }) => {
     }
 
     try {
-      const { data } = await authService.me();
-      setUser(data.user);
+      const response = await authService.me();
+      const payload = getPayloadData(response);
+      setUser(payload.user || null);
     } catch {
       clearToken();
       setUser(null);
@@ -31,15 +34,19 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
-    const { data } = await authService.login(email, password);
-    setToken(data.token);
-    setUser(data.user);
+    const response = await authService.login(email, password);
+    const payload = getPayloadData(response);
+    setToken(payload.token);
+    setUser(payload.user);
+    return payload.user;
   };
 
   const register = async (payload) => {
-    const { data } = await authService.register(payload);
-    setToken(data.token);
-    setUser(data.user);
+    const response = await authService.register(payload);
+    const responsePayload = getPayloadData(response);
+    setToken(responsePayload.token);
+    setUser(responsePayload.user);
+    return responsePayload.user;
   };
 
   const logout = () => {

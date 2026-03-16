@@ -1,12 +1,27 @@
+import { useEffect, useState } from "react";
 import { quickFilters } from "@/components/home/homeData";
 
 const SearchSection = ({ filters, onFilterChange, onSubmit, activeQuickFilter, onQuickFilterChange, onPriceRangeChange }) => {
+  const placeholderOptions = ["Quận 3, TP.HCM", "Bình Thạnh...", "Đường Nguyễn Trãi...", "Quận 7, gần RMIT..."];
+  const [placeholderText, setPlaceholderText] = useState(placeholderOptions[0]);
+
+  useEffect(() => {
+    let placeholderIndex = 0;
+
+    const intervalId = setInterval(() => {
+      placeholderIndex = (placeholderIndex + 1) % placeholderOptions.length;
+      setPlaceholderText(placeholderOptions[placeholderIndex]);
+    }, 2500);
+
+    return () => clearInterval(intervalId);
+  }, []);
+
   return (
     <section className="search-section" id="search">
       <div className="search-box">
         <div className="search-field">
           <label>Địa điểm</label>
-          <input type="text" name="area" value={filters.area} onChange={onFilterChange} placeholder="Quận, phường, đường..." />
+          <input type="text" name="area" value={filters.area} onChange={onFilterChange} placeholder={placeholderText} />
         </div>
         <div className="search-field">
           <label>Loại phòng</label>

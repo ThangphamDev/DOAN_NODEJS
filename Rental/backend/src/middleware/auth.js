@@ -7,14 +7,14 @@ const authenticate = async (req, res, next) => {
     const token = authHeader.startsWith("Bearer ") ? authHeader.split(" ")[1] : null;
 
     if (!token) {
-      return res.status(401).json({ message: "Unauthorized" });
+      return res.status(401).json({ success: false, message: "Unauthorized" });
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const user = await User.findByPk(decoded.id);
 
     if (!user || !user.isActive) {
-      return res.status(401).json({ message: "Invalid account" });
+      return res.status(401).json({ success: false, message: "Invalid account" });
     }
 
     req.user = {
@@ -25,7 +25,7 @@ const authenticate = async (req, res, next) => {
 
     next();
   } catch (error) {
-    return res.status(401).json({ message: "Unauthorized" });
+    return res.status(401).json({ success: false, message: "Unauthorized" });
   }
 };
 

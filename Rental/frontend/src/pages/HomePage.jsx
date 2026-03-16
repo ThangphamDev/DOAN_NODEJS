@@ -7,7 +7,7 @@ import HowItWorksSection from "@/components/home/components/HowItWorksSection";
 import FeaturesSection from "@/components/home/components/FeaturesSection";
 import TestimonialsSection from "@/components/home/components/TestimonialsSection";
 import CtaSection from "@/components/home/components/CtaSection";
-import "@/components/home/HomePage.css";
+import { getApiData } from "@/utils/apiResponse";
 const HomePage = () => {
   const [rooms, setRooms] = useState([]);
   const [filters, setFilters] = useState({ minPrice: "", maxPrice: "", area: "" });
@@ -16,7 +16,10 @@ const HomePage = () => {
   useEffect(() => {
     roomService
       .listRooms({})
-      .then(({ data }) => setRooms(data?.data || []))
+      .then((response) => {
+        const payload = getApiData(response, {});
+        setRooms(payload?.data || []);
+      })
       .catch(() => {});
   }, []);
 
@@ -30,7 +33,10 @@ const HomePage = () => {
     setFilters(next);
     roomService
       .listRooms({ minPrice: min || undefined, maxPrice: max || undefined, area: next.area || undefined })
-      .then(({ data }) => setRooms(data?.data || []))
+      .then((response) => {
+        const payload = getApiData(response, {});
+        setRooms(payload?.data || []);
+      })
       .catch(() => {});
   };
 
@@ -40,14 +46,20 @@ const HomePage = () => {
     setFilters(next);
     roomService
       .listRooms({ minPrice: next.minPrice || undefined, maxPrice: next.maxPrice || undefined, area: next.area || undefined })
-      .then(({ data }) => setRooms(data?.data || []))
+      .then((response) => {
+        const payload = getApiData(response, {});
+        setRooms(payload?.data || []);
+      })
       .catch(() => {});
   };
 
   const handleSearch = () => {
     roomService
       .listRooms({ minPrice: filters.minPrice || undefined, maxPrice: filters.maxPrice || undefined, area: filters.area || undefined })
-      .then(({ data }) => setRooms(data?.data || []))
+      .then((response) => {
+        const payload = getApiData(response, {});
+        setRooms(payload?.data || []);
+      })
       .catch(() => {});
   };
 

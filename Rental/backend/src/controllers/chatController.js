@@ -18,7 +18,7 @@ class ChatController {
 				this.service.sendMessage(
 					{
 						senderId: req.user.id,
-						receiverI: receiverId,
+						receiverId,
 						roomId: req.body.roomId,
 						content: req.body.content,
 					},

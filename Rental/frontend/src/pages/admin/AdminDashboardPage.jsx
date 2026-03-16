@@ -1,35 +1,49 @@
 import { useEffect, useState } from "react";
 import adminService from "@/services/AdminService";
+import { getApiData, getApiMessage } from "@/utils/apiResponse";
 
 const DashboardPage = () => {
   const [rooms, setRooms] = useState([]);
   const [users, setUsers] = useState([]);
+  const [error, setError] = useState("");
 
   const loadData = () => {
     Promise.all([adminService.getReportedRooms(), adminService.getUsers()])
-      .then(([roomsRes, usersRes]) => { setRooms(roomsRes.data); setUsers(usersRes.data); })
-      .catch(() => {});
+      .then(([roomsRes, usersRes]) => {
+        setRooms(getApiData(roomsRes, []));
+        setUsers(getApiData(usersRes, []));
+      })
+      .catch((err) => setError(getApiMessage(err, "Không tải được dữ liệu admin")));
   };
 
   useEffect(() => {
-    Promise.all([adminService.getReportedRooms(), adminService.getUsers()])
-      .then(([roomsRes, usersRes]) => { setRooms(roomsRes.data); setUsers(usersRes.data); })
-      .catch(() => {});
+    loadData();
   }, []);
 
   const deleteRoom = async (id) => {
-    await adminService.deleteRoom(id);
-    loadData();
+    try {
+      setError("");
+      await adminService.deleteRoom(id);
+      loadData();
+    } catch (err) {
+      setError(getApiMessage(err, "Không thể xóa tin vi phạm"));
+    }
   };
 
   const lockUser = async (id) => {
-    await adminService.lockUser(id);
-    loadData();
+    try {
+      setError("");
+      await adminService.lockUser(id);
+      loadData();
+    } catch (err) {
+      setError(getApiMessage(err, "Không thể khóa tài khoản"));
+    }
   };
 
   return (
     <section>
       <h1>Admin</h1>
+      {error && <p className="error">{error}</p>}
       <h2>Tin vi phạm</h2>
       <div className="card-list">
         {rooms.map((room) => (

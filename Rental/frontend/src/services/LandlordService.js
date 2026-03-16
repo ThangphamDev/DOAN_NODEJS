@@ -6,7 +6,18 @@ class LandlordService {
   }
 
   createRoom(payload) {
-    return api.post("/rooms", payload);
+    const formData = new FormData();
+    formData.append("title", payload.title || "");
+    formData.append("price", payload.price || "");
+    formData.append("area", payload.area || "");
+    formData.append("address", payload.address || "");
+    formData.append("description", payload.description || "");
+
+    (payload.images || []).forEach((file) => {
+      formData.append("images", file);
+    });
+
+    return api.post("/rooms", formData);
   }
 
   updateAppointmentStatus(id, status) {

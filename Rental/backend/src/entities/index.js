@@ -1,4 +1,4 @@
-const sequelize = require("@/config/database");
+const { sequelize } = require("@/config/database");
 
 const User = require("@/entities/user")(sequelize);
 const Room = require("@/entities/room")(sequelize);

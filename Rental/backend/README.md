@@ -24,6 +24,7 @@ DB_PORT=3306
 DB_NAME=rental_platform
 DB_USER=root
 DB_PASSWORD=your_password
+DB_AUTO_CREATE=true
 DB_SYNC=true
 DB_SYNC_ALTER=true
 
@@ -31,11 +32,34 @@ JWT_SECRET=your_jwt_secret
 JWT_EXPIRES_IN=7d
 ```
 
+## XAMPP MySQL quick setup
+1. Start `Apache` and `MySQL` in XAMPP Control Panel.
+2. In `backend/`, copy `.env.example` to `.env` and update values if needed.
+3. Default XAMPP usually uses:
+  - `DB_HOST=127.0.0.1`
+  - `DB_PORT=3306`
+  - `DB_USER=root`
+  - `DB_PASSWORD=` (empty)
+4. Keep `DB_AUTO_CREATE=true` so backend auto-creates `DB_NAME` if missing.
+
 ## Run
 ```bash
 npm install
 npm run dev
 ```
+
+## Seed demo data
+```bash
+npm run seed
+```
+
+Seed tạo sẵn dữ liệu customer/landlord/admin, phòng, lịch hẹn, đánh giá, yêu thích, tin nhắn.
+Tài khoản demo mặc định:
+- customer1@example.com / 123456
+- customer2@example.com / 123456
+- landlord1@example.com / 123456
+- landlord2@example.com / 123456
+- admin@example.com / admin123 (hoặc theo ADMIN_EMAIL/ADMIN_PASSWORD)
 
 ## Test
 ```bash

@@ -1,0 +1,246 @@
+.customer-page {
+  width: min(1200px, calc(100% - 2rem));
+  margin: 1.75rem auto 2.5rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.customer-page__head h1 {
+  margin: 0;
+  font-size: clamp(1.6rem, 2.6vw, 2rem);
+  letter-spacing: -0.02em;
+}
+
+.customer-page__head p {
+  margin-top: 0.4rem;
+  color: var(--text-secondary);
+}
+
+.customer-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 1rem;
+}
+
+.customer-detail-grid {
+  display: grid;
+  grid-template-columns: 1.55fr 1fr;
+  gap: 1rem;
+}
+
+.customer-detail-hero {
+  width: 100%;
+  height: 320px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--primary-light);
+}
+
+.customer-detail-hero img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.customer-detail-placeholder {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.customer-detail-gallery {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.6rem;
+  margin-top: 0.75rem;
+}
+
+.customer-detail-gallery img {
+  width: 100%;
+  height: 88px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+.customer-detail-content {
+  margin-top: 0.85rem;
+}
+
+.customer-price-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.customer-price-row strong {
+  color: var(--primary);
+  font-size: 1.2rem;
+}
+
+.customer-price-row span {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.customer-detail-actions h3,
+.customer-review-form h3,
+.customer-chat-sidebar h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.customer-detail-actions p,
+.customer-note {
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+}
+
+.customer-form-stack {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.customer-success {
+  color: #0d7a4a;
+  background: #effbf4;
+  border: 1px solid #caefd9;
+  border-radius: var(--radius-md);
+  padding: 0.55rem 0.7rem;
+  font-size: 0.88rem;
+  margin-top: 0.6rem;
+}
+
+.customer-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.8rem;
+}
+
+.customer-section-head h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.customer-section-head span {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.customer-review-items {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.customer-review-item {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.75rem;
+}
+
+.customer-review-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.customer-review-top span {
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.customer-textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.customer-chat-grid {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 1rem;
+}
+
+.customer-chat-main {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.customer-chat-messages {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: #fbfcff;
+  min-height: 420px;
+  max-height: 540px;
+  overflow: auto;
+  padding: 0.8rem;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.customer-chat-bubble {
+  max-width: 78%;
+  border-radius: 14px;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border);
+  background: #fff;
+}
+
+.customer-chat-bubble--mine {
+  margin-left: auto;
+  background: #edf3ff;
+  border-color: #cddcff;
+}
+
+.customer-chat-bubble--other {
+  margin-right: auto;
+}
+
+.customer-chat-bubble__meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.7rem;
+  margin-bottom: 0.35rem;
+}
+
+.customer-chat-bubble__meta strong {
+  font-size: 0.84rem;
+}
+
+.customer-chat-bubble__meta span {
+  color: var(--text-muted);
+  font-size: 0.74rem;
+}
+
+.customer-chat-bubble p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.customer-chat-compose {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.6rem;
+  align-items: end;
+}
+
+@media (max-width: 980px) {
+  .customer-detail-grid,
+  .customer-chat-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .customer-chat-messages {
+    min-height: 340px;
+  }
+}
