@@ -11,13 +11,12 @@ const RoomDetailPage = () => {
   const [scheduledAt, setScheduledAt] = useState("");
   const [review, setReview] = useState({ rating: 5, content: "" });
 
-  const fetchRoom = async () => {
-    const { data } = await roomService.getRoomDetail(id);
-    setRoom(data);
+  const fetchRoom = () => {
+    roomService.getRoomDetail(id).then(({ data }) => setRoom(data)).catch(() => {});
   };
 
   useEffect(() => {
-    fetchRoom();
+    roomService.getRoomDetail(id).then(({ data }) => setRoom(data)).catch(() => {});
   }, [id]);
 
   const addFavorite = async () => {

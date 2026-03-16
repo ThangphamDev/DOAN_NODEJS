@@ -1,0 +1,40 @@
+@import url("https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&display=swap");
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --primary: #1A5CFF;
+  --primary-light: #EEF3FF;
+  --primary-dark: #1040CC;
+  --accent: #FF5C35;
+  --accent-light: #FFF0EC;
+  --text-primary: #0D1117;
+  --text-secondary: #5A6070;
+  --text-muted: #9AA0AD;
+  --bg: #F7F8FC;
+  --surface: #FFFFFF;
+  --border: #E4E7EE;
+  --border-hover: #C8CDDB;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --radius-full: 999px;
+  --shadow-sm: 0 1px 4px rgba(13,17,23,0.06), 0 2px 8px rgba(13,17,23,0.04);
+  --shadow-md: 0 4px 16px rgba(13,17,23,0.08), 0 1px 4px rgba(13,17,23,0.04);
+  --shadow-lg: 0 8px 32px rgba(13,17,23,0.12), 0 2px 8px rgba(13,17,23,0.06);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Be Vietnam Pro', sans-serif;
+  background: var(--bg);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; }
+input, select, textarea { font-family: inherit; }

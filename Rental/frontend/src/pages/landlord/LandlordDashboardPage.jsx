@@ -5,13 +5,12 @@ const DashboardPage = () => {
   const [form, setForm] = useState({ title: "", price: "", area: "", address: "", description: "" });
   const [appointments, setAppointments] = useState([]);
 
-  const loadAppointments = async () => {
-    const { data } = await landlordService.getAppointments();
-    setAppointments(data);
+  const loadAppointments = () => {
+    landlordService.getAppointments().then(({ data }) => setAppointments(data)).catch(() => {});
   };
 
   useEffect(() => {
-    loadAppointments();
+    landlordService.getAppointments().then(({ data }) => setAppointments(data)).catch(() => {});
   }, []);
 
   const onChange = (e) => {

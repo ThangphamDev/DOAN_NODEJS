@@ -5,17 +5,16 @@ const DashboardPage = () => {
   const [rooms, setRooms] = useState([]);
   const [users, setUsers] = useState([]);
 
-  const loadData = async () => {
-    const [roomsRes, usersRes] = await Promise.all([
-      adminService.getReportedRooms(),
-      adminService.getUsers(),
-    ]);
-    setRooms(roomsRes.data);
-    setUsers(usersRes.data);
+  const loadData = () => {
+    Promise.all([adminService.getReportedRooms(), adminService.getUsers()])
+      .then(([roomsRes, usersRes]) => { setRooms(roomsRes.data); setUsers(usersRes.data); })
+      .catch(() => {});
   };
 
   useEffect(() => {
-    loadData();
+    Promise.all([adminService.getReportedRooms(), adminService.getUsers()])
+      .then(([roomsRes, usersRes]) => { setRooms(roomsRes.data); setUsers(usersRes.data); })
+      .catch(() => {});
   }, []);
 
   const deleteRoom = async (id) => {
