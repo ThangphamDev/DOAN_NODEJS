@@ -42,7 +42,9 @@ const SiteHeader = () => {
           {user && (
             <>
               <span className="nav-user-pill">{user.fullName || user.email}</span>
-              {user.role === "customer" && <Link to="/chat" className="btn-ghost">Chat</Link>}
+              {user.role === "customer" && <Link to="/messages" className="btn-ghost">Tin nhắn</Link>}
+              {user.role === "landlord" && <Link to="/landlord" className="btn-ghost">Bảng chủ trọ</Link>}
+              {user.role === "admin" && <Link to="/admin" className="btn-ghost">Bảng admin</Link>}
               <button type="button" className="btn-primary" onClick={handleLogout}>Đăng xuất</button>
             </>
           )}

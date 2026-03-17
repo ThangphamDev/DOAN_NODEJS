@@ -7,12 +7,12 @@ import { getApiData, getApiMessage } from "@/utils/apiResponse";
 
 const ChatPage = () => {
   const { user } = useAuth();
-  const [peerId, setPeerId] = useState("");
-  const [roomId, setRoomId] = useState("");
+  const [inbox, setInbox] = useState([]);
+  const [activePeerId, setActivePeerId] = useState(null);
+  const [activePeerName, setActivePeerName] = useState("");
   const [messages, setMessages] = useState([]);
   const [content, setContent] = useState("");
   const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
 
   const socket = useMemo(() => {
     const token = getToken();
@@ -22,58 +22,116 @@ const ChatPage = () => {
     });
   }, []);
 
+  const loadInbox = async () => {
+    try {
+      const response = await chatService.getInbox();
+      const items = getApiData(response, []);
+      setInbox(items);
+
+      if (!activePeerId && items.length > 0) {
+        setActivePeerId(items[0].peerId);
+        setActivePeerName(items[0].peerName);
+      }
+
+      setError("");
+    } catch (err) {
+      setError(getApiMessage(err, "Không tải được danh sách hội thoại"));
+    }
+  };
+
+  const loadConversation = async (peerId, peerName = "") => {
+    try {
+      const response = await chatService.getConversation(peerId);
+      setMessages(getApiData(response, []));
+      setActivePeerId(peerId);
+      setActivePeerName(peerName || `User ${peerId}`);
+      setError("");
+    } catch (err) {
+      setError(getApiMessage(err, "Không tải được hội thoại"));
+    }
+  };
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const initInbox = async () => {
+      try {
+        const response = await chatService.getInbox();
+        if (!isMounted) return;
+
+        const items = getApiData(response, []);
+        setInbox(items);
+        if (items.length > 0) {
+          setActivePeerId(items[0].peerId);
+          setActivePeerName(items[0].peerName);
+        }
+        setError("");
+      } catch (err) {
+        if (!isMounted) return;
+        setError(getApiMessage(err, "Không tải được danh sách hội thoại"));
+      }
+    };
+
+    initInbox();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   useEffect(() => {
     if (!socket) return;
 
     socket.on("chat:new", (message) => {
-      setMessages((prev) => [...prev, message]);
+      const messagePeerId = message.senderId === user?.id ? message.receiverId : message.senderId;
+
+      setInbox((prev) => {
+        const matched = prev.find((item) => item.peerId === messagePeerId);
+        const nextItem = {
+          peerId: messagePeerId,
+          peerName: matched?.peerName || `User ${messagePeerId}`,
+          lastMessage: message.content,
+          lastMessageAt: message.createdAt,
+          lastSenderId: message.senderId,
+          roomId: message.roomId,
+        };
+
+        const filtered = prev.filter((item) => item.peerId !== messagePeerId);
+        return [nextItem, ...filtered];
+      });
+
+      if (activePeerId === messagePeerId) {
+        setMessages((prev) => [...prev, message]);
+      }
     });
 
     return () => {
       socket.disconnect();
     };
-  }, [socket]);
+  }, [socket, user?.id, activePeerId]);
 
-  const loadConversation = async () => {
-    if (!peerId) {
-      setError("Vui lòng nhập ID người nhận để mở hội thoại");
-      setSuccessMessage("");
-      return;
+  useEffect(() => {
+    if (activePeerId) {
+      loadConversation(activePeerId, activePeerName);
     }
-
-    try {
-      setError("");
-      const response = await chatService.getConversation(peerId, roomId || undefined);
-      setMessages(getApiData(response, []));
-      setSuccessMessage("Đã tải hội thoại.");
-    } catch (err) {
-      setError(getApiMessage(err, "Không tải được hội thoại"));
-      setSuccessMessage("");
-    }
-  };
+  }, [activePeerId]);
 
   const sendMessage = async () => {
-    if (!peerId || !content.trim()) {
-      setError("Vui lòng nhập ID người nhận và nội dung tin nhắn");
-      setSuccessMessage("");
+    if (!activePeerId || !content.trim()) {
+      setError("Vui lòng chọn hội thoại và nhập nội dung");
       return;
     }
 
     try {
-      setError("");
-      await chatService.sendMessage({ receiverId: Number(peerId), content: content.trim(), roomId: roomId || undefined });
+      await chatService.sendMessage({
+        receiverId: Number(activePeerId),
+        content: content.trim(),
+      });
       setContent("");
-      setSuccessMessage("Tin nhắn đã được gửi.");
+      setError("");
+      await loadInbox();
     } catch (err) {
       setError(getApiMessage(err, "Không gửi được tin nhắn"));
-      setSuccessMessage("");
-    }
-  };
-
-  const handleKeyDown = (event) => {
-    if (event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault();
-      sendMessage();
     }
   };
 
@@ -81,46 +139,46 @@ const ChatPage = () => {
     <section className="customer-page customer-chat-page">
       <div className="customer-page__head">
         <h1>Tin nhắn</h1>
-        <p>Kết nối trực tiếp với chủ trọ, trao đổi nhanh và rõ ràng.</p>
+        <p>Xem lịch sử và trò chuyện theo thời gian thực như messenger.</p>
       </div>
 
-      <div className="customer-chat-grid">
-        <aside className="customer-card customer-chat-sidebar">
-          <h3>Mở hội thoại</h3>
-          <div className="customer-form-stack">
-            <label className="auth-label">
-              <span>ID người nhận</span>
-              <input
-                className="auth-input"
-                value={peerId}
-                onChange={(e) => setPeerId(e.target.value)}
-                placeholder="Ví dụ: 2"
-              />
-            </label>
-            <label className="auth-label">
-              <span>Room ID (tuỳ chọn)</span>
-              <input
-                className="auth-input"
-                value={roomId}
-                onChange={(e) => setRoomId(e.target.value)}
-                placeholder="Ví dụ: 5"
-              />
-            </label>
-            <button type="button" className="auth-button" onClick={loadConversation}>
-              Tải hội thoại
-            </button>
-          </div>
+      {error && <p className="auth-error">{error}</p>}
 
-          <div className="customer-chat-status">
-            {error && <p className="auth-error">{error}</p>}
-            {successMessage && <p className="customer-success">{successMessage}</p>}
-          </div>
+      <div className="customer-chat-grid customer-messenger-grid">
+        <aside className="customer-card customer-chat-sidebar customer-messenger-list">
+          <h3>Hội thoại</h3>
+          {inbox.length === 0 ? (
+            <p className="customer-note">Bạn chưa có hội thoại nào.</p>
+          ) : (
+            <div className="customer-messenger-items">
+              {inbox.map((item) => (
+                <button
+                  key={item.peerId}
+                  type="button"
+                  className={`customer-messenger-item ${activePeerId === item.peerId ? "is-active" : ""}`}
+                  onClick={() => loadConversation(item.peerId, item.peerName)}
+                >
+                  <div className="customer-messenger-item__top">
+                    <strong>{item.peerName}</strong>
+                    <span>{item.lastMessageAt ? new Date(item.lastMessageAt).toLocaleTimeString() : ""}</span>
+                  </div>
+                  <p>{item.lastSenderId === user?.id ? `Bạn: ${item.lastMessage}` : item.lastMessage}</p>
+                </button>
+              ))}
+            </div>
+          )}
         </aside>
 
         <article className="customer-card customer-chat-main">
+          <div className="customer-chat-title">
+            <h3>{activePeerName || "Chọn một hội thoại"}</h3>
+          </div>
+
           <div className="customer-chat-messages">
-            {messages.length === 0 ? (
-              <p className="customer-note">Chưa có tin nhắn. Hãy chọn hội thoại để bắt đầu.</p>
+            {!activePeerId ? (
+              <p className="customer-note">Chọn người dùng ở bên trái để bắt đầu nhắn.</p>
+            ) : messages.length === 0 ? (
+              <p className="customer-note">Chưa có tin nhắn trong hội thoại này.</p>
             ) : (
               messages.map((item) => (
                 <div
@@ -128,7 +186,7 @@ const ChatPage = () => {
                   className={`customer-chat-bubble ${item.senderId === user?.id ? "customer-chat-bubble--mine" : "customer-chat-bubble--other"}`}
                 >
                   <div className="customer-chat-bubble__meta">
-                    <strong>{item.senderId === user?.id ? "Bạn" : `User ${item.senderId}`}</strong>
+                    <strong>{item.senderId === user?.id ? "Bạn" : activePeerName || `User ${item.senderId}`}</strong>
                     <span>{item.createdAt ? new Date(item.createdAt).toLocaleString() : "Vừa xong"}</span>
                   </div>
                   <p>{item.content}</p>
@@ -141,11 +199,10 @@ const ChatPage = () => {
             <textarea
               className="auth-input customer-textarea"
               value={content}
-              onChange={(e) => setContent(e.target.value)}
-              onKeyDown={handleKeyDown}
+              onChange={(event) => setContent(event.target.value)}
               placeholder="Nhập nội dung tin nhắn"
             />
-            <button type="button" className="auth-button" onClick={sendMessage}>
+            <button type="button" className="auth-button" onClick={sendMessage} disabled={!activePeerId}>
               Gửi tin nhắn
             </button>
           </div>

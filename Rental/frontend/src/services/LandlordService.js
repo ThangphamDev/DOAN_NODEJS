@@ -1,6 +1,11 @@
 import api from "@/api/client";
 
 class LandlordService {
+  getMyRooms(status) {
+    const params = status ? { status } : undefined;
+    return api.get("/landlord/rooms/me", { params });
+  }
+
   getAppointments() {
     return api.get("/appointments/me");
   }
@@ -22,6 +27,14 @@ class LandlordService {
 
   updateAppointmentStatus(id, status) {
     return api.patch(`/appointments/${id}/status`, { status });
+  }
+
+  updateRoom(id, payload) {
+    return api.patch(`/rooms/${id}`, payload);
+  }
+
+  deleteRoom(id) {
+    return api.delete(`/rooms/${id}`);
   }
 }
 

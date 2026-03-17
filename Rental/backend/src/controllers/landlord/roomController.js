@@ -8,9 +8,22 @@ const { runInTransaction } = require("@/utils/transaction");
 class LandlordRoomController {
   constructor(service) {
     this.service = service;
+    this.listMyRooms = this.listMyRooms.bind(this);
     this.createRoom = this.createRoom.bind(this);
     this.updateRoom = this.updateRoom.bind(this);
     this.removeRoom = this.removeRoom.bind(this);
+  }
+
+  async listMyRooms(req, res, next) {
+    try {
+      const data = await this.service.listMyRooms({
+        userId: req.user.id,
+        status: req.query.status,
+      });
+      return sendSuccess(res, { data });
+    } catch (error) {
+      return next(error);
+    }
   }
 
   async createRoom(req, res, next) {
@@ -68,6 +81,12 @@ class LandlordRoomController {
   }
 
   registerRoutes(app, prefix = "/api") {
+    app.get(
+      `${prefix}/landlord/rooms/me`,
+      authenticate,
+      authorize("landlord"),
+      this.listMyRooms
+    );
     app.post(
       `${prefix}/rooms`,
       authenticate,

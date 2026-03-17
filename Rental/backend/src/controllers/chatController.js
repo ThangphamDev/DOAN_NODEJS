@@ -9,6 +9,7 @@ class ChatController {
 		this.service = service;
 		this.sendMessage = this.sendMessage.bind(this);
 		this.getConversation = this.getConversation.bind(this);
+		this.getInbox = this.getInbox.bind(this);
 	}
 
 	async sendMessage(req, res, next) {
@@ -49,8 +50,20 @@ class ChatController {
 		}
 	}
 
+	async getInbox(req, res, next) {
+		try {
+			const data = await this.service.getInbox({
+				userId: req.user.id,
+			});
+			return sendSuccess(res, { data });
+		} catch (error) {
+			return next(error);
+		}
+	}
+
 	registerRoutes(app, prefix = "/api") {
 		app.post(`${prefix}/chat/send`, authenticate, authorize("customer", "landlord"), this.sendMessage);
+		app.get(`${prefix}/chat/inbox`, authenticate, authorize("customer", "landlord"), this.getInbox);
 		app.get(
 			`${prefix}/chat/conversation/:peerId`,
 			authenticate,

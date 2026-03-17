@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
+import { io } from "socket.io-client";
 import roomService from "@/services/RoomService";
+import chatService from "@/services/ChatService";
 import LoadingState from "@/components/common/LoadingState";
 import useAuth from "@/hooks/useAuth";
 import { getApiData, getApiMessage } from "@/utils/apiResponse";
+import { getToken } from "@/utils/storage";
 
 const RoomDetailPage = () => {
   const { id } = useParams();
@@ -11,8 +14,20 @@ const RoomDetailPage = () => {
   const [room, setRoom] = useState(null);
   const [scheduledAt, setScheduledAt] = useState("");
   const [review, setReview] = useState({ rating: 5, content: "" });
+  const [chatContent, setChatContent] = useState("");
+  const [showChatComposer, setShowChatComposer] = useState(false);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatLoading, setChatLoading] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+
+  const socket = useMemo(() => {
+    const token = getToken();
+    if (!token) return null;
+    return io(import.meta.env.VITE_SOCKET_URL || "http://localhost:5000", {
+      auth: { token },
+    });
+  }, []);
 
   const uploadBaseUrl = useMemo(() => {
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
@@ -42,6 +57,38 @@ const RoomDetailPage = () => {
   useEffect(() => {
     fetchRoom();
   }, [fetchRoom]);
+
+  useEffect(() => {
+    if (!socket || !showChatComposer || !room?.landlord?.id) return;
+
+    socket.on("chat:new", (message) => {
+      const isWithCurrentLandlord =
+        (message.senderId === room.landlord.id && message.receiverId === user?.id) ||
+        (message.senderId === user?.id && message.receiverId === room.landlord.id);
+
+      if (!isWithCurrentLandlord) {
+        return;
+      }
+
+      if (message.roomId && Number(message.roomId) !== Number(room.id)) {
+        return;
+      }
+
+      setChatMessages((prev) => [...prev, message]);
+    });
+
+    return () => {
+      socket.off("chat:new");
+    };
+  }, [socket, showChatComposer, room?.landlord?.id, room?.id, user?.id]);
+
+  useEffect(() => {
+    return () => {
+      if (socket) {
+        socket.disconnect();
+      }
+    };
+  }, [socket]);
 
   const addFavorite = async () => {
     try {
@@ -91,6 +138,54 @@ const RoomDetailPage = () => {
     }
   };
 
+  const sendMessageToLandlord = async () => {
+    if (!room?.landlord?.id) {
+      setError("Không xác định được chủ trọ của phòng này");
+      setSuccessMessage("");
+      return;
+    }
+
+    if (!chatContent.trim()) {
+      setError("Vui lòng nhập nội dung tin nhắn");
+      setSuccessMessage("");
+      return;
+    }
+
+    try {
+      await chatService.sendMessage({
+        receiverId: room.landlord.id,
+        roomId: room.id,
+        content: chatContent.trim(),
+      });
+      setChatContent("");
+      setError("");
+      setSuccessMessage("Đã gửi tin nhắn cho chủ trọ.");
+    } catch (err) {
+      setError(getApiMessage(err, "Không thể gửi tin nhắn"));
+      setSuccessMessage("");
+    }
+  };
+
+  const loadRoomConversation = async () => {
+    if (!room?.landlord?.id) return;
+
+    try {
+      setChatLoading(true);
+      const response = await chatService.getConversation(room.landlord.id, room.id);
+      setChatMessages(getApiData(response, []));
+      setError("");
+    } catch (err) {
+      setError(getApiMessage(err, "Không tải được lịch sử tin nhắn"));
+    } finally {
+      setChatLoading(false);
+    }
+  };
+
+  const openChatPopup = async () => {
+    setShowChatComposer(true);
+    await loadRoomConversation();
+  };
+
   if (!room) return <LoadingState />;
 
   return (
@@ -130,6 +225,9 @@ const RoomDetailPage = () => {
         <aside className="customer-card customer-detail-actions">
           <h3>Thao tác nhanh</h3>
           <p>Thực hiện yêu thích hoặc đặt lịch xem trực tiếp tại đây.</p>
+          {room.landlord?.fullName && (
+            <p className="customer-note">Chủ trọ: {room.landlord.fullName}</p>
+          )}
 
           {error && <p className="auth-error">{error}</p>}
           {successMessage && <p className="customer-success">{successMessage}</p>}
@@ -150,6 +248,13 @@ const RoomDetailPage = () => {
               </label>
               <button type="button" className="auth-button" onClick={bookVisit}>
                 Đặt lịch xem phòng
+              </button>
+              <button
+                type="button"
+                className="auth-button"
+                onClick={openChatPopup}
+              >
+                Nhắn tin với chủ trọ
               </button>
             </div>
           ) : (
@@ -215,6 +320,52 @@ const RoomDetailPage = () => {
             </button>
           </div>
         </article>
+      )}
+
+      {showChatComposer && (
+        <div className="customer-chat-modal__overlay" onClick={() => setShowChatComposer(false)}>
+          <div className="customer-chat-modal" onClick={(event) => event.stopPropagation()}>
+            <div className="customer-chat-modal__head">
+              <h3>Nhắn tin với {room.landlord?.fullName || "chủ trọ"}</h3>
+              <button type="button" className="auth-button" onClick={() => setShowChatComposer(false)}>
+                Đóng
+              </button>
+            </div>
+
+            <div className="customer-chat-modal__messages">
+              {chatLoading ? (
+                <p className="customer-note">Đang tải hội thoại...</p>
+              ) : chatMessages.length === 0 ? (
+                <p className="customer-note">Chưa có tin nhắn nào trong phòng này.</p>
+              ) : (
+                chatMessages.map((item) => (
+                  <div
+                    key={item.id}
+                    className={`customer-chat-bubble ${item.senderId === user?.id ? "customer-chat-bubble--mine" : "customer-chat-bubble--other"}`}
+                  >
+                    <div className="customer-chat-bubble__meta">
+                      <strong>{item.senderId === user?.id ? "Bạn" : room.landlord?.fullName || "Chủ trọ"}</strong>
+                      <span>{item.createdAt ? new Date(item.createdAt).toLocaleString() : "Vừa xong"}</span>
+                    </div>
+                    <p>{item.content}</p>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <div className="customer-chat-compose">
+              <textarea
+                className="auth-input customer-textarea"
+                value={chatContent}
+                onChange={(e) => setChatContent(e.target.value)}
+                placeholder="Nhập tin nhắn gửi chủ trọ"
+              />
+              <button type="button" className="auth-button" onClick={sendMessageToLandlord}>
+                Gửi tin nhắn
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </section>
   );

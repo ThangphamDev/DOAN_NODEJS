@@ -5,6 +5,10 @@ class LandlordRoomService {
     this.service = service;
   }
 
+  listMyRooms({ userId, status }) {
+    return this.service.listLandlordRooms({ landlordId: userId, status });
+  }
+
   createRoom({ userId, body, files }, options = {}) {
     return this.service.createRoom({ userId, body, files }, options);
   }

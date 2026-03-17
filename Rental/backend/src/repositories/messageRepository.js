@@ -9,6 +9,10 @@ class MessageRepository {
     return this.messageEntity.findAll(query);
   }
 
+  getOne(query) {
+    return this.messageEntity.findOne(query);
+  }
+
   insert(payload, options = {}) {
     return this.messageEntity.create(payload, options);
   }

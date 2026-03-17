@@ -9,6 +9,29 @@ class RoomService {
     this.repository = repository;
   }
 
+  async listLandlordRooms({ landlordId, status }) {
+    const where = { landlordId };
+
+    if (status) {
+      where.status = status;
+    }
+
+    const rooms = await this.repository.getList({
+      where,
+      include: [
+        { model: RoomImage, as: "images" },
+        {
+          model: Review,
+          as: "reviews",
+          include: [{ model: User, as: "reviewer", attributes: ["id", "fullName"] }],
+        },
+      ],
+      order: [["createdAt", "DESC"]],
+    });
+
+    return rooms;
+  }
+
   async listRooms({ minPrice, maxPrice, area, page = 1, limit = 10 }) {
     const where = { status: "active" };
 

@@ -1,4 +1,5 @@
 const { Op } = require("sequelize");
+const { User } = require("@/entities");
 const messageRepository = require("@/repositories/messageRepository");
 const ApiError = require("@/utils/ApiError");
 
@@ -40,6 +41,42 @@ class ChatService {
     });
 
     return messages;
+  }
+
+  async getInbox({ userId }) {
+    const messages = await this.repository.getList({
+      where: {
+        [Op.or]: [{ senderId: userId }, { receiverId: userId }],
+      },
+      include: [
+        { model: User, as: "sender", attributes: ["id", "fullName", "email"] },
+        { model: User, as: "receiver", attributes: ["id", "fullName", "email"] },
+      ],
+      order: [["createdAt", "DESC"]],
+    });
+
+    const seenPeerIds = new Set();
+    const inbox = [];
+
+    messages.forEach((message) => {
+      const peer = message.senderId === userId ? message.receiver : message.sender;
+      if (!peer || seenPeerIds.has(peer.id)) {
+        return;
+      }
+
+      seenPeerIds.add(peer.id);
+      inbox.push({
+        peerId: peer.id,
+        peerName: peer.fullName || peer.email || `User ${peer.id}`,
+        peerEmail: peer.email,
+        lastMessage: message.content,
+        lastMessageAt: message.createdAt,
+        lastSenderId: message.senderId,
+        roomId: message.roomId,
+      });
+    });
+
+    return inbox;
   }
 }
 
