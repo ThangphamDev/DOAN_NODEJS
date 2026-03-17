@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+﻿import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { io } from "socket.io-client";
 import roomService from "@/services/RoomService";
@@ -8,11 +8,21 @@ import useAuth from "@/hooks/useAuth";
 import { getApiData, getApiMessage } from "@/utils/apiResponse";
 import { getToken } from "@/utils/storage";
 
+const amenityItems = [
+  { icon: "wifi", label: "Wifi tốc độ cao" },
+  { icon: "ac_unit", label: "Máy lạnh" },
+  { icon: "local_parking", label: "Chỗ để xe" },
+  { icon: "fitness_center", label: "Không gian thoáng" },
+  { icon: "local_laundry_service", label: "Khu giặt phơi" },
+  { icon: "security", label: "An ninh 24/7" },
+];
+
 const RoomDetailPage = () => {
   const { id } = useParams();
   const { user } = useAuth();
   const [room, setRoom] = useState(null);
   const [scheduledAt, setScheduledAt] = useState("");
+  const [leaseTerm, setLeaseTerm] = useState("12 tháng");
   const [review, setReview] = useState({ rating: 5, content: "" });
   const [chatContent, setChatContent] = useState("");
   const [showChatComposer, setShowChatComposer] = useState(false);
@@ -36,13 +46,28 @@ const RoomDetailPage = () => {
 
   const roomImages = useMemo(() => {
     const images = room?.images || [];
-    return images.map((image) => {
-      const imageUrl = image?.imageUrl || "";
-      if (!imageUrl) return "";
-      if (/^https?:\/\//i.test(imageUrl)) return imageUrl;
-      return `${uploadBaseUrl}${imageUrl.startsWith("/") ? imageUrl : `/${imageUrl}`}`;
-    }).filter(Boolean);
+    return images
+      .map((image) => {
+        const imageUrl = image?.imageUrl || "";
+        if (!imageUrl) return "";
+        if (/^https?:\/\//i.test(imageUrl)) return imageUrl;
+        return `${uploadBaseUrl}${imageUrl.startsWith("/") ? imageUrl : `/${imageUrl}`}`;
+      })
+      .filter(Boolean);
   }, [room?.images, uploadBaseUrl]);
+
+  const averageRating = useMemo(() => {
+    const reviews = room?.reviews || [];
+    if (!reviews.length) return "0.0";
+    const total = reviews.reduce((sum, item) => sum + Number(item.rating || 0), 0);
+    return (total / reviews.length).toFixed(1);
+  }, [room?.reviews]);
+
+  const photoGrid = useMemo(() => {
+    const fallback = "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80";
+    const images = roomImages.length ? roomImages : [fallback];
+    return Array.from({ length: 5 }, (_, index) => images[index] || images[0]);
+  }, [roomImages]);
 
   const fetchRoom = useCallback(() => {
     roomService
@@ -58,27 +83,39 @@ const RoomDetailPage = () => {
     fetchRoom();
   }, [fetchRoom]);
 
+  const loadRoomConversation = useCallback(async () => {
+    if (!room?.landlord?.id) return;
+
+    try {
+      setChatLoading(true);
+      const response = await chatService.getConversation(room.landlord.id, room.id);
+      setChatMessages(getApiData(response, []));
+      setError("");
+    } catch (err) {
+      setError(getApiMessage(err, "Không tải được lịch sử tin nhắn"));
+    } finally {
+      setChatLoading(false);
+    }
+  }, [room?.id, room?.landlord?.id]);
+
   useEffect(() => {
     if (!socket || !showChatComposer || !room?.landlord?.id) return;
 
-    socket.on("chat:new", (message) => {
+    const handleNewMessage = (message) => {
       const isWithCurrentLandlord =
         (message.senderId === room.landlord.id && message.receiverId === user?.id) ||
         (message.senderId === user?.id && message.receiverId === room.landlord.id);
 
-      if (!isWithCurrentLandlord) {
-        return;
-      }
-
-      if (message.roomId && Number(message.roomId) !== Number(room.id)) {
-        return;
-      }
+      if (!isWithCurrentLandlord) return;
+      if (message.roomId && Number(message.roomId) !== Number(room.id)) return;
 
       setChatMessages((prev) => [...prev, message]);
-    });
+    };
+
+    socket.on("chat:new", handleNewMessage);
 
     return () => {
-      socket.off("chat:new");
+      socket.off("chat:new", handleNewMessage);
     };
   }, [socket, showChatComposer, room?.landlord?.id, room?.id, user?.id]);
 
@@ -128,10 +165,10 @@ const RoomDetailPage = () => {
 
     try {
       await roomService.createReview(id, review);
-      fetchRoom();
       setReview({ rating: 5, content: "" });
       setSuccessMessage("Đánh giá của bạn đã được ghi nhận.");
       setError("");
+      fetchRoom();
     } catch (err) {
       setError(getApiMessage(err, "Không thể gửi đánh giá"));
       setSuccessMessage("");
@@ -160,24 +197,10 @@ const RoomDetailPage = () => {
       setChatContent("");
       setError("");
       setSuccessMessage("Đã gửi tin nhắn cho chủ trọ.");
+      await loadRoomConversation();
     } catch (err) {
       setError(getApiMessage(err, "Không thể gửi tin nhắn"));
       setSuccessMessage("");
-    }
-  };
-
-  const loadRoomConversation = async () => {
-    if (!room?.landlord?.id) return;
-
-    try {
-      setChatLoading(true);
-      const response = await chatService.getConversation(room.landlord.id, room.id);
-      setChatMessages(getApiData(response, []));
-      setError("");
-    } catch (err) {
-      setError(getApiMessage(err, "Không tải được lịch sử tin nhắn"));
-    } finally {
-      setChatLoading(false);
     }
   };
 
@@ -189,185 +212,299 @@ const RoomDetailPage = () => {
   if (!room) return <LoadingState />;
 
   return (
-    <section className="customer-page customer-detail-page">
-      <div className="customer-page__head">
-        <h1>{room.title}</h1>
-        <p>{room.address}</p>
-      </div>
-
-      <div className="customer-detail-grid">
-        <article className="customer-card customer-detail-main">
-          <div className="customer-detail-hero">
-            {roomImages[0] ? (
-              <img src={roomImages[0]} alt={room.title} />
-            ) : (
-              <div className="customer-detail-placeholder">Không có ảnh phòng</div>
-            )}
-          </div>
-
-          {roomImages.length > 1 && (
-            <div className="customer-detail-gallery">
-              {roomImages.slice(1, 5).map((imageUrl, index) => (
-                <img key={`${imageUrl}-${index}`} src={imageUrl} alt={`${room.title}-${index + 2}`} />
-              ))}
-            </div>
-          )}
-
-          <div className="customer-detail-content">
-            <div className="customer-price-row">
-              <strong>{Number(room.price).toLocaleString()} VND</strong>
-              <span>{room.area}</span>
-            </div>
-            <p>{room.description || "Chủ trọ chưa cập nhật mô tả chi tiết cho phòng này."}</p>
-          </div>
-        </article>
-
-        <aside className="customer-card customer-detail-actions">
-          <h3>Thao tác nhanh</h3>
-          <p>Thực hiện yêu thích hoặc đặt lịch xem trực tiếp tại đây.</p>
-          {room.landlord?.fullName && (
-            <p className="customer-note">Chủ trọ: {room.landlord.fullName}</p>
-          )}
-
-          {error && <p className="auth-error">{error}</p>}
-          {successMessage && <p className="customer-success">{successMessage}</p>}
-
-          {user?.role === "customer" ? (
-            <div className="customer-form-stack">
-              <button type="button" className="auth-button" onClick={addFavorite}>
-                Thêm vào yêu thích
-              </button>
-              <label className="auth-label">
-                <span>Thời gian xem phòng</span>
-                <input
-                  className="auth-input"
-                  type="datetime-local"
-                  value={scheduledAt}
-                  onChange={(e) => setScheduledAt(e.target.value)}
-                />
-              </label>
-              <button type="button" className="auth-button" onClick={bookVisit}>
-                Đặt lịch xem phòng
-              </button>
-              <button
-                type="button"
-                className="auth-button"
-                onClick={openChatPopup}
-              >
-                Nhắn tin với chủ trọ
-              </button>
-            </div>
-          ) : (
-            <p className="customer-note">Đăng nhập bằng tài khoản khách hàng để đặt lịch và đánh giá phòng.</p>
-          )}
-        </aside>
-      </div>
-
-      <article className="customer-card customer-review-list">
-        <div className="customer-section-head">
-          <h2>Đánh giá từ người thuê</h2>
-          <span>{(room.reviews || []).length} đánh giá</span>
+    <div className="mx-auto flex w-full max-w-7xl flex-col px-4 py-6 md:px-10">
+      {(error || successMessage) && (
+        <div className="mb-6 space-y-3">
+          {error && <p className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</p>}
+          {successMessage && <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{successMessage}</p>}
         </div>
-
-        {(room.reviews || []).length === 0 ? (
-          <p className="customer-note">Chưa có đánh giá nào cho phòng này.</p>
-        ) : (
-          <div className="customer-review-items">
-            {(room.reviews || []).map((item) => (
-              <article key={item.id} className="customer-review-item">
-                <div className="customer-review-top">
-                  <strong>{item.reviewer?.fullName || "Khách thuê"}</strong>
-                  <span>{item.rating}/5</span>
-                </div>
-                <p>{item.content || "(Không có nội dung)"}</p>
-              </article>
-            ))}
-          </div>
-        )}
-      </article>
-
-      {user?.role === "customer" && (
-        <article className="customer-card customer-review-form">
-          <h3>Viết đánh giá</h3>
-          <div className="customer-form-stack">
-            <label className="auth-label">
-              <span>Chấm điểm</span>
-              <select
-                className="auth-select"
-                value={review.rating}
-                onChange={(e) => setReview((prev) => ({ ...prev, rating: Number(e.target.value) }))}
-              >
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <option key={star} value={star}>
-                    {star} / 5
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="auth-label">
-              <span>Nhận xét</span>
-              <textarea
-                className="auth-input customer-textarea"
-                value={review.content}
-                onChange={(e) => setReview((prev) => ({ ...prev, content: e.target.value }))}
-                placeholder="Chia sẻ trải nghiệm thực tế của bạn"
-              />
-            </label>
-
-            <button type="button" className="auth-button" onClick={submitReview}>
-              Gửi đánh giá
-            </button>
-          </div>
-        </article>
       )}
 
-      {showChatComposer && (
-        <div className="customer-chat-modal__overlay" onClick={() => setShowChatComposer(false)}>
-          <div className="customer-chat-modal" onClick={(event) => event.stopPropagation()}>
-            <div className="customer-chat-modal__head">
-              <h3>Nhắn tin với {room.landlord?.fullName || "chủ trọ"}</h3>
-              <button type="button" className="auth-button" onClick={() => setShowChatComposer(false)}>
-                Đóng
-              </button>
+      <div className="mb-8 grid h-[360px] grid-cols-4 grid-rows-2 gap-3 overflow-hidden rounded-xl md:h-[500px]">
+        <div className="col-span-4 row-span-2 bg-slate-200 md:col-span-2" style={{ backgroundImage: `url(${photoGrid[0]})`, backgroundSize: "cover", backgroundPosition: "center" }}></div>
+        <div className="hidden bg-slate-200 md:block" style={{ backgroundImage: `url(${photoGrid[1]})`, backgroundSize: "cover", backgroundPosition: "center" }}></div>
+        <div className="hidden bg-slate-200 md:block" style={{ backgroundImage: `url(${photoGrid[2]})`, backgroundSize: "cover", backgroundPosition: "center" }}></div>
+        <div className="hidden bg-slate-200 md:block" style={{ backgroundImage: `url(${photoGrid[3]})`, backgroundSize: "cover", backgroundPosition: "center" }}></div>
+        <div className="relative hidden bg-slate-200 md:block" style={{ backgroundImage: `url(${photoGrid[4]})`, backgroundSize: "cover", backgroundPosition: "center" }}>
+          {roomImages.length > 5 && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-lg font-bold text-white">+{roomImages.length - 4} ảnh</div>
+          )}
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-10 lg:flex-row">
+        <div className="flex-1">
+          <div className="mb-6 flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <span className="rounded bg-primary/10 px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-primary">Đã xác minh</span>
+              <span className={`rounded px-2.5 py-1 text-xs font-bold uppercase tracking-wider ${room.status === "active" ? "bg-green-500/10 text-green-600" : room.status === "rented" ? "bg-amber-500/10 text-amber-600" : "bg-slate-200 text-slate-700"}`}>
+                {room.status === "active" ? "Còn trống" : room.status === "rented" ? "Đã thuê" : "Tạm ẩn"}
+              </span>
+            </div>
+            <h1 className="text-4xl font-black leading-tight tracking-tight text-slate-900">{room.title}</h1>
+            <p className="flex items-center gap-1 text-slate-500">
+              <span className="material-symbols-outlined text-base">location_on</span>
+              {room.address || "Đang cập nhật địa chỉ"}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 border-y border-slate-200 py-6 md:grid-cols-4">
+            <div className="flex flex-col items-center rounded-lg bg-slate-100/60 p-3 text-center">
+              <span className="material-symbols-outlined mb-1 text-primary">square_foot</span>
+              <span className="font-bold text-slate-900">{room.area || "Đang cập nhật"}</span>
+              <span className="text-xs text-slate-500">Diện tích</span>
+            </div>
+            <div className="flex flex-col items-center rounded-lg bg-slate-100/60 p-3 text-center">
+              <span className="material-symbols-outlined mb-1 text-primary">bed</span>
+              <span className="font-bold text-slate-900">1 phòng</span>
+              <span className="text-xs text-slate-500">Không gian</span>
+            </div>
+            <div className="flex flex-col items-center rounded-lg bg-slate-100/60 p-3 text-center">
+              <span className="material-symbols-outlined mb-1 text-primary">bathtub</span>
+              <span className="font-bold text-slate-900">Tiện nghi cơ bản</span>
+              <span className="text-xs text-slate-500">Sinh hoạt</span>
+            </div>
+            <div className="flex flex-col items-center rounded-lg bg-slate-100/60 p-3 text-center">
+              <span className="material-symbols-outlined mb-1 text-primary">event_available</span>
+              <span className="font-bold text-slate-900">Linh hoạt</span>
+              <span className="text-xs text-slate-500">Hợp đồng</span>
+            </div>
+          </div>
+
+          <div className="py-8">
+            <h3 className="mb-4 text-2xl font-bold text-slate-900">Mô tả</h3>
+            <p className="text-lg leading-relaxed text-slate-600">
+              {room.description || "Chủ trọ chưa cập nhật mô tả chi tiết cho phòng này. Bạn có thể nhắn trực tiếp để hỏi thêm thông tin, lịch xem và các điều khoản thuê."}
+            </p>
+          </div>
+
+          <div className="border-t border-slate-200 py-8">
+            <h3 className="mb-6 text-2xl font-bold text-slate-900">Tiện ích</h3>
+            <div className="grid grid-cols-2 gap-y-4 md:grid-cols-3">
+              {amenityItems.map((item) => (
+                <div className="flex items-center gap-3" key={item.label}>
+                  <span className="material-symbols-outlined text-primary">{item.icon}</span>
+                  <span className="text-slate-700">{item.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="border-t border-slate-200 py-8">
+            <h3 className="mb-6 text-2xl font-bold text-slate-900">Vị trí</h3>
+            <div className="relative h-80 w-full overflow-hidden rounded-xl bg-slate-200 shadow-inner">
+              <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-100 to-slate-300"></div>
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+                <span className="material-symbols-outlined text-5xl text-primary drop-shadow-lg">location_on</span>
+                <div className="mt-2 rounded bg-white px-3 py-1 text-sm font-bold shadow-md">{room.address || "Vị trí phòng trọ"}</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t border-slate-200 py-8">
+            <div className="mb-8 flex items-center justify-between">
+              <h3 className="text-2xl font-bold text-slate-900">Đánh giá ({(room.reviews || []).length})</h3>
+              <div className="flex items-center gap-1">
+                <span className="material-symbols-outlined fill-1 text-yellow-500">star</span>
+                <span className="text-xl font-bold text-slate-900">{averageRating}</span>
+                <span className="ml-1 text-sm text-slate-500">Điểm trung bình</span>
+              </div>
             </div>
 
-            <div className="customer-chat-modal__messages">
-              {chatLoading ? (
-                <p className="customer-note">Đang tải hội thoại...</p>
-              ) : chatMessages.length === 0 ? (
-                <p className="customer-note">Chưa có tin nhắn nào trong phòng này.</p>
+            <div className="space-y-8">
+              {(room.reviews || []).length === 0 ? (
+                <p className="rounded-xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-500">Chưa có đánh giá nào cho phòng này.</p>
               ) : (
-                chatMessages.map((item) => (
-                  <div
-                    key={item.id}
-                    className={`customer-chat-bubble ${item.senderId === user?.id ? "customer-chat-bubble--mine" : "customer-chat-bubble--other"}`}
-                  >
-                    <div className="customer-chat-bubble__meta">
-                      <strong>{item.senderId === user?.id ? "Bạn" : room.landlord?.fullName || "Chủ trọ"}</strong>
-                      <span>{item.createdAt ? new Date(item.createdAt).toLocaleString() : "Vừa xong"}</span>
+                (room.reviews || []).map((item, index) => (
+                  <div className={`${index > 0 ? "border-t border-slate-100 pt-8" : ""} flex flex-col gap-4`} key={item.id}>
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="flex size-10 items-center justify-center rounded-full bg-slate-200 font-bold text-slate-700">
+                          {(item.reviewer?.fullName || "K").slice(0, 1).toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="font-bold text-slate-900">{item.reviewer?.fullName || "Khách thuê"}</p>
+                          <p className="text-xs text-slate-500">{item.createdAt ? new Date(item.createdAt).toLocaleDateString("vi-VN") : "Mới đây"}</p>
+                        </div>
+                      </div>
+                      <div className="flex text-yellow-500">
+                        {Array.from({ length: 5 }, (_, starIndex) => (
+                          <span className="material-symbols-outlined text-sm" key={`${item.id}-${starIndex}`}>
+                            {starIndex < Number(item.rating || 0) ? "star" : "star_outline"}
+                          </span>
+                        ))}
+                      </div>
                     </div>
-                    <p>{item.content}</p>
+                    <p className="italic text-slate-600">"{item.content || "Không có nội dung"}"</p>
                   </div>
                 ))
               )}
             </div>
+          </div>
 
-            <div className="customer-chat-compose">
-              <textarea
-                className="auth-input customer-textarea"
-                value={chatContent}
-                onChange={(e) => setChatContent(e.target.value)}
-                placeholder="Nhập tin nhắn gửi chủ trọ"
-              />
-              <button type="button" className="auth-button" onClick={sendMessageToLandlord}>
-                Gửi tin nhắn
-              </button>
+          {user?.role === "customer" && (
+            <div className="border-t border-slate-200 py-8">
+              <h3 className="mb-6 text-2xl font-bold text-slate-900">Viết đánh giá</h3>
+              <div className="grid gap-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                <label className="grid gap-2 text-sm font-medium text-slate-700">
+                  <span>Chấm điểm</span>
+                  <select
+                    className="rounded-lg border border-slate-200 px-4 py-3 text-sm focus:border-primary focus:outline-none"
+                    value={review.rating}
+                    onChange={(event) => setReview((prev) => ({ ...prev, rating: Number(event.target.value) }))}
+                  >
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <option key={star} value={star}>{star} / 5</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="grid gap-2 text-sm font-medium text-slate-700">
+                  <span>Nhận xét</span>
+                  <textarea
+                    className="min-h-28 rounded-lg border border-slate-200 px-4 py-3 text-sm focus:border-primary focus:outline-none"
+                    value={review.content}
+                    onChange={(event) => setReview((prev) => ({ ...prev, content: event.target.value }))}
+                    placeholder="Chia sẻ trải nghiệm thực tế của bạn"
+                  />
+                </label>
+                <button className="h-12 rounded-xl bg-primary px-5 text-sm font-bold text-white transition-all hover:bg-primary/90" type="button" onClick={submitReview}>
+                  Gửi đánh giá
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <aside className="w-full lg:w-[400px]">
+          <div className="sticky top-24 rounded-xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-200/50">
+            <div className="mb-6 flex items-end justify-between">
+              <div>
+                <p className="text-sm text-slate-500">Giá thuê mỗi tháng</p>
+                <p className="text-3xl font-black text-slate-900">{Number(room.price || 0).toLocaleString("vi-VN")}đ</p>
+              </div>
+              <span className="flex items-center gap-1 rounded bg-green-500/10 px-2 py-1 text-sm font-bold text-green-600">
+                <span className="material-symbols-outlined text-xs">bolt</span>
+                Ưu tiên xem nhanh
+              </span>
+            </div>
+
+            <div className="mb-8 space-y-4">
+              <label className="flex flex-col gap-2">
+                <span className="px-1 text-xs font-bold uppercase text-slate-500">Thời gian xem phòng</span>
+                <div className="relative">
+                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">calendar_month</span>
+                  <input
+                    className="w-full rounded-lg border-none bg-slate-100 py-2 pl-10 pr-4 font-medium text-slate-700"
+                    type="datetime-local"
+                    value={scheduledAt}
+                    onChange={(event) => setScheduledAt(event.target.value)}
+                  />
+                </div>
+              </label>
+              <label className="flex flex-col gap-2">
+                <span className="px-1 text-xs font-bold uppercase text-slate-500">Thời hạn thuê</span>
+                <div className="relative">
+                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">schedule</span>
+                  <select
+                    className="w-full appearance-none rounded-lg border-none bg-slate-100 py-2 pl-10 pr-4 font-medium text-slate-700"
+                    value={leaseTerm}
+                    onChange={(event) => setLeaseTerm(event.target.value)}
+                  >
+                    <option>12 tháng</option>
+                    <option>6 tháng</option>
+                    <option>Linh hoạt</option>
+                  </select>
+                </div>
+              </label>
+            </div>
+
+            {user?.role === "customer" ? (
+              <div className="flex flex-col gap-3">
+                <button className="flex h-14 items-center justify-center gap-2 rounded-xl bg-primary text-lg font-bold text-white shadow-lg shadow-primary/25 transition-all hover:bg-primary/90" type="button" onClick={bookVisit}>
+                  <span className="material-symbols-outlined">event</span>
+                  Đặt lịch xem
+                </button>
+                <button className="flex h-14 items-center justify-center gap-2 rounded-xl bg-primary/10 text-lg font-bold text-primary transition-all hover:bg-primary/20" type="button" onClick={openChatPopup}>
+                  <span className="material-symbols-outlined">chat</span>
+                  Chat với chủ trọ
+                </button>
+                <button className="flex h-12 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white text-sm font-bold text-slate-700 transition-all hover:bg-slate-50" type="button" onClick={addFavorite}>
+                  <span className="material-symbols-outlined">favorite</span>
+                  Thêm vào yêu thích
+                </button>
+              </div>
+            ) : (
+              <p className="rounded-lg bg-slate-100 px-4 py-3 text-sm text-slate-600">Đăng nhập bằng tài khoản khách hàng để đặt lịch xem, nhắn chủ trọ và gửi đánh giá.</p>
+            )}
+
+            <div className="mt-8 flex items-center gap-4 rounded-lg bg-slate-50 p-4">
+              <div className="flex size-12 items-center justify-center rounded-full bg-primary/10 font-bold text-primary">
+                {(room.landlord?.fullName || "C").slice(0, 1).toUpperCase()}
+              </div>
+              <div>
+                <p className="font-bold text-slate-900">{room.landlord?.fullName || "Chủ trọ"}</p>
+                <p className="text-xs text-slate-500">{room.landlord?.phone || "Đã xác minh"}</p>
+              </div>
             </div>
           </div>
+        </aside>
+      </div>
+
+      {user?.role === "customer" && (
+        <div className="fixed bottom-6 right-6 z-[100] flex flex-col items-end gap-4">
+          {showChatComposer && (
+            <div className="hidden h-96 w-80 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-300/60 md:flex">
+              <div className="flex items-center justify-between bg-primary p-4 text-white">
+                <div className="flex items-center gap-2">
+                  <div className="size-2 rounded-full bg-green-400"></div>
+                  <span className="font-bold">Chat với chủ trọ</span>
+                </div>
+                <button className="rounded-lg p-1 transition-colors hover:bg-white/20" type="button" onClick={() => setShowChatComposer(false)}>
+                  <span className="material-symbols-outlined text-sm">close</span>
+                </button>
+              </div>
+
+              <div className="flex-1 space-y-4 overflow-y-auto bg-slate-50 p-4">
+                {chatLoading ? (
+                  <p className="text-sm text-slate-500">Đang tải hội thoại...</p>
+                ) : chatMessages.length === 0 ? (
+                  <p className="text-sm text-slate-500">Chưa có tin nhắn nào trong phòng này.</p>
+                ) : (
+                  chatMessages.map((item) => {
+                    const ownMessage = item.senderId === user?.id;
+                    return (
+                      <div className={`flex max-w-[85%] flex-col gap-1 ${ownMessage ? "ml-auto items-end" : ""}`} key={item.id}>
+                        <div className={`rounded-2xl p-3 text-sm ${ownMessage ? "rounded-br-none bg-primary text-white" : "rounded-tl-none bg-slate-200 text-slate-700"}`}>
+                          {item.content}
+                        </div>
+                        <span className="text-[10px] text-slate-400">{item.createdAt ? new Date(item.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "Vừa xong"}</span>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+
+              <div className="flex items-center gap-2 border-t border-slate-200 bg-white p-3">
+                <input
+                  className="flex-1 rounded-lg border-none bg-slate-100 px-3 py-2 text-sm focus:ring-1 focus:ring-primary"
+                  placeholder="Nhập tin nhắn..."
+                  type="text"
+                  value={chatContent}
+                  onChange={(event) => setChatContent(event.target.value)}
+                />
+                <button className="rounded-full p-2 text-primary transition-colors hover:bg-primary/10" type="button" onClick={sendMessageToLandlord}>
+                  <span className="material-symbols-outlined">send</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          <button className="flex size-14 items-center justify-center rounded-full bg-primary text-white shadow-lg shadow-primary/40 transition-all hover:scale-110 active:scale-95" type="button" onClick={showChatComposer ? () => setShowChatComposer(false) : openChatPopup}>
+            <span className="material-symbols-outlined text-3xl">forum</span>
+          </button>
         </div>
       )}
-    </section>
+    </div>
   );
 };
 

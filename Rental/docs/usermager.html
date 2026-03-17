@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Admin Console - User Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#007bff",
+                        "background-light": "#f5f7f8",
+                        "background-dark": "#0f1923",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden">
+<div class="layout-container flex h-full grow">
+<aside class="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-background-dark flex flex-col hidden lg:flex">
+<div class="p-6 flex items-center gap-3">
+<div class="size-8 bg-primary rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined">apartment</span>
+</div>
+<h2 class="text-xl font-bold tracking-tight">RoomRent</h2>
+</div>
+<nav class="flex-1 px-4 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined text-slate-500">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="text-sm font-semibold">User Management</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined text-slate-500">bed</span>
+<span class="text-sm font-medium">Room Listings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined text-slate-500">calendar_month</span>
+<span class="text-sm font-medium">Bookings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined text-slate-500">bar_chart</span>
+<span class="text-sm font-medium">Reports</span>
+</a>
+</nav>
+<div class="p-4 border-t border-slate-200 dark:border-slate-800">
+<div class="flex items-center gap-3 p-2">
+<div class="size-10 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Admin user profile avatar thumbnail" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBfrNL836QD0YrKltWrNq7Ed00hh9c01c3b2Z5nb4JkNGwSKthEau8qbrXcc8Ncw96r5Y5lDqqgJIWTG22lV7d7_gVmpwLEAp9fEm-OxHjqQRuBaa7lpkWwhL3cJHj11cDq57jnkJN_O_K4mIMoLaK01rl6RILRG83tEdsTGuTgiBrue-NayuxjLm9fp9fcdfLvfyhiTpZHZFyiNb4zarpKIP0b0cYpDg3OtumDpuqaW9H8azGiKgCLHTSn_1Yb2E11p12XXkjVtFaA"/>
+</div>
+<div class="flex flex-col">
+<p class="text-sm font-bold">Alex Admin</p>
+<p class="text-xs text-slate-500">Super Admin</p>
+</div>
+</div>
+</div>
+</aside>
+<main class="flex-1 flex flex-col min-w-0">
+<header class="h-16 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md flex items-center justify-between px-8 sticky top-0 z-10">
+<div class="flex items-center flex-1">
+<div class="max-w-md w-full relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg focus:ring-2 focus:ring-primary text-sm transition-all" placeholder="Search users, email, or IDs..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="size-10 flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="size-10 flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+</header>
+<div class="p-8 space-y-8">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+<div class="space-y-1">
+<h1 class="text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100">User Management</h1>
+<p class="text-slate-500 text-sm">Review, verify and manage access for all platform members.</p>
+</div>
+<button class="bg-primary hover:bg-primary/90 text-white px-6 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 transition-all shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-lg">person_add</span>
+                            Add New User
+                        </button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-white dark:bg-background-dark p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<p class="text-sm font-medium text-slate-500 uppercase tracking-wider">Total Renters</p>
+<div class="flex items-end justify-between mt-2">
+<h3 class="text-3xl font-bold">12,482</h3>
+<span class="text-emerald-500 text-sm font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-lg">trending_up</span> +12%
+                                </span>
+</div>
+</div>
+<div class="bg-white dark:bg-background-dark p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<p class="text-sm font-medium text-slate-500 uppercase tracking-wider">Active Landlords</p>
+<div class="flex items-end justify-between mt-2">
+<h3 class="text-3xl font-bold">1,894</h3>
+<span class="text-emerald-500 text-sm font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-lg">trending_up</span> +5%
+                                </span>
+</div>
+</div>
+<div class="bg-white dark:bg-background-dark p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<p class="text-sm font-medium text-slate-500 uppercase tracking-wider">Pending Verifications</p>
+<div class="flex items-end justify-between mt-2">
+<h3 class="text-3xl font-bold">42</h3>
+<span class="text-amber-500 text-sm font-medium">Requires action</span>
+</div>
+</div>
+</div>
+<div class="bg-white dark:bg-background-dark rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+<div class="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-wrap gap-3 items-center">
+<div class="flex gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
+<button class="px-4 py-1.5 text-sm font-semibold rounded-md bg-white dark:bg-slate-700 shadow-sm">All Users</button>
+<button class="px-4 py-1.5 text-sm font-medium text-slate-500 hover:text-slate-900 dark:hover:text-slate-100">Renters</button>
+<button class="px-4 py-1.5 text-sm font-medium text-slate-500 hover:text-slate-900 dark:hover:text-slate-100">Landlords</button>
+</div>
+<div class="flex-1"></div>
+<button class="flex items-center gap-2 px-3 py-1.5 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800">
+<span class="material-symbols-outlined text-lg">filter_list</span>
+                                Filter
+                            </button>
+<button class="flex items-center gap-2 px-3 py-1.5 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800">
+<span class="material-symbols-outlined text-lg">download</span>
+                                Export
+                            </button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-slate-50 dark:bg-slate-800/50">
+<tr>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">User</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Role</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Join Date</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">JD</div>
+<div class="flex flex-col">
+<span class="font-bold text-sm">John Doe</span>
+<span class="text-xs text-slate-500">john.doe@example.com</span>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">Renter</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+<div class="size-2 rounded-full bg-emerald-500"></div>
+<span class="text-sm font-medium">Active</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-500">Oct 12, 2023</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2">
+<button class="p-1.5 text-slate-400 hover:text-primary transition-colors" title="View Profile">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-red-500 transition-colors" title="Block User">
+<span class="material-symbols-outlined">block</span>
+</button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400 flex items-center justify-center font-bold">SS</div>
+<div class="flex flex-col">
+<span class="font-bold text-sm">Sarah Smith</span>
+<span class="text-xs text-slate-500">sarah.s@rentals.net</span>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">Landlord</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+<div class="size-2 rounded-full bg-emerald-500"></div>
+<span class="text-sm font-medium">Active</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-500">Sep 05, 2023</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2">
+<button class="p-1.5 text-slate-400 hover:text-primary transition-colors" title="View Profile">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-red-500 transition-colors" title="Block User">
+<span class="material-symbols-outlined">block</span>
+</button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors opacity-75">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-500 font-bold">MR</div>
+<div class="flex flex-col">
+<span class="font-bold text-sm">Mike Ross</span>
+<span class="text-xs text-slate-500">mike.ross@gmail.com</span>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">Renter</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-1.5 text-red-600 dark:text-red-400">
+<div class="size-2 rounded-full bg-red-500"></div>
+<span class="text-sm font-medium">Blocked</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-500">Aug 20, 2023</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2">
+<button class="p-1.5 text-slate-400 hover:text-primary transition-colors" title="View Profile">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+<button class="p-1.5 text-emerald-500 hover:text-emerald-600 transition-colors" title="Unblock User">
+<span class="material-symbols-outlined">check_circle</span>
+</button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400 flex items-center justify-center font-bold">ED</div>
+<div class="flex flex-col">
+<span class="font-bold text-sm">Emily Davis</span>
+<span class="text-xs text-slate-500">emily_d@provider.co</span>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">Landlord</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+<div class="size-2 rounded-full bg-emerald-500"></div>
+<span class="text-sm font-medium">Active</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-500">Nov 01, 2023</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2">
+<button class="p-1.5 text-slate-400 hover:text-primary transition-colors" title="View Profile">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+<button class="p-1.5 text-slate-400 hover:text-red-500 transition-colors" title="Block User">
+<span class="material-symbols-outlined">block</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+<span class="text-sm text-slate-500">Showing 1-4 of 14,376 users</span>
+<div class="flex items-center gap-1">
+<button class="size-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined text-lg">chevron_left</span>
+</button>
+<button class="size-8 flex items-center justify-center rounded-lg bg-primary text-white font-bold text-xs">1</button>
+<button class="size-8 flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-medium">2</button>
+<button class="size-8 flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-medium">3</button>
+<span class="px-1 text-slate-400">...</span>
+<button class="size-8 flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-medium">3594</button>
+<button class="size-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800">
+<span class="material-symbols-outlined text-lg">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+</body></html>

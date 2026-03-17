@@ -73,7 +73,7 @@ const RegisterPage = () => {
     <section className="auth-page">
       <div className="auth-card">
         <header className="auth-header">
-          <div className="auth-eyebrow">TroTot New Account</div>
+          <div className="auth-eyebrow">LivinX New Account</div>
           <h1 className="auth-title">Tạo tài khoản mới</h1>
           <p className="auth-subtitle">Đăng ký để bắt đầu tìm phòng hoặc đăng tin cho thuê nhanh chóng.</p>
         </header>

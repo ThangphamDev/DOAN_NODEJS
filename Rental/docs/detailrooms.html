@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>StayFinder | Modern Studio in Downtown</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#007bff",
+                        "background-light": "#f5f7f8",
+                        "background-dark": "#0f1923",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 transition-colors duration-300">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<header class="sticky top-0 z-50 flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 dark:border-slate-800 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md px-6 md:px-20 py-3">
+<div class="flex items-center gap-4 text-primary">
+<div class="size-6">
+<svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M42.4379 44C42.4379 44 36.0744 33.9038 41.1692 24C46.8624 12.9336 42.2078 4 42.2078 4L7.01134 4C7.01134 4 11.6577 12.932 5.96912 23.9969C0.876273 33.9029 7.27094 44 7.27094 44L42.4379 44Z" fill="currentColor"></path>
+</svg>
+</div>
+<h2 class="text-slate-900 dark:text-slate-100 text-xl font-bold leading-tight tracking-[-0.015em]">StayFinder</h2>
+</div>
+<div class="flex flex-1 justify-end gap-8">
+<nav class="hidden md:flex items-center gap-9">
+<a class="text-slate-700 dark:text-slate-300 text-sm font-medium hover:text-primary transition-colors" href="#">Home</a>
+<a class="text-slate-700 dark:text-slate-300 text-sm font-medium hover:text-primary transition-colors" href="#">Listings</a>
+<a class="text-slate-700 dark:text-slate-300 text-sm font-medium hover:text-primary transition-colors" href="#">Favorites</a>
+</nav>
+<div class="flex gap-2">
+<button class="flex items-center justify-center rounded-lg h-10 w-10 bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined text-[20px]">share</span>
+</button>
+<button class="flex items-center justify-center rounded-lg h-10 w-10 bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined text-[20px]">favorite</span>
+</button>
+</div>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-primary/20" data-alt="User profile avatar circle" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAMVg_1XCiOA6DNQkBg2qRNipxtJQTKULr2ORcvpx36UDPuXikR8CNbQtuL9k_zNmVXoPXEBpaIaHZ2b9ylDwuf_oj6sTBO22AJ8icnIL_EtqMiJsI2wo_BLx3xpUSCK8KL4hUL5MKN182UR6p-F3GUGDPEQ_KA6DP04nsCq_qQH_4NtHZgpUnQTNxZsWeGGDtscFNcBG7MW6xulq6t6rW_YXqVSrWJnPl1K7oeJ2IjRwgmduu_7D2hLqs93AjiIDTAFrnrc8HkB9q3");'></div>
+</div>
+</header>
+<main class="mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 md:px-10 py-6">
+<div class="grid grid-cols-4 grid-rows-2 gap-3 h-[400px] md:h-[500px] mb-8 overflow-hidden rounded-xl">
+<div class="col-span-4 md:col-span-2 row-span-2 bg-center bg-no-repeat bg-cover hover:opacity-95 transition-opacity cursor-pointer" data-alt="Main living room area with minimalist furniture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCtmHLi0W7oRiNeyeJaVuXcKYtevDQr9IDRtl6azqvmaqr8Pdv0qKXnUWnolBU9GWGhSZf37qS8lXuwKfasw0GGEWDHkO3YqWNOO2L5_IlyUhcEZewmzRSI8Cu_Lkf3q9clXXHl4JNAQoXCnZC8R6eqQT4n_G38e_-Td4AOMMdUv9s0uq17Jr0Gf__DpMN8XAwUrwKinWJzvY78A_3fpzSjcoxCObL0GVyeMBLeLmiMVNLKrQnGYVXDsV-Q9q5kYPEHTIYsWoZiYZPX");'></div>
+<div class="hidden md:block col-span-1 row-span-1 bg-center bg-no-repeat bg-cover hover:opacity-95 transition-opacity cursor-pointer" data-alt="Modern kitchen with stainless steel appliances" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBr9GlI96DL98zXwoVSO5TpClnC1LXIvGHuRFmblJBTDyF8sDbrJPGJ4yPfGMab07pRyQXagV1uvunBM4jdY57sP5J_8hw5fd6d0v17WXoVOjKjzhTECiKaSfrYsEj1gSJop-wGTgIe6u0N0LX8ZTKKUC6NJ9R-wgrrz-l--GAh6zS7tcYBhYWnvQembLAtrjWa8AKuOZYt_IWIuhBQXtibPmJNGBlysg1WqOb4J93ilukAYTWAZEvXoYOxEDKrrWgFjHAQR0HgWgok");'></div>
+<div class="hidden md:block col-span-1 row-span-1 bg-center bg-no-repeat bg-cover hover:opacity-95 transition-opacity cursor-pointer" data-alt="Large window showing urban city view" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBbetW92zNT-O2NapzuXvmKGCJiVN2gwQadCSJy5Q5L1K9j_WkCcD_3uWvLlHKFTjyQeKEQMrffs2qv2ypflqeDk5s7amCskl3gDspxgJZlW1L5ORE2HZTG7q7hptt12rtVosrJ7r7pCq6LqzSA0oWiFCVFnr6Ev8T-hrGR91c7D3M9PpmmppYuIkYXJh7QmmhvUdFVTUn296Z_XZM0vl6wkZlMoEizRKI_HGzpHUeyybAh3T2Aqb7lbs0VKQxBr36vhank6EopncCE");'></div>
+<div class="hidden md:block col-span-1 row-span-1 bg-center bg-no-repeat bg-cover hover:opacity-95 transition-opacity cursor-pointer" data-alt="Detail of a modern light fixture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAVeahucIEArzPXJGSHMan8lNjiJxMA_Bh8HBzQhNGTEmcK0kRYdH6veh0_DZ-G9H49nDg_1AGgbYDIlG2MY0q9E2a7LqNt6zlGs-ra0-ZXM8RRAYhbiSS__Vf5R86WI7_a4PM6rH74CBt3cHv25oTaiekGsKOrNy9idQD1QhuoGbdK21P-YVP19z6KdHkYD9Eid48a9PBAPAYyn9lNdmvlALq4kxmym11NBhe9IYNTH_9biDEnaw4h9Zd4_13xHA_8l07W4Vch065S");'></div>
+<div class="hidden md:block col-span-1 row-span-1 bg-center bg-no-repeat bg-cover hover:opacity-95 transition-opacity cursor-pointer relative" data-alt="Luxury bathroom with white marble tile" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAd93W8muMKOjETjby8cehjguuC5xWUY4SYqlX7c9hojjT45LjgYzjpNkR1J3ZjdX1j2dq5ffpsUPr8Rd9vBHCifPbRBYO4Up6mMdLQiaEQuc_suBCz7N4ZT2kr-f7qyWrKhKk4x9b7ZNUb6vqzzY_7ochD9gUltP6b2iwQwD-HMNn7LD5h5Qbx7ABOI6dWsfi4Z41JneOu5Lb5DWEZ_2oe8NyKbrXvJ4ADRjCF154n-yKZgpDZo0dQ9qs8QII4P6mj8d23mjr1bKU8");'>
+<div class="absolute inset-0 bg-black/40 flex items-center justify-center">
+<span class="text-white font-bold text-lg">+12 Photos</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col lg:flex-row gap-10">
+<div class="flex-1">
+<div class="flex flex-col gap-2 mb-6">
+<div class="flex items-center gap-2">
+<span class="px-2.5 py-1 bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider rounded">Verified</span>
+<span class="px-2.5 py-1 bg-green-500/10 text-green-600 text-xs font-bold uppercase tracking-wider rounded">Available</span>
+</div>
+<h1 class="text-slate-900 dark:text-slate-100 text-4xl font-black leading-tight tracking-tight">Modern Studio in Downtown</h1>
+<p class="text-slate-500 dark:text-slate-400 flex items-center gap-1">
+<span class="material-symbols-outlined text-base">location_on</span>
+                            123 Urban Ave, Metropolis City Center
+                        </p>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 py-6 border-y border-slate-200 dark:border-slate-800">
+<div class="flex flex-col items-center p-3 rounded-lg bg-slate-100/50 dark:bg-slate-800/50">
+<span class="material-symbols-outlined text-primary mb-1">square_foot</span>
+<span class="text-slate-900 dark:text-slate-100 font-bold">540 sqft</span>
+<span class="text-slate-500 text-xs">Area</span>
+</div>
+<div class="flex flex-col items-center p-3 rounded-lg bg-slate-100/50 dark:bg-slate-800/50">
+<span class="material-symbols-outlined text-primary mb-1">bed</span>
+<span class="text-slate-900 dark:text-slate-100 font-bold">1 Bedroom</span>
+<span class="text-slate-500 text-xs">Room</span>
+</div>
+<div class="flex flex-col items-center p-3 rounded-lg bg-slate-100/50 dark:bg-slate-800/50">
+<span class="material-symbols-outlined text-primary mb-1">bathtub</span>
+<span class="text-slate-900 dark:text-slate-100 font-bold">1 Bathroom</span>
+<span class="text-slate-500 text-xs">Bath</span>
+</div>
+<div class="flex flex-col items-center p-3 rounded-lg bg-slate-100/50 dark:bg-slate-800/50">
+<span class="material-symbols-outlined text-primary mb-1">event_available</span>
+<span class="text-slate-900 dark:text-slate-100 font-bold">Flexible</span>
+<span class="text-slate-500 text-xs">Lease</span>
+</div>
+</div>
+<div class="py-8">
+<h3 class="text-slate-900 dark:text-slate-100 text-2xl font-bold mb-4">Description</h3>
+<p class="text-slate-600 dark:text-slate-400 leading-relaxed text-lg">
+                            A beautiful, sun-lit studio apartment located in the heart of the city. Recently renovated with modern finishes, high ceilings, and floor-to-ceiling windows offering stunning urban views. 
+                            <br/><br/>
+                            This space is perfect for young professionals or students who want to be in the middle of everything. Just steps away from the main transit hub, the best coffee shops, and the vibrant arts district. Includes high-end kitchen appliances and high-speed fiber internet.
+                        </p>
+</div>
+<div class="py-8 border-t border-slate-200 dark:border-slate-800">
+<h3 class="text-slate-900 dark:text-slate-100 text-2xl font-bold mb-6">Amenities</h3>
+<div class="grid grid-cols-2 md:grid-cols-3 gap-y-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">wifi</span>
+<span class="text-slate-700 dark:text-slate-300">High-speed Wi-Fi</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">ac_unit</span>
+<span class="text-slate-700 dark:text-slate-300">Air Conditioning</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">local_parking</span>
+<span class="text-slate-700 dark:text-slate-300">Private Parking</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">fitness_center</span>
+<span class="text-slate-700 dark:text-slate-300">Gym Access</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">local_laundry_service</span>
+<span class="text-slate-700 dark:text-slate-300">In-unit Laundry</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">security</span>
+<span class="text-slate-700 dark:text-slate-300">24/7 Security</span>
+</div>
+</div>
+</div>
+<div class="py-8 border-t border-slate-200 dark:border-slate-800">
+<h3 class="text-slate-900 dark:text-slate-100 text-2xl font-bold mb-6">Location</h3>
+<div class="w-full h-80 rounded-xl overflow-hidden bg-slate-200 dark:bg-slate-800 relative shadow-inner">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Map showing downtown metropolis city center" data-location="Metropolis City" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAxXwVPVxLjdh-wNnC5e54j36oRACIY30zsIxn_42wwoLfLJMZlmT4cG4d4FD5FI551tlxEsA1GArtv8-mt8sSRwLjowy8qDpJNgH9hNBGxYcoap5JI4Z0SRt-i1ehYGagDjtTVD7ohDycygmF-p3LwbnV9JaNAs_mYUiRZdwoLpeOqgwYDkW_sM2EkEWvPuS7vEwbP1LPM1ty30N7gCllrwDoMmqnH5V0OW4HeDIWPmX-jsI6Ck-VbAY5N7a2Gn6S35jkOONqbqbH9");'></div>
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+<span class="material-symbols-outlined text-primary text-5xl drop-shadow-lg">location_on</span>
+<div class="bg-white dark:bg-slate-900 px-3 py-1 rounded shadow-md text-sm font-bold mt-1">Property Location</div>
+</div>
+</div>
+</div>
+<div class="py-8 border-t border-slate-200 dark:border-slate-800">
+<div class="flex items-center justify-between mb-8">
+<h3 class="text-slate-900 dark:text-slate-100 text-2xl font-bold">Reviews (24)</h3>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-yellow-500 fill-1">star</span>
+<span class="text-slate-900 dark:text-slate-100 font-bold text-xl">4.8</span>
+<span class="text-slate-500 text-sm ml-1">Rating</span>
+</div>
+</div>
+<div class="space-y-8">
+<div class="flex flex-col gap-4">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-slate-200 dark:bg-slate-700" data-alt="Reviewer profile picture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDUqdms5k_lp7Mjx3NtXCTg8Gaj0nRcTO6Yr_PzhGUzd-JJtdgIS3CWNarL-uZHFOb-lOMbwNCFolcTJ_LEMAqqrLFyPSECbRxbbxy0NdQ51F61mxYssEul510DOhvZrjjUfN0raGwYc8FTS3ey2gXfpvzHE3c-GdyAlFkMYQdy79BazlVZj7ufqxql7nnwbevZ_hR6Yo8rErCxO-iarGifOThJMUGV5DX0sn6RgDPjAqwRDhDGuz5PdNvzWvO3tc907WPJkppaHEgV");'></div>
+<div>
+<p class="text-slate-900 dark:text-slate-100 font-bold">Sarah Johnson</p>
+<p class="text-slate-500 text-xs">March 2024</p>
+</div>
+</div>
+<div class="flex text-yellow-500">
+<span class="material-symbols-outlined text-sm fill-1">star</span>
+<span class="material-symbols-outlined text-sm fill-1">star</span>
+<span class="material-symbols-outlined text-sm fill-1">star</span>
+<span class="material-symbols-outlined text-sm fill-1">star</span>
+<span class="material-symbols-outlined text-sm fill-1">star</span>
+</div>
+</div>
+<p class="text-slate-600 dark:text-slate-400 italic">"The view from the studio is incredible. The location couldn't be better for downtown access. Highly recommend!"</p>
+</div>
+<div class="flex flex-col gap-4 border-t border-slate-100 dark:border-slate-800 pt-8">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-slate-200 dark:bg-slate-700" data-alt="Reviewer profile picture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuALk2HBpBfUbui7Qrl_3HrzViZ6dfjeju4QIhuRwlhR_xSvuBOfvr4MkGKB5nsFt7zenweG2AssSJkAR6mI3STs2umZ7ovIIB4ZL714wfBf3J1C8T2_qHlxE-2vi7DKqZ85LhYCva0EpnGhhs8MD4G1C7dlqCCLvFXHcmRLuI7nHhVNVtz9CzvcZcEE31FtMVeD9mbSBwG2uX9ACdHtQEHw0r5XfZDkQXTtDX0mOpfCdgXq2MW9KPFBsLCKwNffrxgN7AgCt6EVqpnj");'></div>
+<div>
+<p class="text-slate-900 dark:text-slate-100 font-bold">Mark Thompson</p>
+<p class="text-slate-500 text-xs">January 2024</p>
+</div>
+</div>
+<div class="flex text-yellow-500">
+<span class="material-symbols-outlined text-sm fill-1">star</span>
+<span class="material-symbols-outlined text-sm fill-1">star</span>
+<span class="material-symbols-outlined text-sm fill-1">star</span>
+<span class="material-symbols-outlined text-sm fill-1">star</span>
+<span class="material-symbols-outlined text-sm">star</span>
+</div>
+</div>
+<p class="text-slate-600 dark:text-slate-400 italic">"Management is very responsive. The space is exactly as pictured. Very quiet despite being downtown."</p>
+</div>
+</div>
+<button class="mt-8 text-primary font-bold hover:underline flex items-center gap-1">
+                            Show all reviews <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+<aside class="w-full lg:w-[400px]">
+<div class="sticky top-24 p-6 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl shadow-slate-200/50 dark:shadow-none">
+<div class="flex justify-between items-end mb-6">
+<div>
+<p class="text-slate-500 text-sm">Monthly Rent</p>
+<p class="text-slate-900 dark:text-slate-100 text-3xl font-black">$1,200</p>
+</div>
+<span class="text-green-600 text-sm font-bold flex items-center gap-1 bg-green-500/10 px-2 py-1 rounded">
+<span class="material-symbols-outlined text-xs">bolt</span> All utilities inc.
+                            </span>
+</div>
+<div class="space-y-4 mb-8">
+<div class="flex flex-col gap-2">
+<label class="text-xs font-bold uppercase text-slate-500 px-1">Move-in Date</label>
+<div class="relative">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400">calendar_month</span>
+<input class="w-full pl-10 pr-4 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-slate-700 dark:text-slate-300 font-medium" readonly="" type="text" value="August 1, 2024"/>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-xs font-bold uppercase text-slate-500 px-1">Lease Term</label>
+<div class="relative">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400">schedule</span>
+<select class="w-full pl-10 pr-4 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-slate-700 dark:text-slate-300 font-medium appearance-none">
+<option>12 Months</option>
+<option>6 Months</option>
+<option>Flexible</option>
+</select>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-3">
+<button class="w-full h-14 bg-primary text-white rounded-xl font-bold text-lg hover:bg-primary/90 transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/25">
+<span class="material-symbols-outlined">event</span>
+                                Book Viewing
+                            </button>
+<button class="w-full h-14 bg-primary/10 text-primary rounded-xl font-bold text-lg hover:bg-primary/20 transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">chat</span>
+                                Chat with Owner
+                            </button>
+</div>
+<div class="mt-8 flex items-center gap-4 p-4 rounded-lg bg-slate-50 dark:bg-slate-800/50">
+<div class="size-12 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
+<img alt="Owner Profile" class="w-full h-full object-cover" data-alt="Real estate owner portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCBS6W83JqO316PUGC7fvXRU3GC_oBpNwWjnCvcBXjCtYdmPlyS37gMgotjTANwmYlTc9igLjZ2eId-kNmjDfjai5dt2iFcjcG0lL0Vg3m6Civ3B13ZCb_oaJGD_JPRjeWl8Yy5kqAFtGj1aV_6hVto13JuQNs1jH97Skaq6dJ_YgN3vSuAMZitNVEyQBARMsBsERG37woTXC4BJMEBJR0OSTgntDmGjydlp2pHJcbv2WssKznH5XvLXd4RtT6zaG2sWmRKvyELrWvK"/>
+</div>
+<div>
+<p class="text-slate-900 dark:text-slate-100 font-bold">Alex Rivera</p>
+<p class="text-slate-500 text-xs">Property Owner • Top Rated</p>
+</div>
+</div>
+</div>
+</aside>
+</div>
+</main>
+<footer class="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-10 px-6 md:px-20 mt-10">
+<div class="flex flex-col md:flex-row justify-between items-center gap-6">
+<div class="flex items-center gap-3 opacity-60">
+<div class="size-5">
+<svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M42.4379 44C42.4379 44 36.0744 33.9038 41.1692 24C46.8624 12.9336 42.2078 4 42.2078 4L7.01134 4C7.01134 4 11.6577 12.932 5.96912 23.9969C0.876273 33.9029 7.27094 44 7.27094 44L42.4379 44Z" fill="currentColor"></path>
+</svg>
+</div>
+<span class="font-bold">StayFinder</span>
+</div>
+<p class="text-slate-500 text-sm">© 2024 StayFinder Rentals Inc. All rights reserved.</p>
+<div class="flex gap-6">
+<a class="text-slate-400 hover:text-primary transition-colors" href="#"><span class="material-symbols-outlined">social_leaderboard</span></a>
+<a class="text-slate-400 hover:text-primary transition-colors" href="#"><span class="material-symbols-outlined">language</span></a>
+</div>
+</div>
+</footer>
+</div>
+</div>
+<!-- Floating Chat Popup -->
+<div class="fixed bottom-6 right-6 z-[100] flex flex-col items-end gap-4">
+<!-- Chat Window -->
+<div class="hidden md:flex flex-col w-80 h-96 bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden mb-2 animate-in slide-in-from-bottom-5 duration-300" id="chat-window">
+<!-- Header -->
+<div class="bg-primary p-4 flex items-center justify-between text-white">
+<div class="flex items-center gap-2">
+<div class="size-2 bg-green-400 rounded-full animate-pulse"></div>
+<span class="font-bold">Chat với chủ trọ</span>
+</div>
+<button class="hover:bg-white/20 p-1 rounded-lg transition-colors">
+<span class="material-symbols-outlined text-sm">close</span>
+</button>
+</div>
+<!-- Messages -->
+<div class="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 dark:bg-slate-950/50">
+<div class="flex flex-col gap-1 max-w-[85%]">
+<div class="bg-slate-200 dark:bg-slate-800 p-3 rounded-2xl rounded-tl-none text-sm text-slate-700 dark:text-slate-300">
+                    Chào bạn, tôi là Alex. Bạn cần hỗ trợ gì về căn studio này không?
+                </div>
+<span class="text-[10px] text-slate-400 ml-1">10:24 AM</span>
+</div>
+</div>
+<!-- Input Area -->
+<div class="p-3 border-t border-slate-200 dark:border-slate-800 flex gap-2 items-center bg-white dark:bg-slate-900">
+<input class="flex-1 bg-slate-100 dark:bg-slate-800 border-none rounded-lg py-2 px-3 text-sm focus:ring-1 focus:ring-primary dark:text-slate-200" placeholder="Nhập tin nhắn..." type="text"/>
+<button class="text-primary p-2 hover:bg-primary/10 rounded-full transition-colors">
+<span class="material-symbols-outlined">send</span>
+</button>
+</div>
+</div>
+<!-- Toggle Button -->
+<button class="size-14 bg-primary text-white rounded-full shadow-lg shadow-primary/40 flex items-center justify-center hover:scale-110 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-3xl">forum</span>
+</button>
+</div></body></html>

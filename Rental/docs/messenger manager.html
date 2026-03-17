@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#007bff",
+              "background-light": "#f5f7f8",
+              "background-dark": "#0f1923",
+            },
+            fontFamily: {
+              "display": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<title>Tin nhắn (Chủ trọ) - Hệ thống Quản lý Phòng trọ</title>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100">
+<div class="relative flex h-screen w-full flex-col overflow-hidden">
+<!-- Top Navigation Bar -->
+<header class="flex h-16 items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 shrink-0">
+<div class="flex items-center gap-4">
+<div class="flex items-center justify-center size-10 rounded-lg bg-primary text-white">
+<span class="material-symbols-outlined">apartment</span>
+</div>
+<h2 class="text-lg font-bold leading-tight tracking-tight">Tin nhắn (Chủ trọ)</h2>
+</div>
+<div class="flex flex-1 justify-center max-w-xl px-8">
+<div class="relative w-full">
+<div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+<span class="material-symbols-outlined text-xl">search</span>
+</div>
+<input class="block w-full pl-10 pr-3 py-2 border-none bg-slate-100 dark:bg-slate-800 rounded-lg focus:ring-2 focus:ring-primary/50 text-sm" placeholder="Tìm kiếm tin nhắn, tên khách hàng..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="h-8 w-px bg-slate-200 dark:border-slate-700 mx-1"></div>
+<div class="flex items-center gap-3 pl-2">
+<div class="text-right hidden sm:block">
+<p class="text-sm font-semibold">Nguyễn Văn A</p>
+<p class="text-xs text-slate-500">Chủ trọ</p>
+</div>
+<div class="size-10 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden border border-primary/30">
+<img alt="Avatar chủ trọ" class="w-full h-full object-cover" data-alt="Landlord professional profile photo avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD8wperWJ0EJZTCf_g0HUwFp0hpqJgCOi3g9RN7247VfPkgy1rAdpUUkyrao8lnd4hKMX4x_8HTIjm2YqhkXrZN3DBKYrCP_Y3gsKwQ8xhCQ3ckn922LOlc2QO6MJFS3h-opr6qgA-g8g2ph2URzsqhJkYXD-kBLeNxb7AqXGtKCNYfcbCWemlyRNzq7goC2H9Smx0ETHe17VD4wN29tKFb0RhHcaanyiWjC_Jh4ks_7airfnh2Wx45Qs4fC_Z7TQ8489Q_jJr6Ipbg"/>
+</div>
+</div>
+</div>
+</header>
+<div class="flex flex-1 overflow-hidden">
+<!-- Left Sidebar: Conversations List -->
+<aside class="w-80 flex flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0">
+<div class="p-4 border-b border-slate-100 dark:border-slate-800">
+<div class="flex gap-2">
+<button class="flex-1 py-1.5 px-3 rounded-lg bg-primary text-white text-xs font-semibold">Tất cả</button>
+<button class="flex-1 py-1.5 px-3 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-semibold">Chưa đọc</button>
+<button class="flex-1 py-1.5 px-3 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-semibold">Ưu tiên</button>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto custom-scrollbar">
+<!-- Chat Item Active -->
+<div class="flex items-center gap-3 p-4 bg-primary/10 border-l-4 border-primary cursor-pointer transition-colors">
+<div class="relative shrink-0">
+<img class="size-12 rounded-full object-cover" data-alt="Female renter profile picture avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBcR9XzFp95vlIOmzIcvDeDtrQDD4RLbB9Bv8Iir_f-Ds8OQWsgtOfc2OxvIYTuHTy2GelSdghFKAuy5Ny36CCEDiNq9FKpqsX-qwatAXgT7-3lEXeUK7evf2LGNix1IxM4_nipUDKUVrav_XQ78OJKgeXfC5ct83-rQLmLdZwkVc4zGfUP5y84uPe42IQbhGK3euEp-PjfdjTJvjxfeuQqK6QrkMgoEoxx7siGvO0qYI1b4VvnvMgCn9xmm2n0eQ8xPU5MS_WQr8mV"/>
+<div class="absolute bottom-0 right-0 size-3 rounded-full bg-green-500 border-2 border-white dark:border-slate-900"></div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-baseline mb-0.5">
+<h4 class="text-sm font-bold truncate">Nguyễn Thu Thủy</h4>
+<span class="text-[10px] text-primary font-medium">10:30</span>
+</div>
+<p class="text-xs text-slate-600 dark:text-slate-400 truncate font-medium">Dạ em muốn xem phòng ở Quận 7...</p>
+<div class="mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-xs text-slate-400">house</span>
+<span class="text-[10px] text-slate-400 truncate">Căn hộ Sunrise City</span>
+</div>
+</div>
+</div>
+<!-- Chat Item Unread -->
+<div class="flex items-center gap-3 p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer transition-colors border-b border-slate-50 dark:border-slate-800/50">
+<div class="relative shrink-0">
+<img class="size-12 rounded-full object-cover" data-alt="Male potential renter avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAkfff1qf_aedjeNVuJJMU4OasZWg4ZxVuq7CN6RQjY-OOsAtP7KS7ujA6KIBuIH3M0wURunuDONaTNewzsY9KGzLgemmJFmApSnrlEexxNptTS6sWqa7NNUTLLYj9LYdRycfgndS0m6mArB9hwQtfiktblJuscQ14N7pjB09gpmWroF4afLhao-LDSUtp91muadrApdLH5gn2m66WwAETHj2uQPCqytPT7X_D60dUL6B2PGZhGI-djGGbBrxWDCpF8vZ4_K0U2MuIi"/>
+<div class="absolute top-0 right-0 size-4 bg-red-500 text-[10px] text-white flex items-center justify-center rounded-full border-2 border-white dark:border-slate-900">2</div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-baseline mb-0.5">
+<h4 class="text-sm font-bold truncate">Trần Minh Tâm</h4>
+<span class="text-[10px] text-slate-400">09:15</span>
+</div>
+<p class="text-xs text-slate-900 dark:text-slate-200 truncate font-bold">Giá phòng đã bao gồm điện nước chưa ạ?</p>
+<div class="mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-xs text-slate-400">apartment</span>
+<span class="text-[10px] text-slate-400 truncate">Vinhomes Central Park</span>
+</div>
+</div>
+</div>
+<!-- Chat Item Regular -->
+<div class="flex items-center gap-3 p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer transition-colors border-b border-slate-50 dark:border-slate-800/50">
+<div class="shrink-0">
+<img class="size-12 rounded-full object-cover" data-alt="Young professional renter avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAIz4DRZ2yKzEifU68X5tl8y6KhwEcflmFHpG0k3tVIC48Is8EOKmiKP-aNEpWSh5D1OuxvM14EvHJ0v2xKjRTrqir7UJQ3vM3WdeAyFTWm21ubdUj4UjYLTDpjIf_LLaod7xEleeq3Ei5IWCzxUI1umBzQWfPl9bC_wwHQhNGuNI8QNNC2_I0oj1EpsViHHwuuSB_jva0wvZgWEOIxKEBhzGqNHPqMeX1OLPabSRiZcpLyDGtr3LOfRZcOMbAv3lxtUZv7bhFN24-7"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-baseline mb-0.5">
+<h4 class="text-sm font-semibold text-slate-700 dark:text-slate-300 truncate">Lê Thị Mai</h4>
+<span class="text-[10px] text-slate-400">Hôm qua</span>
+</div>
+<p class="text-xs text-slate-500 dark:text-slate-500 truncate">Em đã gửi cọc rồi ạ, anh kiểm tra giúp em.</p>
+<div class="mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-xs text-slate-400">meeting_room</span>
+<span class="text-[10px] text-slate-400 truncate">Phòng 302 - Nhà trọ Hạnh Phúc</span>
+</div>
+</div>
+</div>
+<!-- Chat Item Regular -->
+<div class="flex items-center gap-3 p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer transition-colors border-b border-slate-50 dark:border-slate-800/50">
+<div class="shrink-0">
+<img class="size-12 rounded-full object-cover" data-alt="Student renter avatar photo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnMcjjV5D3A8uidrYPi5xKRPP63X4PK56La1Q0p4oWgVZEqTV2_TrhLgnhyBIwf1_7QcZt8x-yN9txwEL9vngyeJicL6esvlR-q2gYam_EiU0BSsIMoEdiNqM5P3zdn2jnP12EI_IiVGmMuOgdHfwjnIn6VIL8kg372baz1N-VfGOF5BsBzWCk2lDn8nzVJaA04XcoNoyIFqw5vFMnxA2psRaK7nyVXl3Uh_M6f50BAISl9wx0IkUoyWYftr85qR7-NYoHBsJWxE0R"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-baseline mb-0.5">
+<h4 class="text-sm font-semibold text-slate-700 dark:text-slate-300 truncate">Hoàng Anh Dũng</h4>
+<span class="text-[10px] text-slate-400">Hôm qua</span>
+</div>
+<p class="text-xs text-slate-500 dark:text-slate-500 truncate">Cảm ơn anh, hẹn gặp anh sáng mai.</p>
+<div class="mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-xs text-slate-400">apartment</span>
+<span class="text-[10px] text-slate-400 truncate">Sky Garden III</span>
+</div>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Chat Area -->
+<main class="flex-1 flex flex-col bg-slate-50 dark:bg-slate-900/50 overflow-hidden">
+<!-- Chat Header -->
+<header class="h-16 flex items-center justify-between px-6 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shrink-0">
+<div class="flex items-center gap-4">
+<div class="size-10 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
+<img alt="Nguyễn Thu Thủy" class="w-full h-full object-cover" data-alt="Active chat user profile photo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA5GpyxdjkSsIcgDWqnPsVwd0_uTJn5jt2d_R3xJOdB75DGhGJ9xDu-PN0eRdsqcIoS5PL6oo_BeIZ4yWGXfRWaD-1g9jctqTq0cKtuYlfO3_-kGWUFugv9B2W5oKpdXtG6-uKYi_lzb8b2lgXVBJxjtyOnOFe2THJH90Y_NJL1ZebvJlT4t_soPEUz1klijNweGeIHUQhYa1JHk2xbZvkvIVO-wyUhyevZHYT8lb2vK0CJSNQI5qKEZ7LoADn8kIj8Xu8ru3yjsuoB"/>
+</div>
+<div>
+<h3 class="text-base font-bold leading-none">Nguyễn Thu Thủy</h3>
+<p class="text-xs text-green-500 flex items-center gap-1 mt-1">
+<span class="size-1.5 rounded-full bg-green-500"></span> Đang hoạt động
+                        </p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="flex items-center gap-2 px-3 py-1.5 bg-primary/10 text-primary rounded-lg text-sm font-semibold hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined text-lg">calendar_today</span>
+                        Đặt lịch xem
+                    </button>
+<div class="h-6 w-px bg-slate-200 dark:bg-slate-800 mx-2"></div>
+<button class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+<span class="material-symbols-outlined">call</span>
+</button>
+<button class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+<span class="material-symbols-outlined">info</span>
+</button>
+</div>
+</header>
+<!-- Conversation History -->
+<div class="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+<div class="flex justify-center">
+<span class="text-[11px] px-3 py-1 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-500 uppercase font-bold tracking-wider">Hôm nay</span>
+</div>
+<!-- Message Received -->
+<div class="flex items-end gap-3 max-w-[80%]">
+<img class="size-8 rounded-full object-cover" data-alt="User message avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuACGVGAxdUAl3HW_uL0gtaqxVOToNwAZbTYA6ze2VhJDEFBw_aiQ5B6kG2UhadkzDqJEYfMFov-h9jRqpnihsbqX7UHSGvsxS9CUpDrXraCy-oUGXTtDlG2vWtnzILONUJXvjTG8qnkUDSiYLMhZkS0wnGdbdE9kcw4jo5xFTXiQktVw4RkTmtjBVSK7PHFYgbCNVA6AUMcwNX3wxg6ucbgXHvcH7Ys46KUhZvJc_ZRPrQhiXI6CNZueo-IOsyq7kJuhnnpBjMlczVv"/>
+<div class="flex flex-col gap-1">
+<div class="bg-white dark:bg-slate-800 p-3 rounded-2xl rounded-bl-none shadow-sm border border-slate-100 dark:border-slate-800">
+<p class="text-sm leading-relaxed">Chào anh, em thấy tin đăng cho thuê phòng ở căn Sunrise City. Không biết phòng đó còn trống không ạ?</p>
+</div>
+<span class="text-[10px] text-slate-400 ml-1">10:25 AM</span>
+</div>
+</div>
+<!-- Message Sent -->
+<div class="flex items-end gap-3 flex-row-reverse max-w-[80%] ml-auto">
+<div class="flex flex-col gap-1 items-end">
+<div class="bg-primary text-white p-3 rounded-2xl rounded-br-none shadow-sm">
+<p class="text-sm leading-relaxed">Chào Thủy, phòng đó vẫn còn em nhé. Em muốn xem phòng vào thời gian nào nhỉ?</p>
+</div>
+<div class="flex items-center gap-1">
+<span class="text-[10px] text-slate-400 mr-1">10:28 AM</span>
+<span class="material-symbols-outlined text-[14px] text-primary">done_all</span>
+</div>
+</div>
+</div>
+<!-- Message Received -->
+<div class="flex items-end gap-3 max-w-[80%]">
+<img class="size-8 rounded-full object-cover" data-alt="User message avatar small" src="https://lh3.googleusercontent.com/aida-public/AB6AXuADyoJATFw1mLg2qMbuVuuDuxaE7cVCAsrtaMIt0ulgzqiAkix2Ub10rZipDAfwM79Kr498jtdTuUzuArpZdeMSZ3S62g7QElTCjTi42Mv3SBRXg4I5_qLQrCaf7odejGel86bVvOW55VSEvETF9JfsmU8-EgGtslz0esv_vz_60r_vXaTJwLtAskd8kxElEuy0wlkpcKJIEDda85SmAIBKAtufZYli_fWkK4SPQyiEb_eUGgTOYx2kGxBF-ef9in_-OUwCTu5NU-4j"/>
+<div class="flex flex-col gap-1">
+<div class="bg-white dark:bg-slate-800 p-3 rounded-2xl rounded-bl-none shadow-sm border border-slate-100 dark:border-slate-800">
+<p class="text-sm leading-relaxed">Dạ em muốn xem phòng ở Quận 7 vào tối nay hoặc sáng mai được không ạ? Anh cho em xin thêm vài hình ảnh thực tế của nhà vệ sinh và khu bếp được không?</p>
+</div>
+<span class="text-[10px] text-slate-400 ml-1">10:30 AM</span>
+</div>
+</div>
+<!-- Image Attachment Received -->
+<div class="flex items-end gap-3 max-w-[80%]">
+<div class="w-8 shrink-0"></div>
+<div class="flex flex-col gap-2">
+<div class="grid grid-cols-2 gap-2 w-72">
+<div class="aspect-square bg-slate-200 rounded-xl overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Reference image of a modern bathroom" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCgx7ZOsg7t1blBKQTJApWRGZS2UilhsgG6_vmguwYN3HxyA_PrstF_qIfyOzn2jcsyS9OhEubQX59EQduOhY9TUy2W6a9ojz9eVt29_ztthjOiucwiX1NTFfL4ELUno852ZfDAJ7ULBPAV-2WAVDMArBP7oPEgWlywn56N7bvVdtx3wNPnC_a-KCUGNsbV6Lw5Vb8siyo2NKhpLslo8lQ8pFJzFjiol7GTLHZLSInTRJkWikmu4HuFDS7pirt3iclO71DQCFfVToBf"/>
+</div>
+<div class="aspect-square bg-slate-200 rounded-xl overflow-hidden relative">
+<img class="w-full h-full object-cover opacity-60" data-alt="Reference image of a modern kitchen" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCETB1Wh61pLrYYedVvZfG11cMgpQyjVlOzHc5sGI-AfYAimpVu036-t2rQVDB2M2431cerBKuJtX14kvKWelbEh0ob6bTf4VubufCzVuTic97KAwdmigli-1AbGVyRRL9Ad3w9kSuz80eh7bv_DWoTBt6f41NjIqBOfBMnvNHaEKSce7rAgB-YzQooWdC6hbMKljLfBSGRD_apRz69vi_i9a20wt7OPO-fSq33HA27XL5kXyQy8pfcbs75p_SUjGZWDIzJnfeyqqxJ"/>
+<div class="absolute inset-0 flex items-center justify-center font-bold text-white bg-black/30">
+                                    +3 ảnh
+                                </div>
+</div>
+</div>
+<span class="text-[10px] text-slate-400 italic">Thủy đã gửi 5 ảnh mẫu mong muốn</span>
+</div>
+</div>
+</div>
+<!-- Input Area -->
+<footer class="p-4 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 shrink-0">
+<div class="flex items-center gap-2 mb-2 px-2">
+<button class="p-2 text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">image</span>
+</button>
+<button class="p-2 text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">attach_file</span>
+</button>
+<button class="p-2 text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">mood</span>
+</button>
+<div class="h-4 w-px bg-slate-200 dark:bg-slate-800 mx-1"></div>
+<button class="px-2 text-xs font-semibold text-slate-500 hover:text-primary uppercase tracking-wider">Tạo hợp đồng</button>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex-1 relative">
+<textarea class="w-full p-3 bg-slate-100 dark:bg-slate-800 border-none rounded-xl focus:ring-2 focus:ring-primary/50 text-sm resize-none custom-scrollbar" placeholder="Nhập tin nhắn..." rows="1"></textarea>
+</div>
+<button class="size-11 flex items-center justify-center bg-primary text-white rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-transform active:scale-95">
+<span class="material-symbols-outlined">send</span>
+</button>
+</div>
+</footer>
+</main>
+<!-- Right Sidebar: Context Info -->
+<aside class="w-72 border-l border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hidden lg:flex flex-col shrink-0">
+<div class="p-6 border-b border-slate-100 dark:border-slate-800">
+<h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Thông tin khách hàng</h4>
+<div class="flex flex-col items-center text-center">
+<div class="size-20 rounded-full bg-slate-100 dark:bg-slate-800 mb-3 border-4 border-slate-50 dark:border-slate-900 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="User profile detail photo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdHuj46whG3afE86M92HycIRUmiU5pvCKgSiU64IFiO9_Lywz6lbjtjKnawJn8ndkJHXo3jg5E6kb8k-f5r7wrg-dZiwleN08j9RNI4tcDyEnk0EFCAsX7G7wUieEzCPwjDSeyRKwK6GhV8Qwx2Wwo5V1r7n1bMRCwo81aPoYCv43AKnEnUOzRpTDdNZCiAw8HkICn4mNQHwuDvel6TA1KSMc4IrPAPLWeVnIbvEFyIbfSAKfYIauAARZrH7wR1ZVs7Oab9hEaRTee"/>
+</div>
+<h3 class="text-base font-bold">Nguyễn Thu Thủy</h3>
+<p class="text-xs text-slate-500 mb-4">Khách hàng tiềm năng</p>
+<div class="flex gap-2 w-full">
+<button class="flex-1 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">Trang cá nhân</button>
+<button class="flex-1 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">Chặn</button>
+</div>
+</div>
+</div>
+<div class="p-6 flex-1 overflow-y-auto custom-scrollbar">
+<h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Bất động sản quan tâm</h4>
+<div class="rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden group">
+<div class="h-32 bg-slate-200 relative overflow-hidden">
+<img class="w-full h-full object-cover transition-transform group-hover:scale-110" data-alt="Apartment building exterior photo" data-location="Ho Chi Minh City" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAO47wPWQYGbb4eTZhgmF_R0OyYTkB4B_Mhm16UUWhbK6f8hY8LRH2AXGP0i-uEWcObWC5Sk25bBarbT-GFxuK-189wkdoavlAzZFJSvyPJSHSEATbFJq7w4Yn4Oxi_kMuXk6mEKnGV9EPZoX0Q_OSqxGftzF01YO_lL0x2jTBsWyifnDa0lMQu_ZsB8QvWBdJY0-7wC9s9QpO60Qjb-hT_BgpBeviTVfKOoYoxG_lVo-M9ZRvMpOs8mk0Hj6a8soKdZkQx1jZAG2hu"/>
+<div class="absolute top-2 right-2 bg-primary text-white text-[10px] font-bold px-2 py-1 rounded">TRỐNG</div>
+</div>
+<div class="p-4">
+<h5 class="text-sm font-bold truncate">Căn hộ Sunrise City - Q7</h5>
+<p class="text-xs text-primary font-bold mt-1">12.500.000đ / tháng</p>
+<div class="mt-3 space-y-2">
+<div class="flex items-center gap-2 text-[11px] text-slate-500">
+<span class="material-symbols-outlined text-sm">square_foot</span> 45 m²
+                            </div>
+<div class="flex items-center gap-2 text-[11px] text-slate-500">
+<span class="material-symbols-outlined text-sm">bed</span> 1 Phòng ngủ
+                            </div>
+<div class="flex items-center gap-2 text-[11px] text-slate-500">
+<span class="material-symbols-outlined text-sm">location_on</span> Quận 7, TP. HCM
+                            </div>
+</div>
+<button class="w-full mt-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-bold hover:bg-primary hover:text-white transition-colors">Xem chi tiết tin đăng</button>
+</div>
+</div>
+<div class="mt-8">
+<h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Ghi chú</h4>
+<div class="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-100 dark:border-yellow-900/30 rounded-lg">
+<p class="text-[11px] text-yellow-800 dark:text-yellow-200 leading-relaxed italic">"Khách này có vẻ nhiệt tình, ưu tiên đặt lịch xem phòng vào cuối tuần."</p>
+</div>
+<button class="w-full mt-2 text-xs text-primary font-bold flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-sm">add_circle</span> Thêm ghi chú
+                    </button>
+</div>
+</div>
+</aside>
+</div>
+</div>
+<style>
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: rgba(0, 123, 255, 0.1);
+        border-radius: 10px;
+    }
+    .custom-scrollbar:hover::-webkit-scrollbar-thumb {
+        background: rgba(0, 123, 255, 0.3);
+    }
+</style>
+</body></html>

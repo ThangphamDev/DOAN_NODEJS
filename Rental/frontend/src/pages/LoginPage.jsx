@@ -58,7 +58,7 @@ const LoginPage = () => {
     <section className="auth-page">
       <div className="auth-card">
         <header className="auth-header">
-          <div className="auth-eyebrow">TroTot Secure Access</div>
+          <div className="auth-eyebrow">LivinX Secure Access</div>
           <h1 className="auth-title">Đăng nhập tài khoản</h1>
           <p className="auth-subtitle">Tiếp tục để tìm phòng, quản lý lịch hẹn và trò chuyện với chủ trọ.</p>
         </header>

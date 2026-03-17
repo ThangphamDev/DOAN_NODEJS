@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Renter Messenger</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                "primary": "#007bff",
+                "background-light": "#f5f7f8",
+                "background-dark": "#0f1923",
+              },
+              fontFamily: {
+                "display": ["Inter"]
+              },
+              borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+            },
+          },
+        }
+      </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined { font-size: 24px; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100">
+<div class="flex h-screen overflow-hidden">
+<!-- Sidebar -->
+<aside class="w-80 flex-shrink-0 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col">
+<div class="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center gap-3">
+<div class="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">apartment</span>
+</div>
+<div>
+<h1 class="text-sm font-bold">Renter Portal</h1>
+<p class="text-xs text-slate-500">Messaging Hub</p>
+</div>
+</div>
+<div class="p-4">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+<input class="w-full bg-background-light dark:bg-slate-800 border-none rounded-lg pl-10 text-sm focus:ring-primary" placeholder="Search landlords..." type="text"/>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto">
+<!-- Active Conversation -->
+<div class="flex items-center gap-3 p-4 bg-primary/10 border-l-4 border-primary cursor-pointer">
+<div class="size-12 rounded-full bg-cover bg-center shrink-0" data-alt="Portrait of a friendly professional landlord" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDK7OxixuqBeIam4X89FDvKdTyOctAQjzsLD6kTb4LtRAaXyioTABYEx8sKMwA8UTEUUwHj1AF3JMpt3RGX9A6wbGxfuLNazRuMiACu2S0MKEDWZhBmYpVei2zlRGEWswws3DI6rGN4wR5NA6enxYz86_qZipOOack1DEsVB7Tq0L48C5EjN_5zi90VSIeI1ILnOL10nDUMuaqk8_p63azW6whVO7S-A4N3kKamtTjePuXY9jDfdkRHSYu5grWpcgsol_hYivylXVwU')"></div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-baseline">
+<h3 class="text-sm font-semibold truncate">Sarah Miller</h3>
+<span class="text-[10px] text-primary font-medium">10:45 AM</span>
+</div>
+<p class="text-xs text-slate-600 dark:text-slate-400 truncate font-medium">The lease agreement is ready...</p>
+</div>
+</div>
+<!-- List Items -->
+<div class="flex items-center gap-3 p-4 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors">
+<div class="size-12 rounded-full bg-cover bg-center shrink-0" data-alt="Corporate profile picture of a property manager" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBJvpO7jBgKD8FWIkhl8xlM9EzHoqhUyrYFg93y-Fevhi_NadgQ4UsrWaHfjIZosIXg_t9ojK0v44glxEAGgzBnmSgzeNKbx-2rjf8zoApRbPjKK0Xy8GDEca-f6Agg5Aj2nnIrxsmLdiqDWaAyNoyF9HiTpZL2lZnt8oigtkdhXXCpbyXSuPfj324j61CLMmOhyVuHdvkUK7MNDOzYJnpcqE_RGz_HgNGdghZCysXn3pEV59Jo_99OeGEKR7KblhOTfYuPnVPLPURz')"></div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-baseline">
+<h3 class="text-sm font-semibold truncate">John Davis</h3>
+<span class="text-[10px] text-slate-400">Yesterday</span>
+</div>
+<p class="text-xs text-slate-500 truncate">I'll send the plumber over tomorrow...</p>
+</div>
+</div>
+<div class="flex items-center gap-3 p-4 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors">
+<div class="size-12 rounded-full bg-cover bg-center shrink-0" data-alt="Friendly property agent avatar" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAMvVHOQJJt947C0OZipaZljToSMlHRLSF4-D6wE-UUNbieN5tmEM5X1qNSTw5o6KQPQxV6ReOuJQ_YqVtXpefz_RW2TVeJ7fnUhiHFCLCDyftyKLe316HThVQ1p7Nh6cVEJ6GJTusUhMCWNIGVMPhJ47duW_FiwYb4WU4cqJ47YIb6IKIk8dTW6QleczkRh4xKhZm8ZZO1D5CuBOrZaQCl0FOx7etN4k0H-_Pw428bUEbN1IK8OtWs3scM1-W8wMVBl0j0Dvk98wdb')"></div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-baseline">
+<h3 class="text-sm font-semibold truncate">Elena Rodriguez</h3>
+<span class="text-[10px] text-slate-400">Monday</span>
+</div>
+<p class="text-xs text-slate-500 truncate">Your security deposit has been received.</p>
+</div>
+</div>
+<div class="flex items-center gap-3 p-4 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors">
+<div class="size-12 rounded-full bg-cover bg-center shrink-0" data-alt="Abstract colored placeholder avatar" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA6UJSOer-xAIxUO-4-0fsUb1KbNn4eFy0RlJYDMHcUJnvLZupHFX6H1U3aRbGQ2PTYUU5pjxgmdB2w4HoQqM5G2eylpAf3QOMwX_IYrNXkmHh-_-PCv0Ohg-38WdX8WW5pIR8IH3-zJLxF-8jBFTzJiILxo3tQCd97CnnsLGYwInS3Wv-4hwr7NVOTfhEbv8DKtYID8JLMElR_5MEVnI79X7_RbrC6JuaIZIeDPas_St3HAVtBppAUmkz7eZd4B8pIPuDEOhx-pUJt')"></div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-baseline">
+<h3 class="text-sm font-semibold truncate">Green Valley Management</h3>
+<span class="text-[10px] text-slate-400">Oct 12</span>
+</div>
+<p class="text-xs text-slate-500 truncate">Upcoming scheduled maintenance notice.</p>
+</div>
+</div>
+</div>
+<!-- User profile at bottom of sidebar -->
+<div class="p-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="size-8 rounded-full bg-cover bg-center" data-alt="Renter user profile picture" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCnWYV5svtC0ueXm0iFiEfgjD75Xo52p0_gnYvwPMabyzYLLDCWgPlyjHaITNgve1kg8J1kEtrFedGRraARK9Pc0RhK9OVS7JH8Ddk3_vH-lXWw9CZekOB7-uQrlPROLIjIT79X1T3uoQy8tRXYYMTkHVbjwfDUaS9ia4HDVbppyEzF3Lalv9AQm7PAPOvXLscdrm6xTnJfcMiewEd1fY6M8nPkhajOX7iVJBKiZUWPR0gZ1MoVLVyxiAWCvqfEcyRwuUWnUcWBTGoA')"></div>
+<span class="text-sm font-medium">Alex Johnson</span>
+</div>
+<button class="text-slate-400 hover:text-slate-600">
+<span class="material-symbols-outlined text-xl">settings</span>
+</button>
+</div>
+</aside>
+<!-- Main Chat Area -->
+<main class="flex-1 flex flex-col bg-white dark:bg-background-dark">
+<!-- Chat Header -->
+<header class="h-16 border-b border-slate-200 dark:border-slate-800 px-6 flex items-center justify-between bg-white/80 dark:bg-background-dark/80 backdrop-blur-md z-10">
+<div class="flex items-center gap-3">
+<div class="relative">
+<div class="size-10 rounded-full bg-cover bg-center" data-alt="Portrait of Sarah Miller" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCXABaImgMz1a4Rs0TM-HYpxqtS4HDgRh-tOrIDCRXnvSwJhx4R-R-737IfV5Y142lv-RlgY9vyhaLUuZtUB1KDHX-tzOL7ySHMeuDPzD709ZUD0XEMdQVxU7sq_ZpYsbn0PcFB2pMbrzsNvIBqIthapPYYssDZipgJC4VZQCvLGp3932EcYAa70MUaLxzdtIgDi-laXUIP_icMVFu1kDemXSZ4MlesCsaciQhPp2LT4CTYc7J8x4tKNYPyqCdAkO8o_znaRt4KDJN3')"></div>
+<div class="absolute bottom-0 right-0 size-3 bg-green-500 border-2 border-white dark:border-background-dark rounded-full"></div>
+</div>
+<div>
+<h2 class="text-base font-bold">Sarah Miller</h2>
+<p class="text-[10px] uppercase tracking-wider font-semibold text-primary">Landlord • 123 Maple St</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
+<span class="material-symbols-outlined">call</span>
+</button>
+<button class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
+<span class="material-symbols-outlined">videocam</span>
+</button>
+<button class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
+<span class="material-symbols-outlined">info</span>
+</button>
+</div>
+</header>
+<!-- Message Thread -->
+<div class="flex-1 overflow-y-auto p-6 flex flex-col gap-6">
+<!-- Date Divider -->
+<div class="flex justify-center">
+<span class="text-[11px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full uppercase tracking-widest">Yesterday</span>
+</div>
+<!-- Message Left -->
+<div class="flex items-end gap-3 max-w-[70%]">
+<div class="size-8 rounded-full bg-cover bg-center shrink-0 mb-1" data-alt="Sarah Miller portrait small" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD-1OEvuRMWlwDH3JWCD5if-qsXjBriQruMmsJtuHVfEt_THk48gH5M_gF-srp-5NS51koEUsaf8qaPgY5JMQMhF6AITakIqoXRN4jyxi5DaQj1JND21yOO0lCWZdYScnHHMyB3ajxpx7b0rz60fM3ivds-R8YIuL3NUQOXPuLTmZz1F9YF2ev521BqCmXbulM_k943RAUsUMWVnvGSRdhnYbAp5DYbB9KXrI082bmszv4lZ1FxvaBqAmOgZZoRK6clnXBa6bR3L5wV')"></div>
+<div class="flex flex-col gap-1">
+<div class="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 p-4 rounded-xl rounded-bl-none text-sm leading-relaxed shadow-sm">
+                        Hello Alex, I've reviewed the maintenance request you submitted for the leaking faucet in the kitchen.
+                    </div>
+<span class="text-[10px] text-slate-400 ml-1">4:15 PM</span>
+</div>
+</div>
+<!-- Message Left -->
+<div class="flex items-end gap-3 max-w-[70%] ml-11">
+<div class="flex flex-col gap-1">
+<div class="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 p-4 rounded-xl rounded-bl-none text-sm leading-relaxed shadow-sm">
+                        I've instructed the property manager to coordinate a visit.
+                    </div>
+<span class="text-[10px] text-slate-400">4:16 PM</span>
+</div>
+</div>
+<!-- Message Right -->
+<div class="flex flex-col items-end gap-1 self-end max-w-[70%]">
+<div class="bg-primary text-white p-4 rounded-xl rounded-br-none text-sm shadow-md shadow-primary/20 leading-relaxed">
+                    That sounds great, thank you Sarah. Tomorrow morning works best for me if they are available.
+                </div>
+<div class="flex items-center gap-1 mr-1">
+<span class="text-[10px] text-slate-400">4:30 PM</span>
+<span class="material-symbols-outlined text-primary text-[14px]">done_all</span>
+</div>
+</div>
+<!-- Date Divider -->
+<div class="flex justify-center mt-4">
+<span class="text-[11px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full uppercase tracking-widest">Today</span>
+</div>
+<!-- Message Left -->
+<div class="flex items-end gap-3 max-w-[70%]">
+<div class="size-8 rounded-full bg-cover bg-center shrink-0 mb-1" data-alt="Sarah Miller portrait small" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA9XqMBpX9goDdk8uqop-pko-tCrlKaKRhx_LwZbwclIIGARbOB6MsXZ5T-lBCKeNeDEkg5bR1P6DYrKzOVY8a2yeIrPzSeaR3Z-uf4Tdz8rx08P9st6sLPJSej4Cg6LIUjMWEMwkiS9yZmVW5SNDaGmstn_LLwMBTbBbwKwdW-I8Fs5vZ33GJXDuT_CP2ddKA0bS9q6W9j9LW7mdkeyonfOvVufM8A8vjHNcrCx4wa2Pr4mUsp136OFigHZj5-3owZfGO7xsWjiKr2')"></div>
+<div class="flex flex-col gap-1">
+<div class="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 p-4 rounded-xl rounded-bl-none text-sm leading-relaxed shadow-sm">
+                        The lease agreement for the upcoming renewal is ready for your signature. I've sent it through the portal.
+                    </div>
+<span class="text-[10px] text-slate-400 ml-1">10:45 AM</span>
+</div>
+</div>
+<!-- Attachment Message Left -->
+<div class="flex items-end gap-3 max-w-[70%] ml-11">
+<div class="flex flex-col gap-1">
+<div class="bg-slate-100 dark:bg-slate-800 p-3 rounded-xl rounded-bl-none border border-slate-200 dark:border-slate-700 shadow-sm">
+<div class="flex items-center gap-3">
+<div class="size-10 bg-primary/20 rounded flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">description</span>
+</div>
+<div class="flex-1 min-w-0">
+<p class="text-sm font-semibold truncate">Lease_Renewal_2024.pdf</p>
+<p class="text-xs text-slate-500">2.4 MB • PDF Document</p>
+</div>
+<button class="text-primary hover:bg-primary/10 p-1 rounded">
+<span class="material-symbols-outlined">download</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Chat Input -->
+<div class="p-6 bg-white dark:bg-background-dark">
+<div class="flex items-end gap-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-2 focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+<button class="p-2 text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">add_circle</span>
+</button>
+<button class="p-2 text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">mood</span>
+</button>
+<textarea class="flex-1 bg-transparent border-none focus:ring-0 text-sm resize-none py-2 px-0 max-h-32" placeholder="Type your message..." rows="1"></textarea>
+<button class="bg-primary text-white size-10 rounded-lg flex items-center justify-center shadow-lg shadow-primary/30 hover:bg-primary/90 transition-colors">
+<span class="material-symbols-outlined">send</span>
+</button>
+</div>
+<div class="mt-2 flex justify-center">
+<p class="text-[10px] text-slate-400">Press Shift + Enter for new line</p>
+</div>
+</div>
+</main>
+</div>
+</body></html>

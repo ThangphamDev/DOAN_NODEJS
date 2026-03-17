@@ -8,12 +8,12 @@ const SiteFooter = () => {
               <div className="logo-icon">
                 <svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V21H15v-5h-6v5H3V9.5z" /></svg>
               </div>
-              Tro<span className="logo-dot">Tốt</span>
+              Livin<span className="logo-dot">X</span>
             </a>
-            <p className="footer-desc" style={{ marginTop: "14px" }}>
+            <p className="footer-desc footer-desc--spaced">
               Nền tảng kết nối người tìm phòng và chủ trọ uy tín, nhanh chóng, an toàn trên toàn Việt Nam.
             </p>
-            <div style={{ fontSize: "13px" }}>© 2026 TroTốt. All rights reserved.</div>
+            <div className="footer-copy">© 2026 LivinX. All rights reserved.</div>
           </div>
 
           <div>

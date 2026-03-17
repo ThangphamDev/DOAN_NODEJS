@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#007bff",
+                        "background-light": "#f5f7f8",
+                        "background-dark": "#0f1923",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">
+<div class="layout-container flex flex-col md:flex-row h-full min-h-screen">
+<!-- Sidebar Navigation -->
+<aside class="w-full md:w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col">
+<div class="p-6 flex items-center gap-3">
+<div class="size-8 bg-primary rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined">home_work</span>
+</div>
+<h1 class="font-bold text-xl tracking-tight text-primary">TroNhanh</h1>
+</div>
+<div class="px-4 py-2">
+<div class="flex items-center gap-3 p-3 rounded-xl bg-primary/10 mb-6">
+<div class="size-10 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden" data-alt="User profile avatar placeholder" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAJc9W9mFtx9FkZvUBYQZALpfZ6vHwic-N2LhZzEz8QlxXYmccMLh-6C2vV8beq0p0x-X-M0lAjccu8ISAoXrtziMZKUBrSwECPcbDSDwxIODLQBg0fQ9CRTOuJBhwS91qXM1BAzx0XnyXoO0E2KdSKsNUi_8YOOUb6rg1S_vq-TPebhqXg-BLmGHlh4ajnhur7G_R4kw_V2UdvSEAwwBLE7ZhbVrcKomGtIW62HS6JyLKjk1rvPO9KHyQ6xofTGzc3TqF5cCrliJSg");'></div>
+<div class="flex flex-col">
+<span class="text-sm font-bold">Nguyễn Văn A</span>
+<span class="text-xs text-slate-500 dark:text-slate-400">Chủ trọ xác thực</span>
+</div>
+</div>
+<nav class="space-y-1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary text-white" href="#">
+<span class="material-symbols-outlined">list_alt</span>
+<span class="font-medium">Tin đăng của tôi</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="font-medium">Lịch hẹn xem phòng</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">chat_bubble</span>
+<span class="font-medium">Tin nhắn</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-medium">Cài đặt tài khoản</span>
+</a>
+</nav>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col">
+<!-- Header -->
+<header class="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 flex items-center justify-between sticky top-0 z-10">
+<h2 class="text-lg font-bold">Quản lý tin đăng</h2>
+<div class="flex items-center gap-4">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+<input class="pl-10 pr-4 py-1.5 rounded-lg border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 focus:ring-primary focus:border-primary text-sm w-64" placeholder="Tìm kiếm tin đăng..." type="text"/>
+</div>
+<button class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 transition-colors">
+<span class="material-symbols-outlined text-[20px]">add</span>
+                        Thêm tin mới
+                    </button>
+</div>
+</header>
+<!-- Tabs Section -->
+<div class="px-6 pt-6">
+<div class="flex border-b border-slate-200 dark:border-slate-800 gap-8">
+<button class="pb-4 border-b-2 border-primary text-primary font-bold text-sm">Đang hiển thị (12)</button>
+<button class="pb-4 border-b-2 border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium text-sm transition-colors">Chờ duyệt (2)</button>
+<button class="pb-4 border-b-2 border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-medium text-sm transition-colors">Đã ẩn (5)</button>
+</div>
+</div>
+<!-- List Content -->
+<div class="p-6 space-y-4">
+<!-- Card Item 1 -->
+<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col md:flex-row shadow-sm hover:shadow-md transition-shadow">
+<div class="w-full md:w-64 h-48 md:h-auto bg-slate-200 dark:bg-slate-800 relative">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Modern high-end studio apartment interior" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDCFDjmFcRkM9Vk9U_lporzZda1pkzCV9TkUG0IEcVn7LHVgDUFaUs6vLKWMm-j6XsbL34zY2GwwrBKmUPJsroDZLZARAZRnwN4-f2cxSSbKJBnI1FltroM7koeLoubzYN9mT8dx5iCc0m6PGRxpJKNdD__12vqiGUg0Dys7Ph-6j_JjYw4GsVezOaKGcP_ohMNtXkSHR6OO52vBxL6Fksab-ZIExXX_TeTRvJvPrhrKa95sYx7b_pH3GKsJL6nRDT9_mYURYnU7khO");'></div>
+<div class="absolute top-2 left-2 bg-green-500 text-white text-[10px] uppercase font-bold px-2 py-1 rounded">Đang hiển thị</div>
+</div>
+<div class="flex-1 p-5 flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start mb-2">
+<h3 class="text-lg font-bold hover:text-primary cursor-pointer transition-colors">Phòng trọ cao cấp Quận 7 - Full nội thất</h3>
+<span class="text-primary font-bold text-lg">5.500.000đ/tháng</span>
+</div>
+<div class="flex flex-wrap gap-4 text-sm text-slate-500 dark:text-slate-400 mb-4">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">square_foot</span> 35m²</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">location_on</span> Đường số 10, Tân Hưng, Quận 7</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">schedule</span> Cập nhật 2 giờ trước</span>
+</div>
+</div>
+<div class="flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-4">
+<div class="flex gap-4 text-xs font-medium text-slate-500">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-base">visibility</span> 1,240 lượt xem</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-base">call</span> 12 cuộc gọi</span>
+</div>
+<div class="flex gap-2">
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-sm font-medium transition-colors">
+<span class="material-symbols-outlined text-lg">edit</span> Sửa
+                                </button>
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-sm font-medium transition-colors">
+<span class="material-symbols-outlined text-lg">visibility_off</span> Ẩn tin
+                                </button>
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30 text-sm font-medium transition-colors">
+<span class="material-symbols-outlined text-lg">delete</span> Xóa
+                                </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Card Item 2 -->
+<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col md:flex-row shadow-sm hover:shadow-md transition-shadow">
+<div class="w-full md:w-64 h-48 md:h-auto bg-slate-200 dark:bg-slate-800 relative">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Spacious room with large windows and city view" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDjsMW7srO6JGmFlAU5_F7r2vExe1ye0qNeHErRxmHhJjxwi7I25qh2d2fmyjEwmjoh3JTNKNyYezm32Ha0osq1ilk-yANSiCCnT6dVrTmTRQ92fS7bCPnMVIpeZCDwEA08iRi2000OYrXy1f_8Kpwcwks4ndYlhAo5QW4OuoL48pIj3hcT6CzbXkw9WdA1l7WQgt4kW1o95dIR3M3vg4Bdul--yvxCmY3SFCosBmoOtYKTdocWI0i9ths8gv-iIeM7F4PO6_EPHmbl");'></div>
+<div class="absolute top-2 left-2 bg-green-500 text-white text-[10px] uppercase font-bold px-2 py-1 rounded">Đang hiển thị</div>
+</div>
+<div class="flex-1 p-5 flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start mb-2">
+<h3 class="text-lg font-bold hover:text-primary cursor-pointer transition-colors">Căn hộ Studio mini gần ĐH Tôn Đức Thắng</h3>
+<span class="text-primary font-bold text-lg">3.800.000đ/tháng</span>
+</div>
+<div class="flex flex-wrap gap-4 text-sm text-slate-500 dark:text-slate-400 mb-4">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">square_foot</span> 20m²</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">location_on</span> Lê Văn Lương, Quận 7</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">schedule</span> Cập nhật hôm qua</span>
+</div>
+</div>
+<div class="flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-4">
+<div class="flex gap-4 text-xs font-medium text-slate-500">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-base">visibility</span> 850 lượt xem</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-base">call</span> 5 cuộc gọi</span>
+</div>
+<div class="flex gap-2">
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-sm font-medium transition-colors">
+<span class="material-symbols-outlined text-lg">edit</span> Sửa
+                                </button>
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-sm font-medium transition-colors">
+<span class="material-symbols-outlined text-lg">visibility_off</span> Ẩn tin
+                                </button>
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30 text-sm font-medium transition-colors">
+<span class="material-symbols-outlined text-lg">delete</span> Xóa
+                                </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Empty State Example (Hidden) -->
+<!-- 
+                <div class="flex flex-col items-center justify-center py-20 opacity-50">
+                    <span class="material-symbols-outlined text-6xl mb-4">post_add</span>
+                    <p class="text-lg font-medium">Bạn chưa có tin đăng nào ở trạng thái này</p>
+                </div>
+                -->
+</div>
+<!-- Footer Pagination -->
+<footer class="p-6 mt-auto border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+<p class="text-sm text-slate-500">Hiển thị 1-10 trên tổng số 12 tin đăng</p>
+<div class="flex items-center gap-2">
+<button class="p-2 rounded-lg border border-slate-200 dark:border-slate-800 disabled:opacity-50">
+<span class="material-symbols-outlined text-sm">chevron_left</span>
+</button>
+<button class="size-8 rounded-lg bg-primary text-white text-sm font-bold">1</button>
+<button class="size-8 rounded-lg text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">2</button>
+<button class="p-2 rounded-lg border border-slate-200 dark:border-slate-800">
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+</button>
+</div>
+</footer>
+</main>
+</div>
+</body></html>

@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>RoomRent - Find Your Next Home</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#007bff",
+                        "background-light": "#f5f7f8",
+                        "background-dark": "#0f1923",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
+<div class="relative flex min-h-screen flex-col overflow-x-hidden">
+<!-- Header -->
+<header class="sticky top-0 z-50 w-full border-b border-slate-200 dark:border-slate-800 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md">
+<div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+<div class="flex items-center gap-2 text-primary">
+<span class="material-symbols-outlined text-3xl font-bold">corporate_fare</span>
+<h2 class="text-xl font-black tracking-tight text-slate-900 dark:text-slate-100">RoomRent</h2>
+</div>
+<nav class="hidden md:flex flex-1 justify-center gap-8">
+<a class="text-sm font-semibold hover:text-primary transition-colors" href="#">Browse Rooms</a>
+<a class="text-sm font-semibold hover:text-primary transition-colors" href="#">List Your Space</a>
+<a class="text-sm font-semibold hover:text-primary transition-colors" href="#">Community</a>
+<a class="text-sm font-semibold hover:text-primary transition-colors" href="#">Support</a>
+</nav>
+<div class="flex items-center gap-3">
+<button class="hidden sm:flex items-center justify-center rounded-lg px-4 py-2 text-sm font-bold text-slate-900 dark:text-slate-100 hover:bg-primary/10 transition-colors">
+                        Log In
+                    </button>
+<button class="flex items-center justify-center rounded-lg bg-primary px-5 py-2 text-sm font-bold text-white shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all">
+                        Sign Up
+                    </button>
+</div>
+</div>
+</header>
+<main class="flex-1">
+<!-- Hero Section -->
+<section class="relative px-6 py-12 md:py-24">
+<div class="mx-auto max-w-7xl">
+<div class="relative flex min-h-[500px] flex-col items-center justify-center overflow-hidden rounded-3xl bg-slate-900 p-8 text-center text-white md:p-16">
+<div class="absolute inset-0 z-0 opacity-40">
+<img alt="Modern cozy apartment interior" class="h-full w-full object-cover" data-alt="Modern cozy apartment interior with soft lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAHLbKsTIxS9JG8O9u74Hqv8ihY2Tt7XNu06_eeOtEXGNU_CA90_eHZiqP-o-tgmb6x2d_7RNd4BukXJlVrcHbSE98aGIyvfr2HFYLqHotCk_rMaVDaPj4NxpA0sZ9UMhTj9zQ0DXESPZWIa_-gVO7CcDZhYxN-GTT9Yw2cfEv4ByxH5k5e9QeaF4IsLZKO6-Qs7JHNeeXlLyhFCXLT-6_uQ-Y5aPGDcn0dFSVkiX4FvelxCI4_E7OoHZDXDcF4MoRJkPSGAMTKkUXQ"/>
+</div>
+<div class="absolute inset-0 z-0 bg-gradient-to-t from-slate-950 via-slate-900/40 to-transparent"></div>
+<div class="relative z-10 max-w-3xl">
+<h1 class="mb-4 text-4xl font-black tracking-tight md:text-6xl">
+                                Find your perfect room in the heart of the city
+                            </h1>
+<p class="mb-10 text-lg text-slate-200 md:text-xl">
+                                Thousands of verified listings at your fingertips. From shared apartments to private studios.
+                            </p>
+<!-- Advanced Search Bar -->
+<div class="w-full max-w-4xl rounded-2xl bg-white p-2 shadow-2xl dark:bg-slate-800">
+<div class="flex flex-col gap-2 md:flex-row md:items-center">
+<div class="flex flex-1 items-center gap-2 border-b border-slate-100 px-4 py-3 dark:border-slate-700 md:border-b-0 md:border-r">
+<span class="material-symbols-outlined text-primary">location_on</span>
+<input class="w-full border-none bg-transparent text-slate-900 placeholder-slate-400 focus:ring-0 dark:text-white" placeholder="Where are you going?" type="text"/>
+</div>
+<div class="flex flex-1 items-center gap-2 border-b border-slate-100 px-4 py-3 dark:border-slate-700 md:border-b-0 md:border-r">
+<span class="material-symbols-outlined text-primary">payments</span>
+<select class="w-full border-none bg-transparent text-slate-900 focus:ring-0 dark:text-white">
+<option>Price Range</option>
+<option>$0 - $500</option>
+<option>$500 - $1000</option>
+<option>$1000+</option>
+</select>
+</div>
+<div class="flex flex-1 items-center gap-2 px-4 py-3">
+<span class="material-symbols-outlined text-primary">home_work</span>
+<select class="w-full border-none bg-transparent text-slate-900 focus:ring-0 dark:text-white">
+<option>Room Type</option>
+<option>Private Room</option>
+<option>Shared Room</option>
+<option>Entire Studio</option>
+</select>
+</div>
+<button class="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-8 py-4 font-bold text-white transition-transform hover:scale-[1.02] active:scale-[0.98] md:w-auto">
+<span class="material-symbols-outlined">search</span>
+                                        Search
+                                    </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Popular Areas -->
+<section class="mx-auto max-w-7xl px-6 py-12">
+<div class="mb-8 flex items-end justify-between">
+<div>
+<h2 class="text-3xl font-black tracking-tight">Popular Areas</h2>
+<p class="text-slate-500 dark:text-slate-400">Discover rooms in the most sought-after neighborhoods</p>
+</div>
+<a class="text-sm font-bold text-primary hover:underline" href="#">View All Locations</a>
+</div>
+<div class="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
+<!-- Location Item -->
+<div class="group cursor-pointer">
+<div class="relative mb-3 aspect-square overflow-hidden rounded-2xl bg-slate-200">
+<img alt="San Francisco Bridge" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Golden Gate Bridge in San Francisco" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDSJV8TmP_eOMYpiZjFcUBWLuMIcPRmcVPR-KhqGjgIurO_oxd4VUCgy0J45iHLwDnZlwFisY98Tqu2Mfjm10PXn4JofeSE9JrdgyBP_W1acnFHNu6ivGOqe54vUEFhplZl4KyQGjAQkIMRnetWIpHVQMdVA8QIjZxAQZMO2wc0J_1uadLGM5n2i5ofXkJj8MPq1mVfjkKluhk79JCzpasu4gAiEHHhXUc0JNDtjiNI4GJqwcDvjCa23EFni4uDEAeFbSldqBjKQQb0"/>
+<div class="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors"></div>
+</div>
+<h3 class="font-bold">San Francisco</h3>
+<p class="text-xs text-slate-500 dark:text-slate-400">1,240 rooms</p>
+</div>
+<div class="group cursor-pointer">
+<div class="relative mb-3 aspect-square overflow-hidden rounded-2xl bg-slate-200">
+<img alt="New York Skyline" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="New York City skyline at dusk" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDrZDY3DCnHJ5H--DtPs6K48LfTw0LjxrjU6iq8DW8SQZqgo-DlHPbD66svn55FDGlmxDTVB8Xcj3QpXXMKMcfCXC1w17ktk4r606iWU1-AJzSKcx0eNPo-sGJv_nHniQZbtHy8z1AtUXWC7mf8zeCR4o-cG6lRGpHyrEIbp2atVaQjM2koqZEujvd_cGh0FQEvbPbi5M8KJ4dawA71ya_t7xVvQkRmzmwS0zPmxISePfgLQ2ucWjMaMn-yyS0ek7HzMSClNMhh46vQ"/>
+<div class="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors"></div>
+</div>
+<h3 class="font-bold">New York</h3>
+<p class="text-xs text-slate-500 dark:text-slate-400">2,810 rooms</p>
+</div>
+<div class="group cursor-pointer">
+<div class="relative mb-3 aspect-square overflow-hidden rounded-2xl bg-slate-200">
+<img alt="London Big Ben" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Clock tower Big Ben in London" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDxxv04cOLD1R0njkoNTzbkOIxf8N07bbKXyfeJec5RJ4gUfj_lV3YlPPpQb8gwRAOugcmdZeBIqQv32olGp4POAwPDrYXzPL4QpoNbQa1Y0OVUA6kwYVcrIcx-7Owq-vTkxB5Ht3Dhei3p3xVe3SVd0n3FQbjfW9xO-sjTo9b0a9kO4ArdOV7wXQ1eD-HpPAiDo51d67s-oH8SEuvmSAR3KEyIUDQyTHCwUW7R6wCxjhOreIfKmz2tD5TQSD4z7XV4TLaSA83OZMH4"/>
+<div class="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors"></div>
+</div>
+<h3 class="font-bold">London</h3>
+<p class="text-xs text-slate-500 dark:text-slate-400">950 rooms</p>
+</div>
+<div class="group cursor-pointer">
+<div class="relative mb-3 aspect-square overflow-hidden rounded-2xl bg-slate-200">
+<img alt="Berlin TV Tower" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Berlin Fernsehturm TV tower at sunset" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZBPoqYQ0SawIKik65aKmu_qclub9Y6eoEdaiCVVW4N0bZPZfBdroPN4pAwBXqm4H8lKNdO-gAzUyBNa9zZEX53dwtmnwr8AnYOgeag1bqN-8oYfcuCPor_NdL8bE-ES9Hdhhhjn0w2CgGGb-RroEakPOpwl_-Ize3Pbm9YLGHhn9lIFcNTM-8syhkl1tvft_GiHVlKC3hBnSwurpp1CM5wZlCkjjoFqZyQg8IdYl3yQ2wW2IweX7UjerRnR8BwosLVuhJ7Ox4Qut4"/>
+<div class="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors"></div>
+</div>
+<h3 class="font-bold">Berlin</h3>
+<p class="text-xs text-slate-500 dark:text-slate-400">720 rooms</p>
+</div>
+<div class="group cursor-pointer">
+<div class="relative mb-3 aspect-square overflow-hidden rounded-2xl bg-slate-200">
+<img alt="Tokyo Cityscape" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Neon lights of Tokyo city street" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAuF1tGeGpOP9vj3mJVtqtOsYDYlJp3OJCNV4We-fy2_-P5m4GhyFZkUGtGsaZ4h7-nf1kAJ4H5FmkjAgGtgDnQw16zmw8Cnv_nQ7Kph0dEScqL97JfpM-qR5LhQZFgiaF7HYYqKPLPEGyopMZeugn5AEcMcJ4FdQlEkWIg3XavA-DigFP0SZrTBjlBSxBKEP1fYEeKNOrDr1XWzYluup1qnsXDEnpm_s4Kcgp8vY9dmdwRrYHSE2Lq_6x44CK2yZZv19b4ckr0-0ab"/>
+<div class="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors"></div>
+</div>
+<h3 class="font-bold">Tokyo</h3>
+<p class="text-xs text-slate-500 dark:text-slate-400">1,580 rooms</p>
+</div>
+<div class="group cursor-pointer">
+<div class="relative mb-3 aspect-square overflow-hidden rounded-2xl bg-slate-200">
+<img alt="Sydney Opera House" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Sydney Opera House near the water" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBiG7JiMTu5mMY0gVvBV7KI3JiJig8PpqMjqCrAz3oOQLvF6Tj0XLtIOgrp1Dbl30Gex285OGmuImiWTVXllfqblko_k02RwvgvttOivwHX4-K_d2j79VhOLR9MjEhzHF0IFRNXY7B-ShKuapU-5q-j_flPssDHbuvjWWu9MD86pafCTU_U8-9qIr3aFkkoapcJrh-TRJJDsfob6yH5R4D92Nou5dJl8FTLBynyumZDSrStHllkBDoIOsrQPVWn1JGvZMqKHa6MFqhT"/>
+<div class="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors"></div>
+</div>
+<h3 class="font-bold">Sydney</h3>
+<p class="text-xs text-slate-500 dark:text-slate-400">630 rooms</p>
+</div>
+</div>
+</section>
+<!-- Featured Listings -->
+<section class="bg-slate-100 dark:bg-slate-900/50 py-16">
+<div class="mx-auto max-w-7xl px-6">
+<div class="mb-10">
+<h2 class="text-3xl font-black tracking-tight">Featured Listings</h2>
+<p class="text-slate-500 dark:text-slate-400">Hand-picked premium rooms for high comfort</p>
+</div>
+<div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+<!-- Room Card 1 -->
+<div class="group overflow-hidden rounded-2xl bg-background-light shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl dark:bg-background-dark dark:border dark:border-slate-800">
+<div class="relative aspect-[4/3] overflow-hidden">
+<img alt="Minimalist room" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Clean minimalist bedroom with large window" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDuXn6fvXZqd2mjM_Q9CcVIvtJkobiry86byc0O4ynH4f7XO_GwcpA2d5MfOrXdfkc_JoKXwxVWPqfdgkjSRyQ2ufBzwNB06IKCpdk4vP4Dvh5A-ArWwgF6R1mgcfvj6o5y_0Ztlt4XYwzy1NDCqff1-RHPHOwRhblHLcYxcwdDyxO3sJM1gCJQK6uYm5rTnED7JykrKvilAksg3pBUKHI92x7fhGVQe382VelGQ74WjKX7HI8wr1Nv-IN4UkHbBklrfmjWcI3QS1pV"/>
+<div class="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-xs font-bold text-slate-900 shadow-sm">
+                                    Private Room
+                                </div>
+<button class="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-md transition-colors hover:bg-primary hover:text-white">
+<span class="material-symbols-outlined text-sm">favorite</span>
+</button>
+</div>
+<div class="p-5">
+<div class="mb-2 flex items-center justify-between">
+<h3 class="font-bold text-slate-900 dark:text-white">Modern Studio, Brooklyn</h3>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-sm text-yellow-500" style="font-variation-settings: 'FILL' 1">star</span>
+<span class="text-sm font-bold">4.9</span>
+</div>
+</div>
+<div class="mb-4 flex items-center gap-1 text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<span class="text-xs">Bedford-Stuyvesant, NY</span>
+</div>
+<div class="flex items-center justify-between border-t border-slate-100 pt-4 dark:border-slate-800">
+<div>
+<span class="text-xl font-black text-primary">$850</span>
+<span class="text-xs text-slate-500 dark:text-slate-400">/ month</span>
+</div>
+<button class="rounded-lg bg-primary/10 px-4 py-2 text-xs font-bold text-primary hover:bg-primary hover:text-white transition-colors">
+                                        View Details
+                                    </button>
+</div>
+</div>
+</div>
+<!-- Room Card 2 -->
+<div class="group overflow-hidden rounded-2xl bg-background-light shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl dark:bg-background-dark dark:border dark:border-slate-800">
+<div class="relative aspect-[4/3] overflow-hidden">
+<img alt="Boho bedroom" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Cozy bohemian style bedroom with plants" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAhlhZmYMxMpIMvIN6WHoXoJ-FEhvlAVohH1hq5tOqD5ZCiPNiFSDQYOiaTJm550jOp_3CO_GE2b8136qqaNoArPojO0VLhJmEAPQr9yhGnBkXDUl2_GtK3zoKUPHGYGLc5rK-uGItfmSymZ_yafixdDvKrD3K_kdbW_cfgsd7j4No1dkLcldFl8n9tiGXYUmtuDHCDE4YoqXBOfc-q9KOcByTl-8k9Pjull0SW0PgQ-57cFEs45Ol3YpbOSqIQKZVeHsLDRfoVpak-"/>
+<div class="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-xs font-bold text-slate-900 shadow-sm">
+                                    Shared Suite
+                                </div>
+<button class="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-md transition-colors hover:bg-primary hover:text-white">
+<span class="material-symbols-outlined text-sm">favorite</span>
+</button>
+</div>
+<div class="p-5">
+<div class="mb-2 flex items-center justify-between">
+<h3 class="font-bold text-slate-900 dark:text-white">Bright Loft, Berlin</h3>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-sm text-yellow-500" style="font-variation-settings: 'FILL' 1">star</span>
+<span class="text-sm font-bold">4.7</span>
+</div>
+</div>
+<div class="mb-4 flex items-center gap-1 text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<span class="text-xs">Mitte, Berlin</span>
+</div>
+<div class="flex items-center justify-between border-t border-slate-100 pt-4 dark:border-slate-800">
+<div>
+<span class="text-xl font-black text-primary">$620</span>
+<span class="text-xs text-slate-500 dark:text-slate-400">/ month</span>
+</div>
+<button class="rounded-lg bg-primary/10 px-4 py-2 text-xs font-bold text-primary hover:bg-primary hover:text-white transition-colors">
+                                        View Details
+                                    </button>
+</div>
+</div>
+</div>
+<!-- Room Card 3 -->
+<div class="group overflow-hidden rounded-2xl bg-background-light shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl dark:bg-background-dark dark:border dark:border-slate-800">
+<div class="relative aspect-[4/3] overflow-hidden">
+<img alt="Luxury suite" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Luxury bedroom with city view from window" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAmarOXavtriGkqbhR-GFvACMyG75JCXLBi-u780IcIg2U2xkm5FCwx_lZWdQBBUHCvL03tcfw-CdtBgWeWZmcDXzZpIRBGx2jWJkdHGPauzDFcFhL_oJfNDloSikH_Zjo4Va5PxodSCrc_m5CJne3zTviXRr59NbrMWARJ0Lq0B-ny2AtuVieMy6UfCPLRgILgBQR0J21g5Ck0DHRxjve9cL7kgmcwml7ZQOrgSKmGNkGt9poT7SwNZUbtI9UgGubeRamxsVRGS9Wh"/>
+<div class="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-xs font-bold text-slate-900 shadow-sm">
+                                    Private Room
+                                </div>
+<button class="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-md transition-colors hover:bg-primary hover:text-white">
+<span class="material-symbols-outlined text-sm">favorite</span>
+</button>
+</div>
+<div class="p-5">
+<div class="mb-2 flex items-center justify-between">
+<h3 class="font-bold text-slate-900 dark:text-white">Penthouse Room, SF</h3>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-sm text-yellow-500" style="font-variation-settings: 'FILL' 1">star</span>
+<span class="text-sm font-bold">5.0</span>
+</div>
+</div>
+<div class="mb-4 flex items-center gap-1 text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<span class="text-xs">SoMa, San Francisco</span>
+</div>
+<div class="flex items-center justify-between border-t border-slate-100 pt-4 dark:border-slate-800">
+<div>
+<span class="text-xl font-black text-primary">$1,200</span>
+<span class="text-xs text-slate-500 dark:text-slate-400">/ month</span>
+</div>
+<button class="rounded-lg bg-primary/10 px-4 py-2 text-xs font-bold text-primary hover:bg-primary hover:text-white transition-colors">
+                                        View Details
+                                    </button>
+</div>
+</div>
+</div>
+<!-- Room Card 4 -->
+<div class="group overflow-hidden rounded-2xl bg-background-light shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl dark:bg-background-dark dark:border dark:border-slate-800">
+<div class="relative aspect-[4/3] overflow-hidden">
+<img alt="Vintage room" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="Classic style bedroom with dark wood furniture" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA61Ht6Ry7hABZPlJCp27goC0Z87XjDpP3Pdr_zc2RMabbBjGO_Tez3hZasInWZFrY_bwsUW3Oiege8ilIQP6gGASiYDB0BSVV6GxL4b0N731_ZS2OItK4FkHjr0s2OHsMaAX4d_Vf6CDBfY3PilfoqUiuMAoKyADYGTfeGvrUDyP6TXKrctmJmVqk_fjeYYk7tEySCbBmjg8AE-BzqSBR2iS6ZqZkmrDNqkxY2X7ltscPZwvPrECJzseCAriUE-ZY-NQT3C9OiICZc"/>
+<div class="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-xs font-bold text-slate-900 shadow-sm">
+                                    Entire Studio
+                                </div>
+<button class="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-md transition-colors hover:bg-primary hover:text-white">
+<span class="material-symbols-outlined text-sm">favorite</span>
+</button>
+</div>
+<div class="p-5">
+<div class="mb-2 flex items-center justify-between">
+<h3 class="font-bold text-slate-900 dark:text-white">Artists Retreat, London</h3>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-sm text-yellow-500" style="font-variation-settings: 'FILL' 1">star</span>
+<span class="text-sm font-bold">4.8</span>
+</div>
+</div>
+<div class="mb-4 flex items-center gap-1 text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<span class="text-xs">Shoreditch, London</span>
+</div>
+<div class="flex items-center justify-between border-t border-slate-100 pt-4 dark:border-slate-800">
+<div>
+<span class="text-xl font-black text-primary">$980</span>
+<span class="text-xs text-slate-500 dark:text-slate-400">/ month</span>
+</div>
+<button class="rounded-lg bg-primary/10 px-4 py-2 text-xs font-bold text-primary hover:bg-primary hover:text-white transition-colors">
+                                        View Details
+                                    </button>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-12 text-center">
+<button class="rounded-xl border-2 border-primary bg-transparent px-8 py-3 font-bold text-primary hover:bg-primary hover:text-white transition-all">
+                            Explore All Listings
+                        </button>
+</div>
+</div>
+</section>
+<!-- Testimonials / Social Proof -->
+<section class="mx-auto max-w-7xl px-6 py-20">
+<div class="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:items-center">
+<div>
+<h2 class="mb-6 text-4xl font-black tracking-tight">Rent with confidence</h2>
+<div class="space-y-6">
+<div class="flex gap-4">
+<div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+<span class="material-symbols-outlined">verified_user</span>
+</div>
+<div>
+<h4 class="text-lg font-bold">Verified Hosts</h4>
+<p class="text-slate-500 dark:text-slate-400">Every host goes through a background check and profile verification process.</p>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+<span class="material-symbols-outlined">payments</span>
+</div>
+<div>
+<h4 class="text-lg font-bold">Secure Payments</h4>
+<p class="text-slate-500 dark:text-slate-400">We hold your first month's payment until 48 hours after you move in.</p>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+<span class="material-symbols-outlined">support_agent</span>
+</div>
+<div>
+<h4 class="text-lg font-bold">24/7 Support</h4>
+<p class="text-slate-500 dark:text-slate-400">Our team is here to help you at every step of your rental journey.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="relative">
+<div class="aspect-video overflow-hidden rounded-3xl bg-slate-200 shadow-2xl">
+<img alt="Happy roommates" class="h-full w-full object-cover" data-alt="Two roommates laughing in a modern apartment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAzOafRh2_rBOUBv2Klg4rOvBFaQbmNy8PY8o2JocbA51f4QCb2hVbDGScBuVJTrvghUq3TbFIkFvQYBD7YVybEhMXyIRrL4Q89dKc9Jn57XJ0PotGA23MRfl44TgrmnaAg-PIomRrp9u61cbdGSQG1MhkH9myjwyHGGnVTTxpEOCQlWFEzA9QL113kGuuwZJyX6sRuXMSJf92ALWKoGYqhpU4oPT045xfgAKI05NEdjdcEKk9VfmH3PT7VoAinpg4T6BKsLjKO9Jhu"/>
+</div>
+<div class="absolute -bottom-6 -left-6 max-w-xs rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-800">
+<div class="mb-2 flex gap-1 text-yellow-500">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1">star</span>
+</div>
+<p class="text-sm font-medium italic text-slate-700 dark:text-slate-200">"Found my dream loft in Brooklyn in less than 3 days. The process was so transparent!"</p>
+<div class="mt-4 flex items-center gap-2">
+<div class="h-8 w-8 rounded-full bg-slate-200">
+<img alt="User avatar" class="h-full w-full rounded-full object-cover" data-alt="Female user avatar profile picture" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAedGgimjc8a7f-AWB2RpZS_Dfc0cJfCJPID8zdwQUfPLf-YPlFHQTBZFl9Li3bARIRP0FTHs9DlAYcrjTnnA1Yl_eDql354NMUJkkMX8IRECqwhqeCzjLWOBU0LaHd90KmnXNaR9XcVHiZQ7IAUhz0RCNplca7vhkAQFJTbcSUZg_ShauQQ9lRGRX28qZ9fjQXfnnlqefx01sNcP87PKwEc-OWLXmKUcdhydmFnF7ardPXdBsFnDDZF_L0TdWIOP4uKEnDp-IZ3aHs"/>
+</div>
+<span class="text-xs font-bold">— Sarah J., New York</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-slate-900 px-6 py-16 text-slate-400">
+<div class="mx-auto max-w-7xl">
+<div class="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-4">
+<div class="space-y-4">
+<div class="flex items-center gap-2 text-white">
+<span class="material-symbols-outlined text-3xl font-bold">corporate_fare</span>
+<h2 class="text-xl font-black tracking-tight">RoomRent</h2>
+</div>
+<p class="text-sm">Find your next home away from home. The leading marketplace for room rentals worldwide.</p>
+<div class="flex gap-4">
+<a class="hover:text-white transition-colors" href="#"><span class="material-symbols-outlined">public</span></a>
+<a class="hover:text-white transition-colors" href="#"><span class="material-symbols-outlined">chat</span></a>
+<a class="hover:text-white transition-colors" href="#"><span class="material-symbols-outlined">alternate_email</span></a>
+</div>
+</div>
+<div>
+<h4 class="mb-4 font-bold text-white">Quick Links</h4>
+<ul class="space-y-2 text-sm">
+<li><a class="hover:text-white transition-colors" href="#">Search Rooms</a></li>
+<li><a class="hover:text-white transition-colors" href="#">Cities</a></li>
+<li><a class="hover:text-white transition-colors" href="#">Pricing</a></li>
+<li><a class="hover:text-white transition-colors" href="#">List Your Property</a></li>
+</ul>
+</div>
+<div>
+<h4 class="mb-4 font-bold text-white">Support</h4>
+<ul class="space-y-2 text-sm">
+<li><a class="hover:text-white transition-colors" href="#">Help Center</a></li>
+<li><a class="hover:text-white transition-colors" href="#">Safety Center</a></li>
+<li><a class="hover:text-white transition-colors" href="#">Community Guidelines</a></li>
+<li><a class="hover:text-white transition-colors" href="#">Cookie Policy</a></li>
+</ul>
+</div>
+<div>
+<h4 class="mb-4 font-bold text-white">Newsletter</h4>
+<p class="mb-4 text-sm">Subscribe to get the latest listings and news.</p>
+<div class="flex overflow-hidden rounded-lg bg-slate-800">
+<input class="w-full border-none bg-transparent px-4 py-2 text-sm focus:ring-0" placeholder="Email" type="email"/>
+<button class="bg-primary px-4 py-2 font-bold text-white hover:bg-primary/90">Join</button>
+</div>
+</div>
+</div>
+<div class="mt-16 border-t border-slate-800 pt-8 text-center text-xs">
+<p>© 2024 RoomRent Inc. All rights reserved.</p>
+</div>
+</div>
+</footer>
+</div>
+</body></html>

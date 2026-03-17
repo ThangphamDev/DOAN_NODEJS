@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Quản lý Đánh giá - Chủ Trọ</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#007bff",
+                        "background-light": "#f5f7f8",
+                        "background-dark": "#0f1923",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">
+<div class="flex h-screen overflow-hidden">
+<!-- Sidebar -->
+<aside class="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col">
+<div class="p-6 flex items-center gap-3">
+<div class="size-8 bg-primary rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined">apartment</span>
+</div>
+<h2 class="text-lg font-bold tracking-tight">Trọ Xịn</h2>
+</div>
+<nav class="flex-1 px-4 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-sm font-medium">Tổng quan</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg" href="#">
+<span class="material-symbols-outlined">door_open</span>
+<span class="text-sm font-medium">Phòng trọ</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 bg-primary/10 text-primary rounded-lg" href="#">
+<span class="material-symbols-outlined text-fill-1">star</span>
+<span class="text-sm font-bold">Đánh giá</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="text-sm font-medium">Hợp đồng &amp; Thu tiền</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-sm font-medium">Cài đặt</span>
+</a>
+</nav>
+<div class="p-4 border-t border-slate-200 dark:border-slate-800">
+<div class="flex items-center gap-3 p-2 rounded-lg bg-slate-50 dark:bg-slate-800">
+<div class="size-10 rounded-full bg-slate-300 overflow-hidden" data-alt="Chân dung chủ nhà trọ" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAUdJOJaiGCJTMZM0YtfE1_bWOjcjrj9PToNrXGtu69cLFMtazYrusl6xkQ-Cq31KZ8ltjGyq1XpEOtGjJcaD7eweyu0bjmfoZzS3oyXANpsq8UTkXDZ2e4VUcEOw1lqtzKWtWR-P86AbsbANKMsCf0Y-WasI6Po9k49p-WpMfYTFBQ6Ri6J49WM4JipX-V4Uh26LP5EIgFFghA4kBWwpKqxHqzeLmjsEN5q4uW3cbUmUg1yRWO3FoLe8J58PIy7gDD-hDbkohxGVcO')"></div>
+<div class="flex-1 min-w-0">
+<p class="text-sm font-semibold truncate">Minh Tuấn</p>
+<p class="text-xs text-slate-500 truncate">Chủ hệ thống</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 overflow-y-auto flex flex-col">
+<!-- Top Navigation -->
+<header class="h-16 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-10 px-8 flex items-center justify-between">
+<h1 class="text-xl font-bold">Quản lý Đánh giá</h1>
+<div class="flex items-center gap-4">
+<div class="relative max-w-xs hidden md:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/50" placeholder="Tìm kiếm đánh giá..." type="text"/>
+</div>
+<button class="size-10 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</div>
+</header>
+<div class="p-8 max-w-6xl mx-auto w-full">
+<!-- Stats Summary -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col gap-4">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-slate-500 text-sm font-medium">Trung bình sao</p>
+<h3 class="text-4xl font-black mt-1">4.8</h3>
+</div>
+<div class="bg-primary/10 p-2 rounded-lg text-primary">
+<span class="material-symbols-outlined">hotel_class</span>
+</div>
+</div>
+<div class="flex gap-1 text-primary">
+<span class="material-symbols-outlined !text-lg">star</span>
+<span class="material-symbols-outlined !text-lg">star</span>
+<span class="material-symbols-outlined !text-lg">star</span>
+<span class="material-symbols-outlined !text-lg">star</span>
+<span class="material-symbols-outlined !text-lg">star_half</span>
+</div>
+<p class="text-sm text-slate-500 italic">Dựa trên 120 lượt đánh giá</p>
+</div>
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 md:col-span-2">
+<p class="text-slate-500 text-sm font-medium mb-4">Phân bố xếp hạng</p>
+<div class="space-y-2">
+<div class="grid grid-cols-[24px_1fr_40px] items-center gap-4">
+<span class="text-sm font-medium">5</span>
+<div class="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 70%"></div>
+</div>
+<span class="text-xs text-slate-500 text-right">70%</span>
+</div>
+<div class="grid grid-cols-[24px_1fr_40px] items-center gap-4">
+<span class="text-sm font-medium">4</span>
+<div class="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 20%"></div>
+</div>
+<span class="text-xs text-slate-500 text-right">20%</span>
+</div>
+<div class="grid grid-cols-[24px_1fr_40px] items-center gap-4">
+<span class="text-sm font-medium">3</span>
+<div class="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 5%"></div>
+</div>
+<span class="text-xs text-slate-500 text-right">5%</span>
+</div>
+<div class="grid grid-cols-[24px_1fr_40px] items-center gap-4">
+<span class="text-sm font-medium">2</span>
+<div class="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 3%"></div>
+</div>
+<span class="text-xs text-slate-500 text-right">3%</span>
+</div>
+<div class="grid grid-cols-[24px_1fr_40px] items-center gap-4">
+<span class="text-sm font-medium">1</span>
+<div class="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 2%"></div>
+</div>
+<span class="text-xs text-slate-500 text-right">2%</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Tabs and Filters -->
+<div class="flex flex-col md:flex-row items-center justify-between mb-6 gap-4 border-b border-slate-200 dark:border-slate-800">
+<div class="flex gap-8">
+<button class="pb-4 border-b-2 border-primary text-primary font-bold text-sm">Tất cả</button>
+<button class="pb-4 border-b-2 border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 font-medium text-sm">Chưa trả lời</button>
+<button class="pb-4 border-b-2 border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 font-medium text-sm">Đã trả lời</button>
+</div>
+<div class="pb-4 flex items-center gap-3">
+<button class="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-xs font-medium">
+<span class="material-symbols-outlined !text-sm">filter_list</span>
+                        Lọc: Mới nhất
+                    </button>
+</div>
+</div>
+<!-- Review List -->
+<div class="space-y-4">
+<!-- Review Card 1 -->
+<div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 transition-all hover:shadow-md">
+<div class="flex items-start justify-between mb-4">
+<div class="flex items-center gap-3">
+<div class="size-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-primary">NT</div>
+<div>
+<h4 class="font-bold">Nguyễn Thảo</h4>
+<div class="flex items-center gap-2 mt-0.5">
+<div class="flex text-amber-400">
+<span class="material-symbols-outlined !text-sm fill-1">star</span>
+<span class="material-symbols-outlined !text-sm fill-1">star</span>
+<span class="material-symbols-outlined !text-sm fill-1">star</span>
+<span class="material-symbols-outlined !text-sm fill-1">star</span>
+<span class="material-symbols-outlined !text-sm fill-1">star</span>
+</div>
+<span class="text-xs text-slate-400">Phòng 102 • 2 ngày trước</span>
+</div>
+</div>
+</div>
+<span class="px-2 py-1 bg-red-100 text-red-600 text-[10px] font-bold uppercase tracking-wider rounded">Chưa trả lời</span>
+</div>
+<p class="text-slate-700 dark:text-slate-300 text-sm leading-relaxed mb-6">
+                        Phòng sạch sẽ, chủ trọ rất nhiệt tình hỗ trợ khi mình mới dọn đến. Không gian yên tĩnh, an ninh tốt. Giá cả hợp lý so với khu vực trung tâm. Rất đáng ở lâu dài!
+                    </p>
+<div class="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4">
+<div class="flex gap-4">
+<input class="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-2 text-sm focus:ring-primary focus:border-primary" placeholder="Nhập câu trả lời của bạn..." type="text"/>
+<button class="bg-primary text-white px-6 py-2 rounded-lg text-sm font-bold transition-opacity hover:opacity-90">Gửi</button>
+</div>
+</div>
+</div>
+<!-- Review Card 2 -->
+<div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 transition-all hover:shadow-md">
+<div class="flex items-start justify-between mb-4">
+<div class="flex items-center gap-3">
+<div class="size-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-primary">LM</div>
+<div>
+<h4 class="font-bold">Lê Minh</h4>
+<div class="flex items-center gap-2 mt-0.5">
+<div class="flex text-amber-400">
+<span class="material-symbols-outlined !text-sm fill-1">star</span>
+<span class="material-symbols-outlined !text-sm fill-1">star</span>
+<span class="material-symbols-outlined !text-sm fill-1">star</span>
+<span class="material-symbols-outlined !text-sm fill-1">star</span>
+<span class="material-symbols-outlined !text-sm">star</span>
+</div>
+<span class="text-xs text-slate-400">Phòng 305 • 1 tuần trước</span>
+</div>
+</div>
+</div>
+<span class="px-2 py-1 bg-green-100 text-green-600 text-[10px] font-bold uppercase tracking-wider rounded">Đã trả lời</span>
+</div>
+<p class="text-slate-700 dark:text-slate-300 text-sm leading-relaxed mb-6">
+                        Wifi thỉnh thoảng hơi chậm buổi tối, còn lại mọi thứ đều tuyệt vời. Phòng vệ sinh hơi nhỏ nhưng cực kỳ sạch sẽ.
+                    </p>
+<div class="border-l-4 border-primary/30 pl-4 py-1">
+<div class="flex items-center gap-2 mb-2">
+<span class="text-xs font-bold text-primary">Minh Tuấn (Chủ trọ)</span>
+<span class="text-[10px] text-slate-400">5 ngày trước</span>
+</div>
+<p class="text-sm italic text-slate-500 dark:text-slate-400">
+                            Chào Minh, cảm ơn bạn đã phản hồi. Mình đã liên hệ bên nhà mạng để nâng cấp băng thông Wifi rồi nhé. Hy vọng bạn sẽ hài lòng hơn trong thời gian tới!
+                        </p>
+</div>
+</div>
+<!-- Review Card 3 -->
+<div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 transition-all hover:shadow-md">
+<div class="flex items-start justify-between mb-4">
+<div class="flex items-center gap-3">
+<div class="size-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-primary">KH</div>
+<div>
+<h4 class="font-bold">Khánh Huyền</h4>
+<div class="flex items-center gap-2 mt-0.5">
+<div class="flex text-amber-400">
+<span class="material-symbols-outlined !text-sm fill-1">star</span>
+<span class="material-symbols-outlined !text-sm fill-1">star</span>
+<span class="material-symbols-outlined !text-sm fill-1">star</span>
+<span class="material-symbols-outlined !text-sm fill-1">star</span>
+<span class="material-symbols-outlined !text-sm fill-1">star</span>
+</div>
+<span class="text-xs text-slate-400">Phòng 201 • 10 ngày trước</span>
+</div>
+</div>
+</div>
+<span class="px-2 py-1 bg-red-100 text-red-600 text-[10px] font-bold uppercase tracking-wider rounded">Chưa trả lời</span>
+</div>
+<p class="text-slate-700 dark:text-slate-300 text-sm leading-relaxed mb-6">
+                        Trọ này 10 điểm không có nhưng! Vừa có bảo vệ 24/24 vừa có thang máy tiện lợi.
+                    </p>
+<div class="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4">
+<div class="flex gap-4">
+<input class="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-2 text-sm focus:ring-primary focus:border-primary" placeholder="Nhập câu trả lời của bạn..." type="text"/>
+<button class="bg-primary text-white px-6 py-2 rounded-lg text-sm font-bold transition-opacity hover:opacity-90">Gửi</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Pagination -->
+<div class="flex justify-center mt-10 mb-20">
+<nav class="flex items-center gap-1">
+<button class="p-2 text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="size-8 rounded-lg bg-primary text-white text-sm font-bold">1</button>
+<button class="size-8 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium">2</button>
+<button class="size-8 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-medium">3</button>
+<button class="p-2 text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</nav>
+</div>
+</div>
+</main>
+</div>
+<style>
+    .material-symbols-outlined.fill-1 {
+        font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+</style>
+</body></html>

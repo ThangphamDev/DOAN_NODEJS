@@ -76,12 +76,12 @@ const ListingsSection = ({ rooms }) => {
       </div>
       <div className="listings-grid">
         {rooms.map((room, i) => (
-          <Link to={`/rooms/${room.id}`} key={room.id} style={{ textDecoration: "none", color: "inherit" }}>
+          <Link to={`/rooms/${room.id}`} key={room.id} className="listing-link">
             <RoomCard room={room} index={i} />
           </Link>
         ))}
         {rooms.length === 0 && (
-          <p style={{ gridColumn: "1/-1", textAlign: "center", color: "var(--text-muted)", padding: "2rem" }}>
+          <p className="ui-empty listings-empty">
             Chưa có phòng nào. Hãy thử thay đổi bộ lọc.
           </p>
         )}

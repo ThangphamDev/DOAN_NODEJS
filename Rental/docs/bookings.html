@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                "primary": "#007bff",
+                "background-light": "#f5f7f8",
+                "background-dark": "#0f1923",
+              },
+              fontFamily: {
+                "display": ["Inter"]
+              },
+              borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+            },
+          },
+        }
+    </script>
+<title>Landlord Bookings Management</title>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100">
+<div class="relative flex h-auto min-screen w-full flex-col group/design-root overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<!-- Top Navigation -->
+<header class="flex items-center justify-between whitespace-nowrap border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-background-dark px-10 py-3">
+<div class="flex items-center gap-4">
+<div class="text-primary">
+<span class="material-symbols-outlined text-3xl">domain</span>
+</div>
+<h2 class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-[-0.015em]">PropManager</h2>
+</div>
+<div class="flex flex-1 justify-end gap-8">
+<label class="flex flex-col min-w-40 h-10 max-w-64">
+<div class="flex w-full flex-1 items-stretch rounded-lg h-full">
+<div class="text-slate-500 flex border-none bg-slate-100 dark:bg-slate-800 items-center justify-center pl-4 rounded-l-lg border-r-0">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-slate-900 dark:text-slate-100 focus:outline-0 focus:ring-0 border-none bg-slate-100 dark:bg-slate-800 focus:border-none h-full placeholder:text-slate-500 px-4 rounded-l-none border-l-0 pl-2 text-base font-normal leading-normal" placeholder="Search requests..." value=""/>
+</div>
+</label>
+<div class="flex gap-2">
+<button class="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 gap-2 text-sm font-bold px-3">
+<span class="material-symbols-outlined">calendar_month</span>
+</button>
+<button class="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 gap-2 text-sm font-bold px-3">
+<span class="material-symbols-outlined">tune</span>
+</button>
+</div>
+</div>
+</header>
+<div class="flex flex-1 flex-col lg:flex-row">
+<!-- Sidebar -->
+<aside class="w-full lg:w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-background-dark p-4 shrink-0">
+<div class="flex flex-col gap-6">
+<div class="flex items-center gap-3 px-2">
+<div class="bg-primary rounded-full size-10 flex items-center justify-center text-white" data-alt="Professional portrait of a male landlord" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCZRJ3MtJu3EPlxJjCTvi2k8Dj9zzoYffKEEGb1cVcv8WRWZ6q4mou2PrmbgUPINrVe2j4KaSkwL1qah-V10pNhSCWGAmnv25iZaG0S_6u-RQprTMDHefaBoNn7rNrzB8MOPwm5H75RR7vjIBR1YA6WEyou87Ruzyi9V5juYEdfSmhDLtHJSJYA5_sk65kz0iKW0SSW0vwlYxy2fD_y5BWgyja4elIZc1O-DKXgaFgceebe_WIM_d5Coad3lY_qngoCbTtM0EHw-WGn"); background-size: cover;'></div>
+<div class="flex flex-col">
+<h1 class="text-slate-900 dark:text-slate-100 text-sm font-semibold">Robert Fox</h1>
+<p class="text-slate-500 dark:text-slate-400 text-xs">Verified Landlord</p>
+</div>
+</div>
+<nav class="flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-sm font-medium">My Properties</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 text-primary" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="text-sm font-medium">Bookings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="text-sm font-medium">Tenants</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800" href="#">
+<span class="material-symbols-outlined">chat_bubble</span>
+<span class="text-sm font-medium">Messages</span>
+<span class="ml-auto bg-primary text-white text-[10px] px-1.5 py-0.5 rounded-full">3</span>
+</a>
+</nav>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 p-6 lg:p-10 overflow-y-auto">
+<div class="max-w-5xl mx-auto flex flex-col gap-6">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div>
+<h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100">Booking Requests</h1>
+<p class="text-slate-500 dark:text-slate-400">Manage and schedule viewings for your units.</p>
+</div>
+<div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg self-start">
+<button class="px-4 py-1.5 text-sm font-medium bg-white dark:bg-slate-700 shadow-sm rounded-md text-slate-900 dark:text-slate-100">All</button>
+<button class="px-4 py-1.5 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100">Pending</button>
+<button class="px-4 py-1.5 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100">Upcoming</button>
+</div>
+</div>
+<!-- Bookings List -->
+<div class="grid gap-4">
+<!-- Request Card 1 -->
+<div class="flex flex-col md:flex-row items-start md:items-center justify-between p-5 bg-white dark:bg-background-dark border border-slate-200 dark:border-slate-800 rounded-xl hover:shadow-md transition-shadow gap-4">
+<div class="flex items-center gap-4">
+<div class="size-12 rounded-full border-2 border-primary/20 bg-slate-100 flex items-center justify-center overflow-hidden shrink-0">
+<img class="w-full h-full object-cover" data-alt="Portrait of Sarah Jenkins, potential tenant" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCzeZ3tkDUSnm744K2hS4tFk6_xL-kNnVAwm2hrLTga3DolcPrLT34-y2gMF8WZ7zL4tPLRd0hFkEHemIyu-PGsQSkQf2HYFqaKHg71wjXShCtF37-7F1qdf6p8drKnbgweRlCRbekl6R-KDQJeZy0tB0UQjsxfhtPz687eX16dI5TNZ9Oy2ZSg8GmsRzfxBqua-G4YyjpmL8JyyMfGKwMOJ6brpJHO019-UlUrJZJ7ETzVGKKlzJeFufEqK4N4VBGlxmwDw3Ev3kry"/>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h3 class="font-semibold text-slate-900 dark:text-slate-100">Sarah Jenkins</h3>
+<span class="inline-flex items-center rounded-full bg-amber-50 dark:bg-amber-900/30 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400 ring-1 ring-inset ring-amber-600/20">Pending</span>
+</div>
+<p class="text-sm text-slate-500 dark:text-slate-400 font-medium">Modern Studio - Unit 4B</p>
+<div class="flex items-center gap-3 mt-1 text-xs text-slate-400">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">calendar_today</span> Oct 24, 2023</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">schedule</span> 10:00 AM</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3 w-full md:w-auto">
+<button class="flex-1 md:flex-none px-4 py-2 text-sm font-semibold border border-slate-200 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800">
+                                    Decline
+                                </button>
+<button class="flex-1 md:flex-none px-4 py-2 text-sm font-semibold bg-primary text-white rounded-lg hover:bg-primary/90">
+                                    Approve
+                                </button>
+</div>
+</div>
+<!-- Request Card 2 -->
+<div class="flex flex-col md:flex-row items-start md:items-center justify-between p-5 bg-white dark:bg-background-dark border border-slate-200 dark:border-slate-800 rounded-xl hover:shadow-md transition-shadow gap-4">
+<div class="flex items-center gap-4">
+<div class="size-12 rounded-full border-2 border-primary/20 bg-slate-100 flex items-center justify-center overflow-hidden shrink-0">
+<img class="w-full h-full object-cover" data-alt="Portrait of Michael Chen, potential tenant" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBjCN4Wx04Npwu-Mu2T57ubDStQpIyhYHkRZyATb6-kKCFsiYyfVPYyi5aUNi-enuVs6rW7lbb3XlFwdLhkSgkK8W1_cKGP3jjXt-79aAHr5u10jXHJwi8BMN4wjqqMD8pnbZUM1fDLRmS7ASbk-K16SUYO9-RyetjAcigxRGbMq9aKRY-obVVLBa6TENadu3wTa6eIshu_xAJoNxfPAmRkPlg70gq3W6kt5XG_gEaLXbDxEZRQsRTQncNta-_tk70yK2zSROmgdo1c"/>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h3 class="font-semibold text-slate-900 dark:text-slate-100">Michael Chen</h3>
+<span class="inline-flex items-center rounded-full bg-green-50 dark:bg-green-900/30 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-400 ring-1 ring-inset ring-green-600/20">Confirmed</span>
+</div>
+<p class="text-sm text-slate-500 dark:text-slate-400 font-medium">Skyline Luxury Suite - Unit 12A</p>
+<div class="flex items-center gap-3 mt-1 text-xs text-slate-400">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">calendar_today</span> Oct 25, 2023</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">schedule</span> 02:30 PM</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+<span class="material-symbols-outlined">chat_bubble</span>
+</button>
+<button class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Request Card 3 -->
+<div class="flex flex-col md:flex-row items-start md:items-center justify-between p-5 bg-white dark:bg-background-dark border border-slate-200 dark:border-slate-800 rounded-xl hover:shadow-md transition-shadow gap-4">
+<div class="flex items-center gap-4">
+<div class="size-12 rounded-full border-2 border-primary/20 bg-slate-100 flex items-center justify-center overflow-hidden shrink-0">
+<img class="w-full h-full object-cover" data-alt="Portrait of Emily Watson, potential tenant" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAkgEv_aA39_xQxhYUKpD1REFLReKhYl68F7Ez15nf2IZBHtzaSXtpBdWS6srYlToKHyLg7iHdjgeHRbgfotnqrYaIaggaJjllUbDQPofd17MLXH0dDJOnqJFjgTjOrnQnoJ2FTgu8wuM_w2aLUX09xXfKuUa7eGfqHXsYSlnmcenKrpx6Wpo_EazCpfzFSk58ifgTVXVW69-h2EpOKQA2E5tKuGhb8cG0jdguaIp_kTgI7uUszId0a9zDi21TGdoOO9HrnLcORucjh"/>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h3 class="font-semibold text-slate-900 dark:text-slate-100">Emily Watson</h3>
+<span class="inline-flex items-center rounded-full bg-red-50 dark:bg-red-900/30 px-2 py-0.5 text-xs font-medium text-red-700 dark:text-red-400 ring-1 ring-inset ring-red-600/20">Rejected</span>
+</div>
+<p class="text-sm text-slate-500 dark:text-slate-400 font-medium">Garden View Loft - Unit 2C</p>
+<div class="flex items-center gap-3 mt-1 text-xs text-slate-400">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">calendar_today</span> Oct 22, 2023</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">schedule</span> 11:15 AM</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<span class="text-xs font-medium text-slate-400 italic">Declined Oct 21</span>
+<button class="px-3 py-1.5 text-xs font-semibold bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700">
+                                    Restore
+                                </button>
+</div>
+</div>
+<!-- Request Card 4 -->
+<div class="flex flex-col md:flex-row items-start md:items-center justify-between p-5 bg-white dark:bg-background-dark border border-slate-200 dark:border-slate-800 rounded-xl hover:shadow-md transition-shadow gap-4">
+<div class="flex items-center gap-4">
+<div class="size-12 rounded-full border-2 border-primary/20 bg-slate-100 flex items-center justify-center overflow-hidden shrink-0">
+<img class="w-full h-full object-cover" data-alt="Portrait of David Miller, potential tenant" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBekJGhT_VYvxsIvRiCH-vkLIZJAI04jnVPJj1Tkxd_niMdE-Ba1QPw0BMmWjjbit0ufH0BrMvYTvaokEPzyHXKX20NU8vCJNdDtmSFuHGwG21OTpIZ2ylfrlpN8UBz2GwSccm7XX-yv_KC_YY3int3XHYZb4w5_vKHTV-Z2F-ZeNpd4tE_aT41UG2pXivIOtWeJ8zTfGhqf7BmG9TWAtjzHK6lm6nyEkSQqRAKM0gYVt38y3HkLxJh3mrYDQi3-UE7IQiWo3Y9FwZv"/>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h3 class="font-semibold text-slate-900 dark:text-slate-100">David Miller</h3>
+<span class="inline-flex items-center rounded-full bg-amber-50 dark:bg-amber-900/30 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400 ring-1 ring-inset ring-amber-600/20">Pending</span>
+</div>
+<p class="text-sm text-slate-500 dark:text-slate-400 font-medium">Downtown Penthouse - Unit 4501</p>
+<div class="flex items-center gap-3 mt-1 text-xs text-slate-400">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">calendar_today</span> Oct 26, 2023</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">schedule</span> 09:00 AM</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3 w-full md:w-auto">
+<button class="flex-1 md:flex-none px-4 py-2 text-sm font-semibold border border-slate-200 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800">
+                                    Decline
+                                </button>
+<button class="flex-1 md:flex-none px-4 py-2 text-sm font-semibold bg-primary text-white rounded-lg hover:bg-primary/90">
+                                    Approve
+                                </button>
+</div>
+</div>
+</div>
+<!-- Calendar Mini View or Summary -->
+<div class="mt-4 p-6 bg-primary/5 dark:bg-primary/10 rounded-xl border border-primary/20">
+<div class="flex items-center justify-between mb-4">
+<h4 class="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">event_note</span>
+                                Weekly Overview
+                            </h4>
+<a class="text-sm font-semibold text-primary hover:underline" href="#">Full Calendar</a>
+</div>
+<div class="grid grid-cols-7 gap-2">
+<div class="flex flex-col items-center p-2 rounded-lg bg-white dark:bg-slate-800/50 shadow-sm border border-primary/10">
+<span class="text-[10px] uppercase text-slate-400 font-bold">Mon</span>
+<span class="text-sm font-bold text-slate-700 dark:text-slate-300">23</span>
+<div class="size-1.5 rounded-full bg-slate-300 mt-1"></div>
+</div>
+<div class="flex flex-col items-center p-2 rounded-lg bg-primary text-white shadow-md">
+<span class="text-[10px] uppercase text-white/70 font-bold">Tue</span>
+<span class="text-sm font-bold">24</span>
+<div class="size-1.5 rounded-full bg-white mt-1"></div>
+</div>
+<div class="flex flex-col items-center p-2 rounded-lg bg-white dark:bg-slate-800/50 shadow-sm border border-primary/10">
+<span class="text-[10px] uppercase text-slate-400 font-bold">Wed</span>
+<span class="text-sm font-bold text-slate-700 dark:text-slate-300">25</span>
+<div class="size-1.5 rounded-full bg-green-400 mt-1"></div>
+</div>
+<div class="flex flex-col items-center p-2 rounded-lg bg-white dark:bg-slate-800/50 shadow-sm border border-primary/10">
+<span class="text-[10px] uppercase text-slate-400 font-bold">Thu</span>
+<span class="text-sm font-bold text-slate-700 dark:text-slate-300">26</span>
+<div class="size-1.5 rounded-full bg-amber-400 mt-1"></div>
+</div>
+<div class="flex flex-col items-center p-2 rounded-lg bg-white dark:bg-slate-800/50 shadow-sm border border-primary/10">
+<span class="text-[10px] uppercase text-slate-400 font-bold">Fri</span>
+<span class="text-sm font-bold text-slate-700 dark:text-slate-300">27</span>
+</div>
+<div class="flex flex-col items-center p-2 rounded-lg bg-white dark:bg-slate-800/50 shadow-sm border border-primary/10">
+<span class="text-[10px] uppercase text-slate-400 font-bold">Sat</span>
+<span class="text-sm font-bold text-slate-700 dark:text-slate-300">28</span>
+</div>
+<div class="flex flex-col items-center p-2 rounded-lg bg-white dark:bg-slate-800/50 shadow-sm border border-primary/10">
+<span class="text-[10px] uppercase text-slate-400 font-bold">Sun</span>
+<span class="text-sm font-bold text-slate-700 dark:text-slate-300">29</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+</div>
+</body></html>

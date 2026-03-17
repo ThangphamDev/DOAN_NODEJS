@@ -86,8 +86,8 @@ const HeroSection = () => {
           </div>
 
           <div className="float-badge float-badge-2">
-            <div style={{ fontSize: "11px", color: "var(--text-muted)", marginBottom: "4px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>Mới nhất hôm nay</div>
-            <div style={{ fontSize: "18px", fontWeight: 800, color: "var(--text-primary)" }}>+148 tin đăng</div>
+            <div className="float-badge__label">Mới nhất hôm nay</div>
+            <div className="float-badge__value">+148 tin đăng</div>
           </div>
         </div>
       </div>

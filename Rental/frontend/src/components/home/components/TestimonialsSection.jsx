@@ -12,7 +12,7 @@ const TestimonialsSection = () => {
   return (
     <section className="testimonials-section">
       <div className="section-header">
-        <h2 className="section-title">Khách hàng nói gì về <em>TroTốt</em></h2>
+        <h2 className="section-title">Khách hàng nói gì về <em>LivinX</em></h2>
       </div>
       <div className="testimonials-grid">
         {testimonials.map((item, i) => (

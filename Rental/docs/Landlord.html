@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Landlord Dashboard - Property Manager</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#007bff",
+              "background-light": "#f5f7f8",
+              "background-dark": "#0f1923",
+            },
+            fontFamily: {
+              "display": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .active-nav {
+            background-color: rgba(0, 123, 255, 0.1);
+            color: #007bff;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100">
+<div class="flex min-h-screen">
+<!-- Sidebar Navigation -->
+<aside class="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col fixed h-full">
+<div class="p-6 flex flex-col gap-6 h-full">
+<!-- Brand Profile -->
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-primary flex items-center justify-center text-white">
+<span class="material-symbols-outlined">apartment</span>
+</div>
+<div class="flex flex-col">
+<h1 class="text-slate-900 dark:text-slate-100 text-base font-bold leading-none">PropManager</h1>
+<p class="text-slate-500 dark:text-slate-400 text-xs mt-1">Premium Landlord</p>
+</div>
+</div>
+<!-- Nav Links -->
+<nav class="flex flex-col gap-1 flex-grow">
+<a class="active-nav flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium text-sm transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                        Dashboard
+                    </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">home_work</span>
+                        My Listings
+                    </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">event_note</span>
+                        Appointments
+                    </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors relative" href="#">
+<span class="material-symbols-outlined">chat_bubble</span>
+                        Messages
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 bg-primary text-white text-[10px] px-1.5 rounded-full">5</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+                        Settings
+                    </a>
+</nav>
+<!-- Logout -->
+<button class="flex items-center gap-3 px-3 py-2.5 mt-auto rounded-lg font-medium text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors">
+<span class="material-symbols-outlined">logout</span>
+                    Logout
+                </button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-64 flex-1 p-8">
+<!-- Header Section -->
+<div class="flex flex-wrap justify-between items-center gap-4 mb-8">
+<div class="flex flex-col gap-1">
+<h2 class="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">Landlord Dashboard</h2>
+<p class="text-slate-500 dark:text-slate-400">Welcome back. Here's what's happening with your properties today.</p>
+</div>
+<button class="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-lg font-bold text-sm transition-all shadow-sm shadow-primary/20">
+<span class="material-symbols-outlined text-[20px]">add_circle</span>
+                    Add New Listing
+                </button>
+</div>
+<!-- Summary Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex items-center justify-between mb-4">
+<p class="text-slate-500 dark:text-slate-400 font-medium text-sm">Total Listings</p>
+<span class="material-symbols-outlined text-primary">apartment</span>
+</div>
+<div class="flex items-baseline gap-2">
+<p class="text-3xl font-bold text-slate-900 dark:text-slate-100">12</p>
+<p class="text-green-600 text-sm font-semibold flex items-center">+2% <span class="material-symbols-outlined text-sm">trending_up</span></p>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex items-center justify-between mb-4">
+<p class="text-slate-500 dark:text-slate-400 font-medium text-sm">Pending Appointments</p>
+<span class="material-symbols-outlined text-primary">schedule</span>
+</div>
+<div class="flex items-baseline gap-2">
+<p class="text-3xl font-bold text-slate-900 dark:text-slate-100">8</p>
+<p class="text-green-600 text-sm font-semibold flex items-center">+15% <span class="material-symbols-outlined text-sm">trending_up</span></p>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex items-center justify-between mb-4">
+<p class="text-slate-500 dark:text-slate-400 font-medium text-sm">New Messages</p>
+<span class="material-symbols-outlined text-primary">mail</span>
+</div>
+<div class="flex items-baseline gap-2">
+<p class="text-3xl font-bold text-slate-900 dark:text-slate-100">5</p>
+<p class="text-red-500 text-sm font-semibold flex items-center">-5% <span class="material-symbols-outlined text-sm">trending_down</span></p>
+</div>
+</div>
+</div>
+<!-- Listings Table Section -->
+<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+<div class="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+<h3 class="text-lg font-bold text-slate-900 dark:text-slate-100">My Listings</h3>
+<div class="flex items-center gap-2">
+<button class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+<button class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
+<span class="material-symbols-outlined">search</span>
+</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="bg-slate-50 dark:bg-slate-800/50">
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Property</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Lease Price</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+<!-- Row 1 -->
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-lg bg-slate-100 dark:bg-slate-800 overflow-hidden flex-shrink-0">
+<img alt="Sunset Apartments" class="w-full h-full object-cover" data-alt="Modern apartment building exterior with glass balconies" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCr4u9qAblk7AuPJjcWT3EtlNkLcJsPF36THJ8BcQdsDhTq3W8YzRIjp1pGaAIBCIsNUZqLlpcTnMApKJA4w5S9162pke7xtaO21bh2_vQdcbgU1k_Ixa1TEC_qHJXfz2QBixgCi3mY_DpFJ8LYeT4UboSIlzL9tHmGd9fKqfyxSoN9UqhVWXiujJBlO-trZzIv0uijAydyZ9aOZgBm9K-cSq6NA-_202Uqi9pEwpU3AFZ_jtmbdhSJDEzDnJ6OKjnu2yz_zs1LABXG"/>
+</div>
+<div class="font-medium text-slate-900 dark:text-slate-100">Sunset Apartments</div>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                                        Active
+                                    </span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600 dark:text-slate-400">
+                                    $2,400 /mo
+                                </td>
+<td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+<div class="flex justify-end gap-3">
+<button class="text-primary hover:text-primary/80 transition-colors">Edit</button>
+<span class="text-slate-300 dark:text-slate-700">|</span>
+<button class="text-red-500 hover:text-red-600 transition-colors">Delete</button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-lg bg-slate-100 dark:bg-slate-800 overflow-hidden flex-shrink-0">
+<img alt="Oakwood Cottage" class="w-full h-full object-cover" data-alt="Small cozy wooden cottage surrounded by oak trees" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAt-XoBMHixxh_yd2IjqwxaQBiysKVecAZYACI_rlMrdHfbrUDntuVzJqG-AUxR4dfj0s2MzLCVroaKyWKmVeWY48XgGCRViZhSJKKLkS-NqCteXDIz9gQt2Kxq8FKyXjspW1Rc9cKyeKuyM0j2gwwQz4fmQx1PfQepcFHeBxW6AxSgqNI5qSXLabh3SeNLHjIVhvxxj3zItW_qHZMSBVXpc1HFI9kQ8qNB8gw3G7XY9k-BjEICFWihUUYHnqEr-Lv4EHd9V5nBAUme"/>
+</div>
+<div class="font-medium text-slate-900 dark:text-slate-100">Oakwood Cottage</div>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                                        Active
+                                    </span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600 dark:text-slate-400">
+                                    $1,850 /mo
+                                </td>
+<td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+<div class="flex justify-end gap-3">
+<button class="text-primary hover:text-primary/80 transition-colors">Edit</button>
+<span class="text-slate-300 dark:text-slate-700">|</span>
+<button class="text-red-500 hover:text-red-600 transition-colors">Delete</button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-lg bg-slate-100 dark:bg-slate-800 overflow-hidden flex-shrink-0">
+<img alt="Downtown Studio" class="w-full h-full object-cover" data-alt="Chic minimalist downtown studio apartment interior" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQhJHsHiwgZo7OJ1dXyXsSrmr1heYaLhourY1SptvwsIxk9HirDIZIOYjcKX973pwob-qMHxOj0mwWLcnP5XOxPJc5JvTZemLjLYQu1Ja31BB9MhWbC48ap498FVsBDCCN8cCJofE57roHxGuD44Vf4bpYpnhZE335yE57iukktJCNRxqwb7dIAbKzg_eHDG0CtOa7mYsh-AY6WQLlPE58pIOm29eh2NgEEZoQd5f6uE3M9xjab2VKFQMpBwp1a345ZQ5PxAZgKz6G"/>
+</div>
+<div class="font-medium text-slate-900 dark:text-slate-100">Downtown Studio</div>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300">
+                                        Hidden
+                                    </span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600 dark:text-slate-400">
+                                    $1,500 /mo
+                                </td>
+<td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+<div class="flex justify-end gap-3">
+<button class="text-primary hover:text-primary/80 transition-colors">Edit</button>
+<span class="text-slate-300 dark:text-slate-700">|</span>
+<button class="text-red-500 hover:text-red-600 transition-colors">Delete</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-6 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-sm">
+<p class="text-slate-500 dark:text-slate-400">Showing 3 of 12 listings</p>
+<div class="flex gap-2">
+<button class="px-3 py-1 border border-slate-200 dark:border-slate-800 rounded hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">Previous</button>
+<button class="px-3 py-1 border border-slate-200 dark:border-slate-800 rounded bg-primary text-white font-medium">1</button>
+<button class="px-3 py-1 border border-slate-200 dark:border-slate-800 rounded hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">Next</button>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

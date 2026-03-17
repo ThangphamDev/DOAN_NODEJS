@@ -255,6 +255,12 @@
   text-align: left;
   background: #fff;
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.customer-messenger-item:hover {
+  border-color: #bfd4ff;
+  background: #f7faff;
 }
 
 .customer-messenger-item.is-active {
@@ -333,5 +339,37 @@
 
   .customer-chat-messages {
     min-height: 340px;
+  }
+}
+
+@media (max-width: 680px) {
+  .customer-page {
+    width: calc(100% - 1rem);
+    margin-top: 1rem;
+  }
+
+  .customer-card {
+    padding: 0.85rem;
+  }
+
+  .customer-detail-hero {
+    height: 260px;
+  }
+
+  .customer-detail-gallery {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .customer-chat-compose {
+    grid-template-columns: 1fr;
+  }
+
+  .customer-chat-compose .ui-button {
+    width: 100%;
+  }
+
+  .customer-chat-modal {
+    width: 100%;
+    max-height: 90vh;
   }
 }
