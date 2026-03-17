@@ -10,6 +10,8 @@ class ChatController {
 		this.sendMessage = this.sendMessage.bind(this);
 		this.getConversation = this.getConversation.bind(this);
 		this.getInbox = this.getInbox.bind(this);
+		this.blockUser = this.blockUser.bind(this);
+		this.unblockUser = this.unblockUser.bind(this);
 	}
 
 	async sendMessage(req, res, next) {
@@ -27,9 +29,10 @@ class ChatController {
 				)
 			);
 
+			const payload = message?.toJSON ? message.toJSON() : message;
 			const io = req.app.get("io");
-			io.to(`user:${receiverId}`).emit("chat:new", message);
-			io.to(`user:${req.user.id}`).emit("chat:new", message);
+			io.to(`user:${receiverId}`).emit("chat:new", payload);
+			io.to(`user:${req.user.id}`).emit("chat:new", payload);
 
 			return sendSuccess(res, { status: 201, data: message });
 		} catch (error) {
@@ -61,9 +64,45 @@ class ChatController {
 		}
 	}
 
+	async blockUser(req, res, next) {
+		try {
+			const data = await runInTransaction((tx) =>
+				this.service.blockUser(
+					{
+						blockerId: req.user.id,
+						blockedUserId: Number(req.params.userId),
+					},
+					{ transaction: tx }
+				)
+			);
+			return sendSuccess(res, { data });
+		} catch (error) {
+			return next(error);
+		}
+	}
+
+	async unblockUser(req, res, next) {
+		try {
+			const data = await runInTransaction((tx) =>
+				this.service.unblockUser(
+					{
+						blockerId: req.user.id,
+						blockedUserId: Number(req.params.userId),
+					},
+					{ transaction: tx }
+				)
+			);
+			return sendSuccess(res, { data });
+		} catch (error) {
+			return next(error);
+		}
+	}
+
 	registerRoutes(app, prefix = "/api") {
 		app.post(`${prefix}/chat/send`, authenticate, authorize("customer", "landlord"), this.sendMessage);
 		app.get(`${prefix}/chat/inbox`, authenticate, authorize("customer", "landlord"), this.getInbox);
+		app.post(`${prefix}/chat/block/:userId`, authenticate, authorize("customer", "landlord"), this.blockUser);
+		app.delete(`${prefix}/chat/block/:userId`, authenticate, authorize("customer", "landlord"), this.unblockUser);
 		app.get(
 			`${prefix}/chat/conversation/:peerId`,
 			authenticate,

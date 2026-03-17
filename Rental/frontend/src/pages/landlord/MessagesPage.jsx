@@ -1,6 +1,7 @@
 ﻿import { useEffect, useMemo, useRef, useState } from "react";
 import { useNotify } from "@/context/NotifyContext.jsx";
 import useChatConversation from "@/hooks/useChatConversation";
+import chatService from "@/services/ChatService";
 import landlordService from "@/services/LandlordService";
 import { getApiData, getApiMessage } from "@/utils/apiResponse";
 
@@ -23,6 +24,8 @@ const MessagesPage = () => {
     setContent,
     sendMessage,
     selectConversation,
+    refreshInbox,
+    setThreadBlockedState,
     hasActiveConversation,
     isOwnMessage,
     isThreadActive,
@@ -30,6 +33,7 @@ const MessagesPage = () => {
   const notify = useNotify();
   const [rooms, setRooms] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isUpdatingBlock, setIsUpdatingBlock] = useState(false);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -89,6 +93,33 @@ const MessagesPage = () => {
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
       await sendMessage();
+    }
+  };
+
+  const toggleBlockUser = async () => {
+    if (!activeThread?.peerId) {
+      notify.warning("Vui lòng chọn khách thuê cần chặn.");
+      return;
+    }
+
+    try {
+      setIsUpdatingBlock(true);
+
+      if (activeThread.blockedByMe) {
+        await chatService.unblockUser(activeThread.peerId);
+        setThreadBlockedState(activeThread.peerId, false);
+        notify.success("Đã mở chặn khách thuê.");
+      } else {
+        await chatService.blockUser(activeThread.peerId);
+        setThreadBlockedState(activeThread.peerId, true);
+        notify.success("Đã chặn khách thuê trong cuộc trò chuyện này.");
+      }
+
+      await refreshInbox();
+    } catch (err) {
+      notify.error(getApiMessage(err, "Không thể cập nhật trạng thái chặn"));
+    } finally {
+      setIsUpdatingBlock(false);
     }
   };
 
@@ -254,17 +285,18 @@ const MessagesPage = () => {
             <div className="flex items-center gap-3">
               <textarea
                 className="custom-scrollbar min-h-12 max-h-32 flex-1 resize-none rounded-xl border-none bg-slate-100 p-3 text-sm text-slate-800 placeholder:text-slate-400 focus:ring-2 focus:ring-primary/50"
-                placeholder="Nhập tin nhắn..."
+                placeholder={activeThread?.blockedByMe ? "Bạn đã chặn người dùng này" : "Nhập tin nhắn..."}
                 rows="1"
                 value={content}
                 onChange={(event) => setContent(event.target.value)}
                 onKeyDown={handleComposerKeyDown}
+                disabled={activeThread?.blockedByMe}
               />
               <button
                 className="flex size-11 items-center justify-center rounded-xl bg-primary text-white shadow-lg shadow-primary/20 transition-transform active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                 type="button"
                 onClick={sendMessage}
-                disabled={!hasActiveConversation}
+                disabled={!hasActiveConversation || activeThread?.blockedByMe}
               >
                 <span className="material-symbols-outlined">send</span>
               </button>
@@ -284,7 +316,18 @@ const MessagesPage = () => {
               <p className="mb-4 text-xs text-slate-500">{activeThread?.peerEmail || "Khách hàng tiềm năng"}</p>
               <div className="flex w-full gap-2">
                 <button className="flex-1 rounded-lg border border-slate-200 py-2 text-xs font-bold transition-colors hover:bg-slate-50" type="button">Trang cá nhân</button>
-                <button className="flex-1 rounded-lg border border-slate-200 py-2 text-xs font-bold transition-colors hover:bg-slate-50" type="button">Chặn</button>
+                <button
+                  className={`flex-1 rounded-lg border py-2 text-xs font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+                    activeThread?.blockedByMe
+                      ? "border-emerald-200 text-emerald-600 hover:bg-emerald-50"
+                      : "border-red-200 text-red-600 hover:bg-red-50"
+                  }`}
+                  type="button"
+                  onClick={toggleBlockUser}
+                  disabled={!hasActiveConversation || isUpdatingBlock}
+                >
+                  {activeThread?.blockedByMe ? "Mở chặn" : "Chặn"}
+                </button>
               </div>
             </div>
           </div>
@@ -341,7 +384,9 @@ const MessagesPage = () => {
               <div className="rounded-lg border border-yellow-100 bg-yellow-50 p-3">
                 <p className="text-[11px] italic leading-relaxed text-yellow-800">
                   {hasActiveConversation
-                    ? "Khách này đang được theo dõi trong kênh nhắn tin trực tiếp. Ưu tiên chốt lịch xem nếu phản hồi nhanh."
+                    ? activeThread?.blockedByMe
+                      ? "Khách thuê này đang bị chặn. Tin nhắn mới sẽ bị từ chối cho đến khi bạn mở chặn."
+                      : "Khách này đang được theo dõi trong kênh nhắn tin trực tiếp. Ưu tiên chốt lịch xem nếu phản hồi nhanh."
                     : "Chưa có ghi chú cho khách này."}
                 </p>
               </div>

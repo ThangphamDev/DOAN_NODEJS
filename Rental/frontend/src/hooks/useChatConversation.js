@@ -12,6 +12,7 @@ const toThread = (item = {}) => ({
   peerEmail: item.peerEmail || "",
   roomId: item.roomId ? Number(item.roomId) : null,
   roomTitle: item.roomTitle || "",
+  blockedByMe: Boolean(item.blockedByMe),
 });
 
 const isSameThread = (left, right) =>
@@ -65,6 +66,7 @@ const useChatConversation = () => {
         lastSenderId: message.senderId,
         roomId,
         roomTitle: matched?.roomTitle || activeMatched?.roomTitle || message.roomTitle || message.room?.title || "",
+        blockedByMe: Boolean(matched?.blockedByMe || activeMatched?.blockedByMe),
       };
 
       return [nextItem, ...previousInbox.filter((item) => !isSameThread(item, nextThread))];
@@ -88,6 +90,7 @@ const useChatConversation = () => {
               peerName: prev.peerName || matched.peerName,
               peerEmail: prev.peerEmail || matched.peerEmail || "",
               roomTitle: prev.roomTitle || matched.roomTitle || "",
+              blockedByMe: prev.blockedByMe ?? matched.blockedByMe ?? false,
             };
           }
         }
@@ -172,9 +175,40 @@ const useChatConversation = () => {
     setActiveThread(toThread(item));
   }, []);
 
+  const setThreadBlockedState = useCallback((peerId, blockedByMe) => {
+    setInbox((prev) =>
+      prev.map((item) =>
+        Number(item.peerId) === Number(peerId)
+          ? {
+              ...item,
+              blockedByMe,
+            }
+          : item
+      )
+    );
+
+    setActiveThread((prev) => {
+      if (!prev || Number(prev.peerId) !== Number(peerId)) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        blockedByMe,
+      };
+    });
+  }, []);
+
   const sendMessage = useCallback(async () => {
     if (!activeThread?.peerId || !content.trim()) {
       const message = "Vui lòng chọn hội thoại và nhập nội dung";
+      setError(message);
+      notify.warning(message);
+      return false;
+    }
+
+    if (activeThread?.blockedByMe) {
+      const message = "Bạn đã chặn người dùng này. Hãy mở chặn trước khi gửi tin nhắn.";
       setError(message);
       notify.warning(message);
       return false;
@@ -215,6 +249,7 @@ const useChatConversation = () => {
     sendMessage,
     selectConversation,
     refreshInbox: loadInbox,
+    setThreadBlockedState,
     hasActiveConversation: Boolean(activeThread?.peerId),
     isOwnMessage: (message) => Number(message.senderId) === Number(user?.id),
     isThreadActive: (item) => isSameThread(activeThread, toThread(item)),

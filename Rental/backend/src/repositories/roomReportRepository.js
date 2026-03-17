@@ -13,6 +13,10 @@ class RoomReportRepository {
     return this.roomReportEntity.findAll(query);
   }
 
+  getOne(query) {
+    return this.roomReportEntity.findOne(query);
+  }
+
   getById(id, query = {}) {
     return this.roomReportEntity.findByPk(id, query);
   }

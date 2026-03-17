@@ -13,6 +13,14 @@ class ChatService {
   sendMessage(payload) {
     return api.post("/chat/send", payload);
   }
+
+  blockUser(userId) {
+    return api.post(`/chat/block/${userId}`);
+  }
+
+  unblockUser(userId) {
+    return api.delete(`/chat/block/${userId}`);
+  }
 }
 
 export default new ChatService();

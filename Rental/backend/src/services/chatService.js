@@ -1,6 +1,7 @@
 const { Op } = require("sequelize");
 const { User, Room } = require("@/entities");
 const messageRepository = require("@/repositories/messageRepository");
+const userBlockRepository = require("@/repositories/userBlockRepository");
 const ApiError = require("@/utils/ApiError");
 
 class ChatService {
@@ -13,6 +14,19 @@ class ChatService {
       throw new ApiError(400, "receiverId and content are required");
     }
 
+    const blockedRelationship = await userBlockRepository.getOne({
+      where: {
+        [Op.or]: [
+          { blockerId: senderId, blockedUserId: receiverId },
+          { blockerId: receiverId, blockedUserId: senderId },
+        ],
+      },
+    });
+
+    if (blockedRelationship) {
+      throw new ApiError(403, "Cuộc trò chuyện này đã bị chặn");
+    }
+
     const message = await this.repository.insert({
       senderId,
       receiverId,
@@ -23,6 +37,7 @@ class ChatService {
     return this.repository.getOne({
       where: { id: message.id },
       include: roomId ? [{ model: Room, as: "room", attributes: ["id", "title"] }] : [],
+      transaction: options.transaction,
     });
   }
 
@@ -47,6 +62,14 @@ class ChatService {
   }
 
   async getInbox({ userId }) {
+    const blockedUsers = await userBlockRepository.getList({
+      where: {
+        blockerId: userId,
+      },
+      attributes: ["blockedUserId"],
+    });
+
+    const blockedUserIds = new Set(blockedUsers.map((item) => Number(item.blockedUserId)));
     const messages = await this.repository.getList({
       where: {
         [Op.or]: [{ senderId: userId }, { receiverId: userId }],
@@ -80,10 +103,50 @@ class ChatService {
         lastSenderId: message.senderId,
         roomId: message.roomId,
         roomTitle: message.room?.title || "",
+        blockedByMe: blockedUserIds.has(Number(peer.id)),
       });
     });
 
     return inbox;
+  }
+
+  async blockUser({ blockerId, blockedUserId }, options = {}) {
+    if (!blockedUserId || Number(blockerId) === Number(blockedUserId)) {
+      throw new ApiError(400, "Invalid blocked user");
+    }
+
+    const existingBlock = await userBlockRepository.getOne({
+      where: {
+        blockerId,
+        blockedUserId,
+      },
+    });
+
+    if (existingBlock) {
+      return { message: "User already blocked" };
+    }
+
+    await userBlockRepository.insert(
+      {
+        blockerId,
+        blockedUserId,
+      },
+      options
+    );
+
+    return { message: "User blocked" };
+  }
+
+  async unblockUser({ blockerId, blockedUserId }, options = {}) {
+    await userBlockRepository.deleteWhere(
+      {
+        blockerId,
+        blockedUserId,
+      },
+      options
+    );
+
+    return { message: "User unblocked" };
   }
 }
 

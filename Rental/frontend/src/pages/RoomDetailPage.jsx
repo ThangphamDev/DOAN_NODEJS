@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { io } from "socket.io-client";
 import LoadingState from "@/components/common/LoadingState";
@@ -51,6 +51,8 @@ const RoomDetailPage = () => {
 
     return io(import.meta.env.VITE_SOCKET_URL || "http://localhost:5000", {
       auth: { token },
+      autoConnect: true,
+      transports: ["websocket", "polling"],
     });
   }, []);
 
@@ -125,6 +127,10 @@ const RoomDetailPage = () => {
 
   useEffect(() => {
     if (!socket || !showChatComposer || !room?.landlord?.id) return undefined;
+
+    if (!socket.connected) {
+      socket.connect();
+    }
 
     const handleNewMessage = (message) => {
       const isCurrentThread =

@@ -33,8 +33,9 @@ const setupSocket = (io) => {
           roomId: roomId || null,
         });
 
-        io.to(`user:${receiverId}`).emit("chat:new", message);
-        io.to(`user:${socket.user.id}`).emit("chat:new", message);
+        const payloadToEmit = message?.toJSON ? message.toJSON() : message;
+        io.to(`user:${receiverId}`).emit("chat:new", payloadToEmit);
+        io.to(`user:${socket.user.id}`).emit("chat:new", payloadToEmit);
       } catch (error) {
         socket.emit("chat:error", { message: "Cannot send message" });
       }

@@ -92,6 +92,17 @@ class RoomService {
       throw new ApiError(404, "Room not found");
     }
 
+    const existingReport = await this.reportRepository.getOne({
+      where: {
+        roomId: room.id,
+        reporterId: payload.userId,
+      },
+    });
+
+    if (existingReport) {
+      throw new ApiError(409, "Bạn đã báo cáo tin đăng này rồi");
+    }
+
     await this.reportRepository.insert(
       {
         roomId: room.id,
