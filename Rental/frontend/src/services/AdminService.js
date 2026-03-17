@@ -9,6 +9,15 @@ class AdminService {
     return api.get(`/admin/rooms/reported/${id}`);
   }
 
+  getReportedContent(status = "all") {
+    const params = status && status !== "all" ? { status } : undefined;
+    return api.get("/admin/reports", { params });
+  }
+
+  updateReportStatus(reportId, status) {
+    return api.patch(`/admin/reports/${reportId}/status`, { status });
+  }
+
   getUsers() {
     return api.get("/admin/users");
   }

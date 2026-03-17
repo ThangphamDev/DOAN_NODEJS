@@ -25,6 +25,14 @@ module.exports = (sequelize) =>
       details: {
         type: DataTypes.TEXT,
       },
+      status: {
+        type: DataTypes.ENUM("pending", "resolved", "dismissed"),
+        allowNull: false,
+        defaultValue: "pending",
+      },
+      reviewedAt: {
+        type: DataTypes.DATE,
+      },
     },
     {
       tableName: "room_reports",

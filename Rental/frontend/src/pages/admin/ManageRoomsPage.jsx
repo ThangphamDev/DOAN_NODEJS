@@ -1,6 +1,7 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import ConfirmActionModal from "@/components/admin/ConfirmActionModal";
 import ReportedRoomDetailModal from "@/components/admin/ReportedRoomDetailModal";
+import { useNotify } from "@/context/NotifyContext.jsx";
 import adminService from "@/services/AdminService";
 import { getApiData, getApiMessage } from "@/utils/apiResponse";
 
@@ -36,8 +37,6 @@ const getReportMeta = (count) => {
 
 const ManageRoomsPage = () => {
   const [rooms, setRooms] = useState([]);
-  const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("pending");
   const [selectedRoomId, setSelectedRoomId] = useState(null);
@@ -46,21 +45,20 @@ const ManageRoomsPage = () => {
   const [detailError, setDetailError] = useState("");
   const [roomPendingDelete, setRoomPendingDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const notify = useNotify();
 
   const loadReportedRooms = async () => {
     try {
       const response = await adminService.getReportedRooms();
       const nextRooms = getApiData(response, []);
       setRooms(nextRooms);
-      setError("");
 
       if (selectedRoomId && !nextRooms.some((room) => String(room.id) === String(selectedRoomId))) {
         setSelectedRoomId(null);
         setSelectedRoom(null);
       }
     } catch (err) {
-      setError(getApiMessage(err, "Không tải được danh sách tin vi phạm"));
-      setSuccessMessage("");
+      notify.error(getApiMessage(err, "Không tải được danh sách tin vi phạm"));
     }
   };
 
@@ -87,8 +85,7 @@ const ManageRoomsPage = () => {
     try {
       setIsDeleting(true);
       await adminService.deleteRoom(roomId);
-      setSuccessMessage("Đã xóa tin vi phạm.");
-      setError("");
+      notify.success("Đã xóa tin vi phạm.");
       setRoomPendingDelete(null);
 
       if (String(selectedRoomId) === String(roomId)) {
@@ -98,8 +95,7 @@ const ManageRoomsPage = () => {
 
       await loadReportedRooms();
     } catch (err) {
-      setError(getApiMessage(err, "Không thể xóa tin vi phạm"));
-      setSuccessMessage("");
+      notify.error(getApiMessage(err, "Không thể xóa tin vi phạm"));
     } finally {
       setIsDeleting(false);
     }
@@ -139,9 +135,6 @@ const ManageRoomsPage = () => {
           <p className="text-slate-500">Admin xem danh sách báo cáo, mở chi tiết từng báo cáo và xóa tin đăng vi phạm.</p>
         </div>
       </div>
-
-      {error && <p className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</p>}
-      {successMessage && <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{successMessage}</p>}
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">

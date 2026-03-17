@@ -1,10 +1,12 @@
-﻿import { useCallback, useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+﻿import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { io } from "socket.io-client";
-import roomService from "@/services/RoomService";
-import chatService from "@/services/ChatService";
 import LoadingState from "@/components/common/LoadingState";
+import ReportRoomModal from "@/components/room/ReportRoomModal";
+import { useNotify } from "@/context/NotifyContext.jsx";
 import useAuth from "@/hooks/useAuth";
+import chatService from "@/services/ChatService";
+import roomService from "@/services/RoomService";
 import { getApiData, getApiMessage } from "@/utils/apiResponse";
 import { getToken } from "@/utils/storage";
 
@@ -17,9 +19,20 @@ const amenityItems = [
   { icon: "security", label: "An ninh 24/7" },
 ];
 
+const formatMessageTime = (value) => {
+  if (!value) return "Vừa xong";
+
+  return new Date(value).toLocaleTimeString("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
 const RoomDetailPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { user } = useAuth();
+  const notify = useNotify();
   const [room, setRoom] = useState(null);
   const [scheduledAt, setScheduledAt] = useState("");
   const [leaseTerm, setLeaseTerm] = useState("12 tháng");
@@ -28,12 +41,14 @@ const RoomDetailPage = () => {
   const [showChatComposer, setShowChatComposer] = useState(false);
   const [chatMessages, setChatMessages] = useState([]);
   const [chatLoading, setChatLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [isReporting, setIsReporting] = useState(false);
+  const chatEndRef = useRef(null);
 
   const socket = useMemo(() => {
     const token = getToken();
     if (!token) return null;
+
     return io(import.meta.env.VITE_SOCKET_URL || "http://localhost:5000", {
       auth: { token },
     });
@@ -46,6 +61,7 @@ const RoomDetailPage = () => {
 
   const roomImages = useMemo(() => {
     const images = room?.images || [];
+
     return images
       .map((image) => {
         const imageUrl = image?.imageUrl || "";
@@ -59,6 +75,7 @@ const RoomDetailPage = () => {
   const averageRating = useMemo(() => {
     const reviews = room?.reviews || [];
     if (!reviews.length) return "0.0";
+
     const total = reviews.reduce((sum, item) => sum + Number(item.rating || 0), 0);
     return (total / reviews.length).toFixed(1);
   }, [room?.reviews]);
@@ -69,15 +86,24 @@ const RoomDetailPage = () => {
     return Array.from({ length: 5 }, (_, index) => images[index] || images[0]);
   }, [roomImages]);
 
+  const appendChatMessage = useCallback((message) => {
+    setChatMessages((prev) => {
+      const exists = prev.some((item) => Number(item.id) === Number(message.id));
+      if (exists) return prev;
+      return [...prev, message];
+    });
+  }, []);
+
   const fetchRoom = useCallback(() => {
     roomService
       .getRoomDetail(id)
       .then((response) => {
         setRoom(getApiData(response));
-        setError("");
       })
-      .catch((err) => setError(getApiMessage(err, "Không tải được thông tin phòng")));
-  }, [id]);
+      .catch((err) => {
+        notify.error(getApiMessage(err, "Không tải được thông tin phòng"));
+      });
+  }, [id, notify]);
 
   useEffect(() => {
     fetchRoom();
@@ -90,26 +116,24 @@ const RoomDetailPage = () => {
       setChatLoading(true);
       const response = await chatService.getConversation(room.landlord.id, room.id);
       setChatMessages(getApiData(response, []));
-      setError("");
     } catch (err) {
-      setError(getApiMessage(err, "Không tải được lịch sử tin nhắn"));
+      notify.error(getApiMessage(err, "Không tải được lịch sử tin nhắn"));
     } finally {
       setChatLoading(false);
     }
-  }, [room?.id, room?.landlord?.id]);
+  }, [notify, room?.id, room?.landlord?.id]);
 
   useEffect(() => {
-    if (!socket || !showChatComposer || !room?.landlord?.id) return;
+    if (!socket || !showChatComposer || !room?.landlord?.id) return undefined;
 
     const handleNewMessage = (message) => {
-      const isWithCurrentLandlord =
-        (message.senderId === room.landlord.id && message.receiverId === user?.id) ||
-        (message.senderId === user?.id && message.receiverId === room.landlord.id);
+      const isCurrentThread =
+        ((Number(message.senderId) === Number(room.landlord.id) && Number(message.receiverId) === Number(user?.id)) ||
+          (Number(message.senderId) === Number(user?.id) && Number(message.receiverId) === Number(room.landlord.id))) &&
+        Number(message.roomId || 0) === Number(room.id || 0);
 
-      if (!isWithCurrentLandlord) return;
-      if (message.roomId && Number(message.roomId) !== Number(room.id)) return;
-
-      setChatMessages((prev) => [...prev, message]);
+      if (!isCurrentThread) return;
+      appendChatMessage(message);
     };
 
     socket.on("chat:new", handleNewMessage);
@@ -117,90 +141,105 @@ const RoomDetailPage = () => {
     return () => {
       socket.off("chat:new", handleNewMessage);
     };
-  }, [socket, showChatComposer, room?.landlord?.id, room?.id, user?.id]);
+  }, [appendChatMessage, room?.id, room?.landlord?.id, showChatComposer, socket, user?.id]);
+
+  useEffect(() => {
+    if (!showChatComposer) return;
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [chatMessages, showChatComposer]);
 
   useEffect(() => {
     return () => {
-      if (socket) {
-        socket.disconnect();
-      }
+      socket?.disconnect();
     };
   }, [socket]);
+
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+      return;
+    }
+
+    navigate("/");
+  };
 
   const addFavorite = async () => {
     try {
       await roomService.toggleFavorite(id);
-      setSuccessMessage("Đã cập nhật danh sách yêu thích.");
-      setError("");
+      notify.success("Đã cập nhật danh sách yêu thích.");
     } catch (err) {
-      setError(getApiMessage(err, "Không thể cập nhật yêu thích"));
-      setSuccessMessage("");
+      notify.error(getApiMessage(err, "Không thể cập nhật yêu thích"));
     }
   };
 
   const bookVisit = async () => {
     if (!scheduledAt) {
-      setError("Vui lòng chọn thời gian xem phòng");
-      setSuccessMessage("");
+      notify.warning("Vui lòng chọn thời gian xem phòng.");
       return;
     }
 
     try {
-      await roomService.createAppointment(id, { scheduledAt });
-      setSuccessMessage("Đã gửi lịch xem phòng thành công.");
-      setError("");
+      await roomService.createAppointment(id, { scheduledAt, leaseTerm });
+      notify.success("Đã gửi lịch xem phòng thành công.");
       setScheduledAt("");
     } catch (err) {
-      setError(getApiMessage(err, "Không thể đặt lịch xem phòng"));
-      setSuccessMessage("");
+      notify.error(getApiMessage(err, "Không thể đặt lịch xem phòng"));
     }
   };
 
   const submitReview = async () => {
     if (!review.content.trim()) {
-      setError("Vui lòng nhập nội dung đánh giá");
-      setSuccessMessage("");
+      notify.warning("Vui lòng nhập nội dung đánh giá.");
       return;
     }
 
     try {
       await roomService.createReview(id, review);
       setReview({ rating: 5, content: "" });
-      setSuccessMessage("Đánh giá của bạn đã được ghi nhận.");
-      setError("");
+      notify.success("Đánh giá của bạn đã được ghi nhận.");
       fetchRoom();
     } catch (err) {
-      setError(getApiMessage(err, "Không thể gửi đánh giá"));
-      setSuccessMessage("");
+      notify.error(getApiMessage(err, "Không thể gửi đánh giá"));
+    }
+  };
+
+  const submitRoomReport = async (payload) => {
+    try {
+      setIsReporting(true);
+      await roomService.reportRoom(id, payload);
+      notify.success("Đã gửi báo cáo bài đăng.");
+      setShowReportModal(false);
+    } catch (err) {
+      notify.error(getApiMessage(err, "Không thể gửi báo cáo bài đăng"));
+    } finally {
+      setIsReporting(false);
     }
   };
 
   const sendMessageToLandlord = async () => {
     if (!room?.landlord?.id) {
-      setError("Không xác định được chủ trọ của phòng này");
-      setSuccessMessage("");
+      notify.error("Không xác định được chủ trọ của phòng này.");
       return;
     }
 
     if (!chatContent.trim()) {
-      setError("Vui lòng nhập nội dung tin nhắn");
-      setSuccessMessage("");
+      notify.warning("Vui lòng nhập nội dung tin nhắn.");
       return;
     }
 
     try {
-      await chatService.sendMessage({
+      const response = await chatService.sendMessage({
         receiverId: room.landlord.id,
         roomId: room.id,
         content: chatContent.trim(),
       });
+      const message = getApiData(response, null);
+      if (message) {
+        appendChatMessage(message);
+      }
       setChatContent("");
-      setError("");
-      setSuccessMessage("Đã gửi tin nhắn cho chủ trọ.");
-      await loadRoomConversation();
     } catch (err) {
-      setError(getApiMessage(err, "Không thể gửi tin nhắn"));
-      setSuccessMessage("");
+      notify.error(getApiMessage(err, "Không thể gửi tin nhắn"));
     }
   };
 
@@ -209,26 +248,51 @@ const RoomDetailPage = () => {
     await loadRoomConversation();
   };
 
+  const handlePopupKeyDown = async (event) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      await sendMessageToLandlord();
+    }
+  };
+
   if (!room) return <LoadingState />;
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col px-4 py-6 md:px-10">
-      {(error || successMessage) && (
-        <div className="mb-6 space-y-3">
-          {error && <p className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</p>}
-          {successMessage && <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{successMessage}</p>}
-        </div>
-      )}
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <button
+          className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+          type="button"
+          onClick={handleBack}
+        >
+          <span className="material-symbols-outlined text-lg">arrow_back</span>
+          Quay về
+        </button>
+
+        {user?.role === "customer" ? (
+          <button
+            className="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-100"
+            type="button"
+            onClick={() => setShowReportModal(true)}
+          >
+            <span className="material-symbols-outlined text-lg">flag</span>
+            Báo cáo bài đăng
+          </button>
+        ) : null}
+      </div>
 
       <div className="mb-8 grid h-[360px] grid-cols-4 grid-rows-2 gap-3 overflow-hidden rounded-xl md:h-[500px]">
-        <div className="col-span-4 row-span-2 bg-slate-200 md:col-span-2" style={{ backgroundImage: `url(${photoGrid[0]})`, backgroundSize: "cover", backgroundPosition: "center" }}></div>
-        <div className="hidden bg-slate-200 md:block" style={{ backgroundImage: `url(${photoGrid[1]})`, backgroundSize: "cover", backgroundPosition: "center" }}></div>
-        <div className="hidden bg-slate-200 md:block" style={{ backgroundImage: `url(${photoGrid[2]})`, backgroundSize: "cover", backgroundPosition: "center" }}></div>
-        <div className="hidden bg-slate-200 md:block" style={{ backgroundImage: `url(${photoGrid[3]})`, backgroundSize: "cover", backgroundPosition: "center" }}></div>
-        <div className="relative hidden bg-slate-200 md:block" style={{ backgroundImage: `url(${photoGrid[4]})`, backgroundSize: "cover", backgroundPosition: "center" }}>
-          {roomImages.length > 5 && (
+        <div
+          className="col-span-4 row-span-2 bg-slate-200 md:col-span-2"
+          style={{ backgroundImage: `url(${photoGrid[0]})`, backgroundPosition: "center", backgroundSize: "cover" }}
+        ></div>
+        <div className="hidden bg-slate-200 md:block" style={{ backgroundImage: `url(${photoGrid[1]})`, backgroundPosition: "center", backgroundSize: "cover" }}></div>
+        <div className="hidden bg-slate-200 md:block" style={{ backgroundImage: `url(${photoGrid[2]})`, backgroundPosition: "center", backgroundSize: "cover" }}></div>
+        <div className="hidden bg-slate-200 md:block" style={{ backgroundImage: `url(${photoGrid[3]})`, backgroundPosition: "center", backgroundSize: "cover" }}></div>
+        <div className="relative hidden bg-slate-200 md:block" style={{ backgroundImage: `url(${photoGrid[4]})`, backgroundPosition: "center", backgroundSize: "cover" }}>
+          {roomImages.length > 5 ? (
             <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-lg font-bold text-white">+{roomImages.length - 4} ảnh</div>
-          )}
+          ) : null}
         </div>
       </div>
 
@@ -237,7 +301,15 @@ const RoomDetailPage = () => {
           <div className="mb-6 flex flex-col gap-2">
             <div className="flex items-center gap-2">
               <span className="rounded bg-primary/10 px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-primary">Đã xác minh</span>
-              <span className={`rounded px-2.5 py-1 text-xs font-bold uppercase tracking-wider ${room.status === "active" ? "bg-green-500/10 text-green-600" : room.status === "rented" ? "bg-amber-500/10 text-amber-600" : "bg-slate-200 text-slate-700"}`}>
+              <span
+                className={`rounded px-2.5 py-1 text-xs font-bold uppercase tracking-wider ${
+                  room.status === "active"
+                    ? "bg-green-500/10 text-green-600"
+                    : room.status === "rented"
+                      ? "bg-amber-500/10 text-amber-600"
+                      : "bg-slate-200 text-slate-700"
+                }`}
+              >
                 {room.status === "active" ? "Còn trống" : room.status === "rented" ? "Đã thuê" : "Tạm ẩn"}
               </span>
             </div>
@@ -324,7 +396,9 @@ const RoomDetailPage = () => {
                         </div>
                         <div>
                           <p className="font-bold text-slate-900">{item.reviewer?.fullName || "Khách thuê"}</p>
-                          <p className="text-xs text-slate-500">{item.createdAt ? new Date(item.createdAt).toLocaleDateString("vi-VN") : "Mới đây"}</p>
+                          <p className="text-xs text-slate-500">
+                            {item.createdAt ? new Date(item.createdAt).toLocaleDateString("vi-VN") : "Mới đây"}
+                          </p>
                         </div>
                       </div>
                       <div className="flex text-yellow-500">
@@ -342,7 +416,7 @@ const RoomDetailPage = () => {
             </div>
           </div>
 
-          {user?.role === "customer" && (
+          {user?.role === "customer" ? (
             <div className="border-t border-slate-200 py-8">
               <h3 className="mb-6 text-2xl font-bold text-slate-900">Viết đánh giá</h3>
               <div className="grid gap-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -372,7 +446,7 @@ const RoomDetailPage = () => {
                 </button>
               </div>
             </div>
-          )}
+          ) : null}
         </div>
 
         <aside className="w-full lg:w-[400px]">
@@ -450,18 +524,28 @@ const RoomDetailPage = () => {
         </aside>
       </div>
 
-      {user?.role === "customer" && (
-        <div className="fixed bottom-6 right-6 z-[100] flex flex-col items-end gap-4">
-          {showChatComposer && (
-            <div className="hidden h-96 w-80 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-300/60 md:flex">
+      {user?.role === "customer" ? (
+        <div className="pointer-events-none fixed bottom-4 right-4 z-[100] flex max-w-[calc(100vw-2rem)] flex-col items-end gap-3 md:bottom-6 md:right-6">
+          {showChatComposer ? (
+            <div className="pointer-events-auto flex h-[28rem] w-[min(24rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-slate-300/60">
               <div className="flex items-center justify-between bg-primary p-4 text-white">
                 <div className="flex items-center gap-2">
                   <div className="size-2 rounded-full bg-green-400"></div>
-                  <span className="font-bold">Chat với chủ trọ</span>
+                  <div>
+                    <p className="font-bold">Chat với chủ trọ</p>
+                    <p className="text-xs text-white/80">{room.landlord?.fullName || "Chủ trọ"}</p>
+                  </div>
                 </div>
                 <button className="rounded-lg p-1 transition-colors hover:bg-white/20" type="button" onClick={() => setShowChatComposer(false)}>
                   <span className="material-symbols-outlined text-sm">close</span>
                 </button>
+              </div>
+
+              <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-4 py-2 text-xs text-slate-500">
+                <span className="truncate pr-3">{room.title}</span>
+                <Link className="shrink-0 font-semibold text-primary hover:underline" to="/messages">
+                  Mở trang nhắn tin
+                </Link>
               </div>
 
               <div className="flex-1 space-y-4 overflow-y-auto bg-slate-50 p-4">
@@ -470,40 +554,60 @@ const RoomDetailPage = () => {
                 ) : chatMessages.length === 0 ? (
                   <p className="text-sm text-slate-500">Chưa có tin nhắn nào trong phòng này.</p>
                 ) : (
-                  chatMessages.map((item) => {
-                    const ownMessage = item.senderId === user?.id;
+                  chatMessages.map((item, index) => {
+                    const ownMessage = Number(item.senderId) === Number(user?.id);
                     return (
-                      <div className={`flex max-w-[85%] flex-col gap-1 ${ownMessage ? "ml-auto items-end" : ""}`} key={item.id}>
-                        <div className={`rounded-2xl p-3 text-sm ${ownMessage ? "rounded-br-none bg-primary text-white" : "rounded-tl-none bg-slate-200 text-slate-700"}`}>
+                      <div className={`flex max-w-[85%] flex-col gap-1 ${ownMessage ? "ml-auto items-end" : ""}`} key={item.id || `${item.senderId}-${index}`}>
+                        <div
+                          className={`rounded-2xl p-3 text-sm ${
+                            ownMessage ? "rounded-br-none bg-primary text-white" : "rounded-tl-none bg-slate-200 text-slate-700"
+                          }`}
+                        >
                           {item.content}
                         </div>
-                        <span className="text-[10px] text-slate-400">{item.createdAt ? new Date(item.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "Vừa xong"}</span>
+                        <span className="text-[10px] text-slate-400">{formatMessageTime(item.createdAt)}</span>
                       </div>
                     );
                   })
                 )}
+                <div ref={chatEndRef}></div>
               </div>
 
-              <div className="flex items-center gap-2 border-t border-slate-200 bg-white p-3">
-                <input
-                  className="flex-1 rounded-lg border-none bg-slate-100 px-3 py-2 text-sm focus:ring-1 focus:ring-primary"
-                  placeholder="Nhập tin nhắn..."
-                  type="text"
-                  value={chatContent}
-                  onChange={(event) => setChatContent(event.target.value)}
-                />
-                <button className="rounded-full p-2 text-primary transition-colors hover:bg-primary/10" type="button" onClick={sendMessageToLandlord}>
-                  <span className="material-symbols-outlined">send</span>
-                </button>
+              <div className="border-t border-slate-200 bg-white p-3">
+                <div className="flex items-end gap-2 rounded-xl border border-slate-200 bg-slate-50 p-2 focus-within:ring-2 focus-within:ring-primary/20">
+                  <textarea
+                    className="max-h-28 flex-1 resize-none border-none bg-transparent px-1 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:ring-0"
+                    placeholder="Nhập tin nhắn cho chủ trọ..."
+                    rows="1"
+                    value={chatContent}
+                    onChange={(event) => setChatContent(event.target.value)}
+                    onKeyDown={handlePopupKeyDown}
+                  />
+                  <button className="flex size-10 items-center justify-center rounded-full text-primary transition-colors hover:bg-primary/10" type="button" onClick={sendMessageToLandlord}>
+                    <span className="material-symbols-outlined">send</span>
+                  </button>
+                </div>
+                <p className="mt-2 text-center text-[10px] text-slate-400">Nhấn Enter để gửi, Shift + Enter để xuống dòng</p>
               </div>
             </div>
-          )}
+          ) : null}
 
-          <button className="flex size-14 items-center justify-center rounded-full bg-primary text-white shadow-lg shadow-primary/40 transition-all hover:scale-110 active:scale-95" type="button" onClick={showChatComposer ? () => setShowChatComposer(false) : openChatPopup}>
+          <button
+            className="pointer-events-auto flex size-14 items-center justify-center rounded-full bg-primary text-white shadow-lg shadow-primary/40 transition-all hover:scale-110 active:scale-95"
+            type="button"
+            onClick={showChatComposer ? () => setShowChatComposer(false) : openChatPopup}
+          >
             <span className="material-symbols-outlined text-3xl">forum</span>
           </button>
         </div>
-      )}
+      ) : null}
+
+      <ReportRoomModal
+        open={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        onSubmit={submitRoomReport}
+        isSubmitting={isReporting}
+      />
     </div>
   );
 };

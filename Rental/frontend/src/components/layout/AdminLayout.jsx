@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import adminService from "@/services/AdminService";
 import useAuth from "@/hooks/useAuth";
@@ -7,23 +7,23 @@ import { getApiData } from "@/utils/apiResponse";
 const AdminLayout = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [reportedRoomsCount, setReportedRoomsCount] = useState(0);
+  const [pendingReportsCount, setPendingReportsCount] = useState(0);
 
   useEffect(() => {
     let isMounted = true;
 
-    const loadReportedRooms = async () => {
+    const loadPendingReports = async () => {
       try {
-        const response = await adminService.getReportedRooms();
+        const response = await adminService.getReportedContent("pending");
         if (!isMounted) return;
-        setReportedRoomsCount(getApiData(response, []).length);
+        setPendingReportsCount(getApiData(response, []).length);
       } catch {
         if (!isMounted) return;
-        setReportedRoomsCount(0);
+        setPendingReportsCount(0);
       }
     };
 
-    loadReportedRooms();
+    loadPendingReports();
 
     return () => {
       isMounted = false;
@@ -44,6 +44,11 @@ const AdminLayout = () => {
       .join("")
       .toUpperCase();
 
+  const navClassName = ({ isActive }) =>
+    `flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors ${
+      isActive ? "bg-primary/10 font-medium text-primary" : "text-slate-600 hover:bg-slate-100"
+    }`;
+
   return (
     <div className="flex min-h-screen bg-background-light font-display text-slate-900">
       <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-slate-200 bg-white lg:flex">
@@ -59,47 +64,30 @@ const AdminLayout = () => {
 
         <nav className="flex flex-1 flex-col gap-2 p-4">
           <div className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Main Menu</div>
-          <NavLink
-            className={({ isActive }) =>
-              `flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors ${
-                isActive ? "bg-primary/10 font-medium text-primary" : "text-slate-600 hover:bg-slate-100"
-              }`
-            }
-            to="/admin"
-            end
-          >
+
+          <NavLink className={navClassName} end to="/admin">
             <span className="material-symbols-outlined">dashboard</span>
             <span>Tổng quan</span>
           </NavLink>
-          <NavLink
-            className={({ isActive }) =>
-              `flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors ${
-                isActive ? "bg-primary/10 font-medium text-primary" : "text-slate-600 hover:bg-slate-100"
-              }`
-            }
-            to="/admin/rooms"
-          >
+
+          <NavLink className={navClassName} to="/admin/rooms">
             <span className="material-symbols-outlined">list_alt</span>
             <span>Tin vi phạm</span>
           </NavLink>
-          <NavLink
-            className={({ isActive }) =>
-              `flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors ${
-                isActive ? "bg-primary/10 font-medium text-primary" : "text-slate-600 hover:bg-slate-100"
-              }`
-            }
-            to="/admin/users"
-          >
+
+          <NavLink className={navClassName} to="/admin/users">
             <span className="material-symbols-outlined">group</span>
             <span>Người dùng</span>
           </NavLink>
-          <div className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-600">
+
+          <NavLink className={navClassName} to="/admin/reports">
             <span className="material-symbols-outlined">flag</span>
             <span>Nội dung bị báo cáo</span>
             <span className="ml-auto rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
-              {reportedRoomsCount}
+              {pendingReportsCount}
             </span>
-          </div>
+          </NavLink>
+
           <div className="mb-2 mt-6 px-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Operations</div>
           <div className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-600">
             <span className="material-symbols-outlined">payments</span>

@@ -1,7 +1,17 @@
-﻿import { useEffect, useMemo, useState } from "react";
-import landlordService from "@/services/LandlordService";
+﻿import { useEffect, useMemo, useRef, useState } from "react";
+import { useNotify } from "@/context/NotifyContext.jsx";
 import useChatConversation from "@/hooks/useChatConversation";
-import { getApiData } from "@/utils/apiResponse";
+import landlordService from "@/services/LandlordService";
+import { getApiData, getApiMessage } from "@/utils/apiResponse";
+
+const formatMessageTime = (value) => {
+  if (!value) return "Vừa xong";
+
+  return new Date(value).toLocaleTimeString("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
 
 const MessagesPage = () => {
   const {
@@ -11,15 +21,16 @@ const MessagesPage = () => {
     messages,
     content,
     setContent,
-    error,
     sendMessage,
     selectConversation,
     hasActiveConversation,
     isOwnMessage,
     isThreadActive,
   } = useChatConversation();
+  const notify = useNotify();
   const [rooms, setRooms] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const messagesEndRef = useRef(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -29,9 +40,10 @@ const MessagesPage = () => {
         const response = await landlordService.getMyRooms();
         if (!isMounted) return;
         setRooms(getApiData(response, []));
-      } catch {
+      } catch (err) {
         if (!isMounted) return;
         setRooms([]);
+        notify.error(getApiMessage(err, "Không tải được danh sách tin đăng của bạn"));
       }
     };
 
@@ -40,7 +52,11 @@ const MessagesPage = () => {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [notify]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [activeThread, messages]);
 
   const uploadBaseUrl = useMemo(() => {
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
@@ -62,18 +78,26 @@ const MessagesPage = () => {
   const filteredInbox = useMemo(() => {
     const normalized = searchQuery.trim().toLowerCase();
     if (!normalized) return inbox;
+
     return inbox.filter((item) => {
       const haystack = `${item.peerName} ${item.peerEmail || ""} ${item.lastMessage || ""}`.toLowerCase();
       return haystack.includes(normalized);
     });
   }, [inbox, searchQuery]);
 
+  const handleComposerKeyDown = async (event) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      await sendMessage();
+    }
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-col gap-1">
           <h2 className="text-3xl font-extrabold tracking-tight">Tin nhắn khách thuê</h2>
-          <p className="text-slate-500">Dùng mẫu messenger manager mới cho khu chủ trọ, giữ nguyên dữ liệu thật từ inbox và socket.</p>
+          <p className="text-slate-500">Trao đổi trực tiếp với khách thuê theo từng tin đăng và nhận phản hồi theo thời gian thực.</p>
         </div>
         <div className="relative w-full max-w-md">
           <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
@@ -87,10 +111,8 @@ const MessagesPage = () => {
         </div>
       </div>
 
-      {error && <p className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</p>}
-
-      <div className="flex h-[calc(100vh-12rem)] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <aside className="flex w-80 shrink-0 flex-col border-r border-slate-200 bg-white">
+      <div className="flex h-[calc(100vh-12rem)] min-h-[40rem] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <aside className="flex h-full min-h-0 w-80 shrink-0 flex-col border-r border-slate-200 bg-white">
           <div className="border-b border-slate-100 p-4">
             <div className="flex gap-2">
               <button className="flex-1 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-white" type="button">Tất cả</button>
@@ -99,7 +121,7 @@ const MessagesPage = () => {
             </div>
           </div>
 
-          <div className="custom-scrollbar flex-1 overflow-y-auto">
+          <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto">
             {filteredInbox.length === 0 ? (
               <div className="p-6 text-sm text-slate-500">Chưa có hội thoại nào phù hợp.</div>
             ) : (
@@ -118,15 +140,15 @@ const MessagesPage = () => {
                       <div className="flex size-12 items-center justify-center rounded-full bg-slate-100 font-bold text-primary">
                         {(item.peerName || "K").slice(0, 1).toUpperCase()}
                       </div>
-                      {item.lastSenderId !== user?.id && (
+                      {item.lastSenderId !== user?.id ? (
                         <div className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white">1</div>
-                      )}
+                      ) : null}
                     </div>
-                    <div className="min-w-0 flex-1">
+                    <div className="min-w-0 flex-1 overflow-hidden">
                       <div className="mb-0.5 flex items-baseline justify-between gap-2">
                         <h4 className={`truncate text-sm ${isActive ? "font-bold" : "font-semibold text-slate-700"}`}>{item.peerName}</h4>
-                        <span className={`text-[10px] ${isActive ? "font-medium text-primary" : "text-slate-400"}`}>
-                          {item.lastMessageAt ? new Date(item.lastMessageAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : ""}
+                        <span className={`shrink-0 text-[10px] ${isActive ? "font-medium text-primary" : "text-slate-400"}`}>
+                          {formatMessageTime(item.lastMessageAt)}
                         </span>
                       </div>
                       <p className={`truncate text-xs ${item.lastSenderId === user?.id ? "text-slate-500" : "font-bold text-slate-900"}`}>
@@ -134,7 +156,7 @@ const MessagesPage = () => {
                       </p>
                       <div className="mt-1 flex items-center gap-1 text-[10px] text-slate-400">
                         <span className="material-symbols-outlined text-xs">home_work</span>
-                        <span className="truncate">{item.roomId ? `Tin đăng #${item.roomId}` : "Chưa gắn với phòng cụ thể"}</span>
+                        <span className="truncate">{item.roomTitle || (item.roomId ? `Tin đăng #${item.roomId}` : "Chưa gắn với phòng cụ thể")}</span>
                       </div>
                     </div>
                   </button>
@@ -144,18 +166,20 @@ const MessagesPage = () => {
           </div>
         </aside>
 
-        <main className="flex min-w-0 flex-1 flex-col bg-slate-50">
+        <main className="flex min-h-0 min-w-0 flex-1 flex-col bg-slate-50">
           <header className="flex h-16 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-6">
-            <div className="flex items-center gap-4">
-              <div className="flex size-10 items-center justify-center rounded-full bg-slate-100 font-bold text-primary">
+            <div className="min-w-0 flex items-center gap-4">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-slate-100 font-bold text-primary">
                 {(activeThread?.peerName || "K").slice(0, 1).toUpperCase()}
               </div>
-              <div>
-                <h3 className="text-base font-bold leading-none">{activeThread?.peerName || "Chọn một hội thoại"}</h3>
-                <p className="mt-1 text-xs text-slate-500">{activeThread?.peerEmail || "Khách thuê tiềm năng"}</p>
+              <div className="min-w-0">
+                <h3 className="truncate text-base font-bold leading-none">{activeThread?.peerName || "Chọn một hội thoại"}</h3>
+                <p className="mt-1 truncate text-xs text-slate-500">
+                  {activeThread?.roomTitle || activeThread?.peerEmail || "Khách thuê tiềm năng"}
+                </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex shrink-0 items-center gap-2">
               <button className="flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-1.5 text-sm font-semibold text-primary" type="button">
                 <span className="material-symbols-outlined text-lg">calendar_today</span>
                 Đặt lịch xem
@@ -169,45 +193,46 @@ const MessagesPage = () => {
             </div>
           </header>
 
-          <div className="custom-scrollbar flex-1 space-y-6 overflow-y-auto p-6">
-            {hasActiveConversation ? (
-              <div className="flex justify-center">
-                <span className="rounded-full bg-slate-200 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-slate-500">Hôm nay</span>
-              </div>
-            ) : null}
+          <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto p-6">
+            <div className="flex min-h-full flex-col gap-6">
+              {hasActiveConversation ? (
+                <div className="flex justify-center">
+                  <span className="rounded-full bg-slate-200 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-slate-500">Hôm nay</span>
+                </div>
+              ) : null}
 
-            {!hasActiveConversation ? (
-              <div className="flex h-full items-center justify-center text-sm text-slate-500">Chọn một hội thoại ở cột bên trái để bắt đầu làm việc.</div>
-            ) : messages.length === 0 ? (
-              <div className="flex h-full items-center justify-center text-sm text-slate-500">Chưa có tin nhắn nào trong hội thoại này.</div>
-            ) : (
-              messages.map((item) => {
-                const ownMessage = isOwnMessage(item);
-                return (
-                  <div key={item.id} className={`flex max-w-[80%] items-end gap-3 ${ownMessage ? "ml-auto flex-row-reverse" : ""}`}>
-                    {!ownMessage ? (
-                      <div className="flex size-8 items-center justify-center rounded-full bg-slate-200 text-xs font-bold text-slate-600">
-                        {(activeThread?.peerName || "K").slice(0, 1).toUpperCase()}
+              {!hasActiveConversation ? (
+                <div className="flex flex-1 items-center justify-center text-sm text-slate-500">Chọn một hội thoại ở cột bên trái để bắt đầu làm việc.</div>
+              ) : messages.length === 0 ? (
+                <div className="flex flex-1 items-center justify-center text-sm text-slate-500">Chưa có tin nhắn nào trong hội thoại này.</div>
+              ) : (
+                messages.map((item, index) => {
+                  const ownMessage = isOwnMessage(item);
+                  return (
+                    <div key={item.id || `${item.senderId}-${index}`} className={`flex max-w-[min(80%,42rem)] items-end gap-3 ${ownMessage ? "ml-auto flex-row-reverse" : ""}`}>
+                      {!ownMessage ? (
+                        <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-slate-200 text-xs font-bold text-slate-600">
+                          {(activeThread?.peerName || "K").slice(0, 1).toUpperCase()}
+                        </div>
+                      ) : null}
+                      <div className={`flex flex-col gap-1 ${ownMessage ? "items-end" : ""}`}>
+                        <div
+                          className={`max-h-48 overflow-y-auto break-words p-3 text-sm leading-relaxed shadow-sm ${
+                            ownMessage
+                              ? "rounded-2xl rounded-br-none bg-primary text-white"
+                              : "rounded-2xl rounded-bl-none border border-slate-100 bg-white"
+                          }`}
+                        >
+                          <p>{item.content}</p>
+                        </div>
+                        <span className="px-1 text-[10px] text-slate-400">{formatMessageTime(item.createdAt)}</span>
                       </div>
-                    ) : null}
-                    <div className={`flex flex-col gap-1 ${ownMessage ? "items-end" : ""}`}>
-                      <div
-                        className={`p-3 text-sm leading-relaxed shadow-sm ${
-                          ownMessage
-                            ? "rounded-2xl rounded-br-none bg-primary text-white"
-                            : "rounded-2xl rounded-bl-none border border-slate-100 bg-white"
-                        }`}
-                      >
-                        <p>{item.content}</p>
-                      </div>
-                      <span className="px-1 text-[10px] text-slate-400">
-                        {item.createdAt ? new Date(item.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "Vừa xong"}
-                      </span>
                     </div>
-                  </div>
-                );
-              })
-            )}
+                  );
+                })
+              )}
+              <div ref={messagesEndRef}></div>
+            </div>
           </div>
 
           <footer className="shrink-0 border-t border-slate-200 bg-white p-4">
@@ -228,11 +253,12 @@ const MessagesPage = () => {
             </div>
             <div className="flex items-center gap-3">
               <textarea
-                className="custom-scrollbar min-h-12 flex-1 resize-none rounded-xl border-none bg-slate-100 p-3 text-sm focus:ring-2 focus:ring-primary/50"
+                className="custom-scrollbar min-h-12 max-h-32 flex-1 resize-none rounded-xl border-none bg-slate-100 p-3 text-sm text-slate-800 placeholder:text-slate-400 focus:ring-2 focus:ring-primary/50"
                 placeholder="Nhập tin nhắn..."
                 rows="1"
                 value={content}
                 onChange={(event) => setContent(event.target.value)}
+                onKeyDown={handleComposerKeyDown}
               />
               <button
                 className="flex size-11 items-center justify-center rounded-xl bg-primary text-white shadow-lg shadow-primary/20 transition-transform active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
@@ -243,10 +269,11 @@ const MessagesPage = () => {
                 <span className="material-symbols-outlined">send</span>
               </button>
             </div>
+            <p className="mt-2 text-center text-[10px] text-slate-400">Nhấn Enter để gửi, Shift + Enter để xuống dòng</p>
           </footer>
         </main>
 
-        <aside className="custom-scrollbar hidden w-72 shrink-0 flex-col overflow-y-auto border-l border-slate-200 bg-white lg:flex">
+        <aside className="custom-scrollbar hidden h-full min-h-0 w-72 shrink-0 flex-col overflow-y-auto border-l border-slate-200 bg-white lg:flex">
           <div className="border-b border-slate-100 p-6">
             <h4 className="mb-4 text-xs font-bold uppercase tracking-widest text-slate-400">Thông tin khách hàng</h4>
             <div className="flex flex-col items-center text-center">
@@ -313,7 +340,9 @@ const MessagesPage = () => {
               <h4 className="mb-4 text-xs font-bold uppercase tracking-widest text-slate-400">Ghi chú</h4>
               <div className="rounded-lg border border-yellow-100 bg-yellow-50 p-3">
                 <p className="text-[11px] italic leading-relaxed text-yellow-800">
-                  {hasActiveConversation ? "Khách này đang được theo dõi trong kênh nhắn tin trực tiếp. Ưu tiên chốt lịch xem nếu phản hồi nhanh." : "Chưa có ghi chú cho khách này."}
+                  {hasActiveConversation
+                    ? "Khách này đang được theo dõi trong kênh nhắn tin trực tiếp. Ưu tiên chốt lịch xem nếu phản hồi nhanh."
+                    : "Chưa có ghi chú cho khách này."}
                 </p>
               </div>
               <button className="mt-2 flex w-full items-center justify-center gap-1 text-xs font-bold text-primary" type="button">

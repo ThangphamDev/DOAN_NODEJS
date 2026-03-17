@@ -1,4 +1,4 @@
-import { Outlet, Route, Routes } from "react-router-dom";
+﻿import { Outlet, Route, Routes } from "react-router-dom";
 import LoginPage from "@/pages/LoginPage";
 import RegisterPage from "@/pages/RegisterPage";
 import HomePage from "@/pages/HomePage";
@@ -8,6 +8,7 @@ import AdminLayout from "@/components/layout/AdminLayout";
 import AdminDashboardPage from "@/pages/admin/AdminDashboardPage";
 import AdminManageRooms from "@/pages/admin/ManageRoomsPage";
 import AdminManageUsers from "@/pages/admin/ManageUsersPage";
+import AdminManageReportedContent from "@/pages/admin/ManageReportedContentPage";
 import LandlordLayout from "@/components/layout/LandlordLayout";
 import LandlordDashboardPage from "@/pages/landlord/LandlordDashboardPage";
 import LandlordManageRooms from "@/pages/landlord/ManageRoomsPage";
@@ -61,6 +62,7 @@ function App() {
         <Route index element={<AdminDashboardPage />} />
         <Route path="rooms" element={<AdminManageRooms />} />
         <Route path="users" element={<AdminManageUsers />} />
+        <Route path="reports" element={<AdminManageReportedContent />} />
       </Route>
     </Routes>
   );

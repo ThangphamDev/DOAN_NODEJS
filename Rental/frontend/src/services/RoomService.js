@@ -20,6 +20,10 @@ class RoomService {
   createReview(id, payload) {
     return api.post(`/reviews/room/${id}`, payload);
   }
+
+  reportRoom(id, payload) {
+    return api.post(`/rooms/${id}/report`, payload);
+  }
 }
 
 export default new RoomService();

@@ -2,6 +2,7 @@
 import ConfirmActionModal from "@/components/admin/ConfirmActionModal";
 import CreateUserModal from "@/components/admin/CreateUserModal";
 import UserDetailModal from "@/components/admin/UserDetailModal";
+import { useNotify } from "@/context/NotifyContext.jsx";
 import adminService from "@/services/AdminService";
 import { getApiData, getApiMessage } from "@/utils/apiResponse";
 
@@ -40,8 +41,6 @@ const roleMap = {
 
 const ManageUsersPage = () => {
   const [users, setUsers] = useState([]);
-  const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -52,21 +51,20 @@ const ManageUsersPage = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [userPendingStatusChange, setUserPendingStatusChange] = useState(null);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const notify = useNotify();
 
   const loadUsers = async () => {
     try {
       const response = await adminService.getUsers();
       const nextUsers = getApiData(response, []);
       setUsers(nextUsers);
-      setError("");
 
       if (selectedUserId && !nextUsers.some((user) => String(user.id) === String(selectedUserId))) {
         setSelectedUserId(null);
         setSelectedUser(null);
       }
     } catch (err) {
-      setError(getApiMessage(err, "Không tải được danh sách tài khoản"));
-      setSuccessMessage("");
+      notify.error(getApiMessage(err, "Không tải được danh sách tài khoản"));
     }
   };
 
@@ -115,13 +113,12 @@ const ManageUsersPage = () => {
 
       if (user.isActive) {
         await adminService.lockUser(user.id);
-        setSuccessMessage("Đã chặn tài khoản.");
+        notify.success("Đã chặn tài khoản.");
       } else {
         await adminService.unlockUser(user.id);
-        setSuccessMessage("Đã mở chặn tài khoản.");
+        notify.success("Đã mở chặn tài khoản.");
       }
 
-      setError("");
       setUserPendingStatusChange(null);
       await loadUsers();
 
@@ -129,8 +126,7 @@ const ManageUsersPage = () => {
         await loadUserDetail(user.id);
       }
     } catch (err) {
-      setError(getApiMessage(err, "Không cập nhật được trạng thái tài khoản"));
-      setSuccessMessage("");
+      notify.error(getApiMessage(err, "Không cập nhật được trạng thái tài khoản"));
     } finally {
       setIsUpdatingStatus(false);
     }
@@ -150,8 +146,7 @@ const ManageUsersPage = () => {
       setIsCreating(true);
       const response = await adminService.createUser(createForm);
       const createdUser = getApiData(response, {}).user;
-      setSuccessMessage("Đã tạo người dùng mới.");
-      setError("");
+      notify.success("Đã tạo người dùng mới.");
       setIsCreateOpen(false);
       setCreateForm(initialFormState);
       await loadUsers();
@@ -160,8 +155,7 @@ const ManageUsersPage = () => {
         await loadUserDetail(createdUser.id);
       }
     } catch (err) {
-      setError(getApiMessage(err, "Không tạo được người dùng"));
-      setSuccessMessage("");
+      notify.error(getApiMessage(err, "Không tạo được người dùng"));
     } finally {
       setIsCreating(false);
     }
@@ -183,9 +177,6 @@ const ManageUsersPage = () => {
           Thêm người dùng
         </button>
       </div>
-
-      {error && <p className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</p>}
-      {successMessage && <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{successMessage}</p>}
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">

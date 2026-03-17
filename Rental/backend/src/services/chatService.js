@@ -1,5 +1,5 @@
 const { Op } = require("sequelize");
-const { User } = require("@/entities");
+const { User, Room } = require("@/entities");
 const messageRepository = require("@/repositories/messageRepository");
 const ApiError = require("@/utils/ApiError");
 
@@ -20,7 +20,10 @@ class ChatService {
       content,
     }, options);
 
-    return message;
+    return this.repository.getOne({
+      where: { id: message.id },
+      include: roomId ? [{ model: Room, as: "room", attributes: ["id", "title"] }] : [],
+    });
   }
 
   async getConversation({ userId, peerId, roomId }) {
@@ -51,20 +54,23 @@ class ChatService {
       include: [
         { model: User, as: "sender", attributes: ["id", "fullName", "email"] },
         { model: User, as: "receiver", attributes: ["id", "fullName", "email"] },
+        { model: Room, as: "room", attributes: ["id", "title"] },
       ],
       order: [["createdAt", "DESC"]],
     });
 
-    const seenPeerIds = new Set();
+    const seenThreadKeys = new Set();
     const inbox = [];
 
     messages.forEach((message) => {
       const peer = message.senderId === userId ? message.receiver : message.sender;
-      if (!peer || seenPeerIds.has(peer.id)) {
+      const threadKey = `${peer?.id || 0}-${Number(message.roomId || 0)}`;
+
+      if (!peer || seenThreadKeys.has(threadKey)) {
         return;
       }
 
-      seenPeerIds.add(peer.id);
+      seenThreadKeys.add(threadKey);
       inbox.push({
         peerId: peer.id,
         peerName: peer.fullName || peer.email || `User ${peer.id}`,
@@ -73,6 +79,7 @@ class ChatService {
         lastMessageAt: message.createdAt,
         lastSenderId: message.senderId,
         roomId: message.roomId,
+        roomTitle: message.room?.title || "",
       });
     });
 
