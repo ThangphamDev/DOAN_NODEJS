@@ -8,6 +8,7 @@ class AdminRoomController {
   constructor(service) {
     this.service = service;
     this.getReportedRooms = this.getReportedRooms.bind(this);
+    this.getReportedRoomDetail = this.getReportedRoomDetail.bind(this);
     this.deleteViolationRoom = this.deleteViolationRoom.bind(this);
   }
 
@@ -31,8 +32,18 @@ class AdminRoomController {
     }
   }
 
+  async getReportedRoomDetail(req, res, next) {
+    try {
+      const data = await this.service.getReportedRoomDetail(req.params.id);
+      return sendSuccess(res, { data });
+    } catch (error) {
+      return next(error);
+    }
+  }
+
   registerRoutes(app, prefix = "/api") {
     app.get(`${prefix}/admin/rooms/reported`, authenticate, authorize("admin"), this.getReportedRooms);
+    app.get(`${prefix}/admin/rooms/reported/:id`, authenticate, authorize("admin"), this.getReportedRoomDetail);
     app.delete(`${prefix}/admin/rooms/:id`, authenticate, authorize("admin"), this.deleteViolationRoom);
   }
 }

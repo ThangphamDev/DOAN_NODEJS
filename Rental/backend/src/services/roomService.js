@@ -2,11 +2,13 @@ const { Op } = require("sequelize");
 const { RoomImage, User, Review } = require("@/entities");
 const { toRoomListModel } = require("@/models");
 const roomRepository = require("@/repositories/roomRepository");
+const roomReportRepository = require("@/repositories/roomReportRepository");
 const ApiError = require("@/utils/ApiError");
 
 class RoomService {
-  constructor(repository) {
+  constructor(repository, reportRepository) {
     this.repository = repository;
+    this.reportRepository = reportRepository;
   }
 
   async listLandlordRooms({ landlordId, status }) {
@@ -83,13 +85,22 @@ class RoomService {
     return room;
   }
 
-  async reportRoom(id, options = {}) {
+  async reportRoom(id, payload = {}, options = {}) {
     const room = await this.repository.getById(id);
 
     if (!room || room.status === "deleted") {
       throw new ApiError(404, "Room not found");
     }
 
+    await this.reportRepository.insert(
+      {
+        roomId: room.id,
+        reporterId: payload.userId,
+        reason: String(payload.reason || "Bao cao vi pham").trim() || "Bao cao vi pham",
+        details: payload.details ? String(payload.details).trim() : null,
+      },
+      options
+    );
     await this.repository.incrementById(id, "reportedCount", 1, options);
 
     return { message: "Room reported" };
@@ -153,4 +164,4 @@ class RoomService {
   }
 }
 
-module.exports = new RoomService(roomRepository);
+module.exports = new RoomService(roomRepository, roomReportRepository);

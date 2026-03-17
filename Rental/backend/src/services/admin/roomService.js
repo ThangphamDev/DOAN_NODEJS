@@ -1,4 +1,5 @@
 const { Op } = require("sequelize");
+const { RoomImage, RoomReport, User } = require("@/entities");
 const roomRepository = require("@/repositories/roomRepository");
 const ApiError = require("@/utils/ApiError");
 
@@ -13,8 +14,37 @@ class AdminRoomService {
         reportedCount: { [Op.gt]: 0 },
         status: { [Op.ne]: "deleted" },
       },
+      include: [
+        { model: User, as: "landlord", attributes: ["id", "fullName", "email", "phone"] },
+        { model: RoomImage, as: "images" },
+      ],
       order: [["reportedCount", "DESC"]],
     });
+  }
+
+  async getReportedRoomDetail(roomId) {
+    const room = await this.repository.getById(roomId, {
+      include: [
+        { model: User, as: "landlord", attributes: ["id", "fullName", "email", "phone"] },
+        { model: RoomImage, as: "images" },
+        {
+          model: RoomReport,
+          as: "reports",
+          separate: true,
+          order: [["createdAt", "DESC"]],
+          include: [{ model: User, as: "reporter", attributes: ["id", "fullName", "email"] }],
+        },
+      ],
+    });
+
+    if (!room || room.status === "deleted") {
+      throw new ApiError(404, "Room not found");
+    }
+
+    return {
+      ...room.toJSON(),
+      roomLink: `/rooms/${room.id}`,
+    };
   }
 
   async deleteViolationRoom(roomId, options = {}) {

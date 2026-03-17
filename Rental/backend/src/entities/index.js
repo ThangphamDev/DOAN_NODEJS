@@ -7,6 +7,7 @@ const Favorite = require("@/entities/favorite")(sequelize);
 const Review = require("@/entities/review")(sequelize);
 const Appointment = require("@/entities/appointment")(sequelize);
 const Message = require("@/entities/message")(sequelize);
+const RoomReport = require("@/entities/roomReport")(sequelize);
 
 User.hasMany(Room, { foreignKey: "landlordId", as: "rooms" });
 Room.belongsTo(User, { foreignKey: "landlordId", as: "landlord" });
@@ -48,6 +49,11 @@ Message.belongsTo(User, { foreignKey: "receiverId", as: "receiver" });
 Room.hasMany(Message, { foreignKey: "roomId", as: "messages" });
 Message.belongsTo(Room, { foreignKey: "roomId", as: "room" });
 
+Room.hasMany(RoomReport, { foreignKey: "roomId", as: "reports" });
+RoomReport.belongsTo(Room, { foreignKey: "roomId", as: "room" });
+User.hasMany(RoomReport, { foreignKey: "reporterId", as: "submittedRoomReports" });
+RoomReport.belongsTo(User, { foreignKey: "reporterId", as: "reporter" });
+
 module.exports = {
   sequelize,
   User,
@@ -57,4 +63,5 @@ module.exports = {
   Review,
   Appointment,
   Message,
+  RoomReport,
 };

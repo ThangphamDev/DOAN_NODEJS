@@ -33,7 +33,15 @@ class RoomController {
 	async reportRoom(req, res, next) {
 		try {
 			const data = await runInTransaction((tx) =>
-				this.service.reportRoom(req.params.id, { transaction: tx })
+				this.service.reportRoom(
+					req.params.id,
+					{
+						userId: req.user.id,
+						reason: req.body.reason,
+						details: req.body.details,
+					},
+					{ transaction: tx }
+				)
 			);
 			return sendSuccess(res, { data });
 		} catch (error) {
