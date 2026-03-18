@@ -1,12 +1,36 @@
 import { useEffect, useMemo, useState } from "react";
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import landlordService from "@/services/LandlordService";
 import useAuth from "@/hooks/useAuth";
 import { getApiData } from "@/utils/apiResponse";
 
+const LANDLORD_PAGE_META = {
+  "/landlord": {
+    title: "Bảng điều khiển chủ trọ",
+    description: "Tổng quan hoạt động cho thuê và theo dõi các đầu việc cần xử lý nhanh.",
+  },
+  "/landlord/rooms": {
+    title: "Quản lý tin đăng",
+    description: "Theo dõi trạng thái hiển thị, cập nhật nội dung và tối ưu bộ ảnh tin đăng.",
+  },
+  "/landlord/appointments": {
+    title: "Quản lý lịch hẹn",
+    description: "Xem nhanh lịch xem phòng, duyệt yêu cầu và theo dõi các ca sắp tới.",
+  },
+  "/landlord/messages": {
+    title: "Tin nhắn khách thuê",
+    description: "Trao đổi theo từng tin đăng và xử lý phản hồi mới trong một nơi tập trung.",
+  },
+  "/landlord/reviews": {
+    title: "Quản lý đánh giá",
+    description: "Theo dõi phản hồi của khách thuê và trả lời ngay từ một nơi tập trung.",
+  },
+};
+
 const LandlordLayout = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [appointments, setAppointments] = useState([]);
 
   useEffect(() => {
@@ -35,6 +59,8 @@ const LandlordLayout = () => {
     return { newMessages };
   }, [appointments]);
 
+  const pageMeta = LANDLORD_PAGE_META[location.pathname] || LANDLORD_PAGE_META["/landlord"];
+
   const handleLogout = () => {
     logout();
     navigate("/");
@@ -50,7 +76,8 @@ const LandlordLayout = () => {
       .toUpperCase();
 
   const navClassName = ({ isActive }) =>
-    `flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors ${isActive ? "bg-primary/10 font-medium text-primary" : "text-slate-600 hover:bg-slate-100"
+    `flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors ${
+      isActive ? "bg-primary/10 font-medium text-primary" : "text-slate-600 hover:bg-slate-100"
     }`;
 
   return (
@@ -104,7 +131,7 @@ const LandlordLayout = () => {
               {getInitials(user?.fullName || user?.email)}
             </div>
             <div className="min-w-0 flex-1 overflow-hidden">
-              <p className="truncate text-sm font-medium">{user?.fullName || "Chủ Trọ"}</p>
+              <p className="truncate text-sm font-medium">{user?.fullName || "Chủ trọ"}</p>
               <p className="truncate text-xs text-slate-500">{user?.email || "Chưa cập nhật email"}</p>
             </div>
             <button className="text-slate-400 transition-colors hover:text-red-500" onClick={handleLogout} type="button">
@@ -115,29 +142,29 @@ const LandlordLayout = () => {
       </aside>
 
       <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-slate-200 bg-white/80 px-8 backdrop-blur-md">
-          <div className="flex max-w-xl flex-1 items-center gap-4">
-            <div className="relative w-full">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-xl text-slate-400">search</span>
-              <input
-                className="w-full rounded-lg border-none bg-slate-100 py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/50"
-                placeholder="Tìm kiếm tin bài, bài viết..."
-                type="text"
-              />
-            </div>
+        <header className="sticky top-0 z-10 flex min-h-[89px] items-center justify-between border-b border-slate-200 bg-white/95 px-8 py-4 backdrop-blur-md">
+          <div className="min-w-0 pr-6">
+            <h2 className="truncate text-2xl font-bold tracking-tight text-slate-900">{pageMeta.title}</h2>
+            <p className="mt-1 text-sm text-slate-500">{pageMeta.description}</p>
           </div>
-          <div className="flex items-center gap-4">
-            <button className="relative flex h-10 w-10 items-center justify-center rounded-lg text-slate-600 transition-colors hover:bg-slate-100" type="button">
+          <div className="flex items-center gap-3">
+            <button
+              className="relative flex h-10 w-10 items-center justify-center rounded-xl text-slate-600 transition-colors hover:bg-slate-100"
+              type="button"
+            >
               <span className="material-symbols-outlined">notifications</span>
-              <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-primary"></span>
+              <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-primary"></span>
             </button>
-            <button className="flex h-10 w-10 items-center justify-center rounded-lg text-slate-600 transition-colors hover:bg-slate-100" type="button">
+            <button
+              className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-600 transition-colors hover:bg-slate-100"
+              type="button"
+            >
               <span className="material-symbols-outlined">help</span>
             </button>
           </div>
         </header>
 
-        <div className="flex flex-1 flex-col gap-8 overflow-y-auto p-8">
+        <div className="flex flex-1 flex-col gap-6 overflow-y-auto p-8">
           <Outlet />
         </div>
       </main>

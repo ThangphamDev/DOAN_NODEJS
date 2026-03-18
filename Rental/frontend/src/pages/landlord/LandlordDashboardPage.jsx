@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { useNotify } from "@/context/NotifyContext.jsx";
-import landlordService from "@/services/LandlordService";
 import chatService from "@/services/ChatService";
+import landlordService from "@/services/LandlordService";
 import { getApiData, getApiMessage } from "@/utils/apiResponse";
 
 const LandlordDashboardPage = () => {
@@ -42,35 +42,64 @@ const LandlordDashboardPage = () => {
 
     return {
       appointments: [
-        { label: "Đã duyệt", count: appointments.filter((item) => item.status === "approved").length, color: "bg-green-500", total: appointmentTotal },
-        { label: "Chờ duyệt", count: appointments.filter((item) => item.status === "pending").length, color: "bg-amber-400", total: appointmentTotal },
-        { label: "Từ chối", count: appointments.filter((item) => item.status === "rejected").length, color: "bg-rose-500", total: appointmentTotal },
+        {
+          label: "Đã duyệt",
+          count: appointments.filter((item) => item.status === "approved").length,
+          color: "bg-green-500",
+          total: appointmentTotal,
+        },
+        {
+          label: "Chờ duyệt",
+          count: appointments.filter((item) => item.status === "pending").length,
+          color: "bg-amber-400",
+          total: appointmentTotal,
+        },
+        {
+          label: "Từ chối",
+          count: appointments.filter((item) => item.status === "rejected").length,
+          color: "bg-rose-500",
+          total: appointmentTotal,
+        },
       ],
       reviews: [
-        { label: "Rất tốt (5 sao)", count: allReviews.filter((item) => Number(item.rating) === 5).length, color: "bg-green-500", total: reviewTotal },
-        { label: "Khá (4 sao)", count: allReviews.filter((item) => Number(item.rating) === 4).length, color: "bg-blue-400", total: reviewTotal },
-        { label: "Cần chú ý (< 4)", count: allReviews.filter((item) => Number(item.rating) < 4).length, color: "bg-amber-500", total: reviewTotal },
+        {
+          label: "Rất tốt (5 sao)",
+          count: allReviews.filter((item) => Number(item.rating) === 5).length,
+          color: "bg-green-500",
+          total: reviewTotal,
+        },
+        {
+          label: "Khá (4 sao)",
+          count: allReviews.filter((item) => Number(item.rating) === 4).length,
+          color: "bg-blue-400",
+          total: reviewTotal,
+        },
+        {
+          label: "Cần chú ý (< 4)",
+          count: allReviews.filter((item) => Number(item.rating) < 4).length,
+          color: "bg-amber-500",
+          total: reviewTotal,
+        },
       ],
       messages: [
-        { label: "Quan tâm", count: inbox.filter((item) => !item.blockedByMe).length, color: "bg-blue-500", total: messageTotal },
-        { label: "Đã chặn (Spam)", count: inbox.filter((item) => item.blockedByMe).length, color: "bg-slate-400", total: messageTotal },
+        {
+          label: "Quan tâm",
+          count: inbox.filter((item) => !item.blockedByMe).length,
+          color: "bg-blue-500",
+          total: messageTotal,
+        },
+        {
+          label: "Đã chặn (Spam)",
+          count: inbox.filter((item) => item.blockedByMe).length,
+          color: "bg-slate-400",
+          total: messageTotal,
+        },
       ],
     };
-  }, [appointments, rooms, inbox]);
+  }, [appointments, inbox, rooms]);
 
   return (
     <>
-      <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <h2 className="text-3xl font-extrabold tracking-tight">Bảng điều khiển chủ trọ</h2>
-          <p className="text-slate-500">Tổng quan hoạt động cho thuê và theo dõi các đầu việc cần xử lý nhanh.</p>
-        </div>
-        <NavLink className="flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-bold text-white shadow-sm shadow-primary/20 transition-all hover:bg-primary/90" to="/landlord/rooms">
-          <span className="material-symbols-outlined text-[20px]">add_circle</span>
-          Thêm tin đăng mới
-        </NavLink>
-      </div>
-
       <div className="mb-10 grid grid-cols-1 gap-6 md:grid-cols-3">
         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="mb-4 flex items-center justify-between">
@@ -82,6 +111,7 @@ const LandlordDashboardPage = () => {
             <p className="text-sm font-semibold text-slate-500">/ {rooms.length}</p>
           </div>
         </div>
+
         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="mb-4 flex items-center justify-between">
             <p className="text-sm font-medium text-slate-500">Lịch hẹn chờ duyệt</p>
@@ -92,6 +122,7 @@ const LandlordDashboardPage = () => {
             <p className="text-sm font-semibold text-green-600">Mới</p>
           </div>
         </div>
+
         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="mb-4 flex items-center justify-between">
             <p className="text-sm font-medium text-slate-500">Tin nhắn khách thuê</p>
@@ -124,7 +155,9 @@ const LandlordDashboardPage = () => {
             <tbody className="divide-y divide-slate-200">
               {rooms.length === 0 ? (
                 <tr>
-                  <td className="px-6 py-6 text-sm text-slate-500" colSpan="4">Bạn chưa có tin đăng nào.</td>
+                  <td className="px-6 py-6 text-sm text-slate-500" colSpan="4">
+                    Bạn chưa có tin đăng nào.
+                  </td>
                 </tr>
               ) : (
                 rooms.slice(0, 3).map((room) => (
@@ -138,7 +171,15 @@ const LandlordDashboardPage = () => {
                       </div>
                     </td>
                     <td className="whitespace-nowrap px-6 py-4">
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${room.status === "hidden" ? "bg-slate-100 text-slate-800" : room.status === "rented" ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"}`}>
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          room.status === "hidden"
+                            ? "bg-slate-100 text-slate-800"
+                            : room.status === "rented"
+                              ? "bg-red-100 text-red-800"
+                              : "bg-green-100 text-green-800"
+                        }`}
+                      >
                         {room.status === "hidden" ? "Đã ẩn" : room.status === "rented" ? "Đã thuê" : "Đang hiển thị"}
                       </span>
                     </td>
@@ -146,7 +187,9 @@ const LandlordDashboardPage = () => {
                       {Number(room.price || 0).toLocaleString("vi-VN")} đ/tháng
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
-                      <NavLink className="text-primary transition-colors hover:text-primary/80" to="/landlord/rooms">Quản lý</NavLink>
+                      <NavLink className="text-primary transition-colors hover:text-primary/80" to="/landlord/rooms">
+                        Quản lý
+                      </NavLink>
                     </td>
                   </tr>
                 ))
@@ -169,7 +212,9 @@ const LandlordDashboardPage = () => {
                 <div key={stat.label}>
                   <div className="mb-1.5 flex justify-between text-sm font-semibold">
                     <span>{stat.label}</span>
-                    <span className="text-slate-500">{stat.count} ({percent}%)</span>
+                    <span className="text-slate-500">
+                      {stat.count} ({percent}%)
+                    </span>
                   </div>
                   <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
                     <div className={`h-full ${stat.color}`} style={{ width: `${percent}%` }}></div>
@@ -178,7 +223,12 @@ const LandlordDashboardPage = () => {
               );
             })}
           </div>
-          <NavLink className="mt-6 block w-full rounded-lg bg-slate-50 py-2.5 text-center text-sm font-bold text-primary transition-colors hover:bg-slate-100" to="/landlord/appointments">Xem chi tiết lịch hẹn</NavLink>
+          <NavLink
+            className="mt-6 block w-full rounded-lg bg-slate-50 py-2.5 text-center text-sm font-bold text-primary transition-colors hover:bg-slate-100"
+            to="/landlord/appointments"
+          >
+            Xem chi tiết lịch hẹn
+          </NavLink>
         </div>
 
         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -194,7 +244,9 @@ const LandlordDashboardPage = () => {
                 <div key={stat.label}>
                   <div className="mb-1.5 flex justify-between text-sm font-semibold">
                     <span>{stat.label}</span>
-                    <span className="text-slate-500">{stat.count} ({percent}%)</span>
+                    <span className="text-slate-500">
+                      {stat.count} ({percent}%)
+                    </span>
                   </div>
                   <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
                     <div className={`h-full ${stat.color}`} style={{ width: `${percent}%` }}></div>
@@ -203,7 +255,12 @@ const LandlordDashboardPage = () => {
               );
             })}
           </div>
-          <NavLink className="mt-6 block w-full rounded-lg bg-slate-50 py-2.5 text-center text-sm font-bold text-primary transition-colors hover:bg-slate-100" to="/landlord/reviews">Xem phản hồi khách</NavLink>
+          <NavLink
+            className="mt-6 block w-full rounded-lg bg-slate-50 py-2.5 text-center text-sm font-bold text-primary transition-colors hover:bg-slate-100"
+            to="/landlord/reviews"
+          >
+            Xem phản hồi khách
+          </NavLink>
         </div>
 
         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -218,7 +275,9 @@ const LandlordDashboardPage = () => {
                 <div key={stat.label}>
                   <div className="mb-1.5 flex justify-between text-sm font-semibold">
                     <span>{stat.label}</span>
-                    <span className="text-slate-500">{stat.count} ({percent}%)</span>
+                    <span className="text-slate-500">
+                      {stat.count} ({percent}%)
+                    </span>
                   </div>
                   <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
                     <div className={`h-full ${stat.color}`} style={{ width: `${percent}%` }}></div>
@@ -227,7 +286,12 @@ const LandlordDashboardPage = () => {
               );
             })}
           </div>
-          <NavLink className="mt-6 block w-full rounded-lg bg-slate-50 py-2.5 text-center text-sm font-bold text-primary transition-colors hover:bg-slate-100" to="/landlord/messages">Mở hộp thư ngay</NavLink>
+          <NavLink
+            className="mt-6 block w-full rounded-lg bg-slate-50 py-2.5 text-center text-sm font-bold text-primary transition-colors hover:bg-slate-100"
+            to="/landlord/messages"
+          >
+            Mở hộp thư ngay
+          </NavLink>
         </div>
       </div>
     </>

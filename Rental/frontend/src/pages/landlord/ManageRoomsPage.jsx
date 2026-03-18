@@ -1,9 +1,19 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import Pagination from "@/components/common/Pagination";
+import LandlordSearchInput from "@/components/landlord/LandlordSearchInput";
+import LandlordToolbar from "@/components/landlord/LandlordToolbar";
 import RoomUpsertModal from "@/components/landlord/RoomUpsertModal";
 import { useNotify } from "@/context/NotifyContext.jsx";
 import landlordService from "@/services/LandlordService";
 import { getApiData, getApiMessage } from "@/utils/apiResponse";
 import { createExistingImageItems, resolveRoomImageUrl } from "@/utils/roomDetails";
+
+const DEFAULT_PAGE_SIZE = 5;
+
+const tabClassName = (isActive) =>
+  `rounded-xl px-4 py-2 text-sm font-semibold transition ${
+    isActive ? "bg-primary text-white shadow-sm shadow-primary/20" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+  }`;
 
 const ManageRoomsPage = () => {
   const [rooms, setRooms] = useState([]);
@@ -12,6 +22,8 @@ const ManageRoomsPage = () => {
   const [editorVersion, setEditorVersion] = useState(0);
   const [activeTab, setActiveTab] = useState("active");
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const notify = useNotify();
 
@@ -32,6 +44,10 @@ const ManageRoomsPage = () => {
   useEffect(() => {
     loadRooms();
   }, [loadRooms]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, pageSize, searchQuery]);
 
   const roomCounts = useMemo(
     () => ({
@@ -60,6 +76,18 @@ const ManageRoomsPage = () => {
       return matchesTab && (!normalized || detailText.includes(normalized));
     });
   }, [rooms, activeTab, searchQuery]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredRooms.length / pageSize));
+  const paginatedRooms = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredRooms.slice(start, start + pageSize);
+  }, [currentPage, filteredRooms, pageSize]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
 
   const openCreateModal = () => {
     setEditingRoom(null);
@@ -146,38 +174,38 @@ const ManageRoomsPage = () => {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <h2 className="text-3xl font-extrabold tracking-tight">Quản lý tin đăng</h2>
-          <p className="text-slate-500">Modal mới hỗ trợ nhập liệu theo tab, preview ảnh lớn và sắp xếp lại thứ tự hiển thị.</p>
-        </div>
-        <div className="flex items-center gap-4">
-          <label className="relative hidden sm:block">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
-            <input
-              className="w-64 rounded-lg border border-slate-200 bg-slate-50 py-2 pl-10 pr-4 text-sm focus:border-primary focus:outline-none"
+      <LandlordToolbar>
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-wrap items-center gap-2">
+            <button className={tabClassName(activeTab === "active")} type="button" onClick={() => setActiveTab("active")}>
+              Đang hiển thị ({roomCounts.active})
+            </button>
+            <button className={tabClassName(activeTab === "hidden")} type="button" onClick={() => setActiveTab("hidden")}>
+              Đã ẩn ({roomCounts.hidden})
+            </button>
+            <button className={tabClassName(activeTab === "rented")} type="button" onClick={() => setActiveTab("rented")}>
+              Đã thuê ({roomCounts.rented})
+            </button>
+          </div>
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <LandlordSearchInput
+              className="min-w-0 sm:w-80"
               placeholder="Tìm kiếm tin đăng..."
-              type="text"
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
             />
-          </label>
-          <button
-            className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-primary/90"
-            type="button"
-            onClick={openCreateModal}
-          >
-            <span className="material-symbols-outlined text-[20px]">add</span>
-            Thêm tin mới
-          </button>
+            <button
+              className="flex h-11 items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-bold text-white transition-colors hover:bg-primary/90"
+              type="button"
+              onClick={openCreateModal}
+            >
+              <span className="material-symbols-outlined text-[20px]">add</span>
+              Thêm tin mới
+            </button>
+          </div>
         </div>
-      </div>
-
-      <div className="flex gap-8 border-b border-slate-200 px-2">
-        <button className={`pb-4 text-sm ${activeTab === "active" ? "border-b-2 border-primary font-bold text-primary" : "border-b-2 border-transparent font-medium text-slate-500 hover:text-slate-700"}`} type="button" onClick={() => setActiveTab("active")}>Đang hiển thị ({roomCounts.active})</button>
-        <button className={`pb-4 text-sm ${activeTab === "hidden" ? "border-b-2 border-primary font-bold text-primary" : "border-b-2 border-transparent font-medium text-slate-500 hover:text-slate-700"}`} type="button" onClick={() => setActiveTab("hidden")}>Đã ẩn ({roomCounts.hidden})</button>
-        <button className={`pb-4 text-sm ${activeTab === "rented" ? "border-b-2 border-primary font-bold text-primary" : "border-b-2 border-transparent font-medium text-slate-500 hover:text-slate-700"}`} type="button" onClick={() => setActiveTab("rented")}>Đã thuê ({roomCounts.rented})</button>
-      </div>
+      </LandlordToolbar>
 
       <div className="space-y-4">
         {filteredRooms.length === 0 ? (
@@ -186,7 +214,7 @@ const ManageRoomsPage = () => {
             <p className="text-lg font-medium">Không có tin đăng nào ở trạng thái hiện tại.</p>
           </div>
         ) : (
-          filteredRooms.map((room) => {
+          paginatedRooms.map((room) => {
             const imageUrl = resolveCoverImage(room);
             const mainFacts = (room.details?.quickFacts || []).slice(0, 2);
 
@@ -223,9 +251,18 @@ const ManageRoomsPage = () => {
                       </div>
 
                       <div className="mb-4 flex flex-wrap gap-4 text-sm text-slate-500">
-                        <span className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">location_on</span> {room.address || "Chưa cập nhật"}</span>
-                        <span className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">pin_drop</span> {room.area || "Chưa cập nhật khu vực"}</span>
-                        <span className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">schedule</span> {room.updatedAt ? `Cập nhật ${new Date(room.updatedAt).toLocaleDateString("vi-VN")}` : "Mới tạo"}</span>
+                        <span className="flex items-center gap-1">
+                          <span className="material-symbols-outlined text-sm">location_on</span>
+                          {room.address || "Chưa cập nhật"}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <span className="material-symbols-outlined text-sm">pin_drop</span>
+                          {room.area || "Chưa cập nhật khu vực"}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <span className="material-symbols-outlined text-sm">schedule</span>
+                          {room.updatedAt ? `Cập nhật ${new Date(room.updatedAt).toLocaleDateString("vi-VN")}` : "Mới tạo"}
+                        </span>
                       </div>
 
                       <div className="flex flex-wrap gap-3 text-sm text-slate-600">
@@ -240,8 +277,13 @@ const ManageRoomsPage = () => {
 
                     <div className="mt-4 flex flex-col gap-4 border-t border-slate-100 pt-4 md:flex-row md:items-center md:justify-between">
                       <div className="flex gap-4 text-xs font-medium text-slate-500">
-                        <span className="flex items-center gap-1"><span className="material-symbols-outlined text-base">reviews</span> {room.reviews?.length || 0} đánh giá</span>
-                        <span className="flex items-center gap-1"><span className="material-symbols-outlined text-base">sell</span> #{room.id}</span>
+                        <span className="flex items-center gap-1">
+                          <span className="material-symbols-outlined text-base">reviews</span>
+                          {room.reviews?.length || 0} đánh giá
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <span className="material-symbols-outlined text-base">sell</span>#{room.id}
+                        </span>
                       </div>
                       <div className="flex flex-wrap gap-2">
                         <button className="flex items-center gap-1.5 rounded-lg bg-slate-100 px-3 py-1.5 text-sm font-medium transition-colors hover:bg-slate-200" onClick={() => openEditModal(room)} type="button">
@@ -265,6 +307,15 @@ const ManageRoomsPage = () => {
           })
         )}
       </div>
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        pageSize={pageSize}
+        onPageSizeChange={setPageSize}
+        totalItems={filteredRooms.length}
+      />
 
       {showEditor ? (
         <RoomUpsertModal

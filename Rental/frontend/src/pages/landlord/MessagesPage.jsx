@@ -178,31 +178,35 @@ const MessagesPage = () => {
   };
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <h2 className="text-3xl font-extrabold tracking-tight">Tin nhắn khách thuê</h2>
-          <p className="text-slate-500">Trao đổi trực tiếp với khách thuê theo từng tin đăng và nhận phản hồi theo thời gian thực.</p>
-        </div>
-        <div className="relative w-full max-w-md">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
-          <input
-            className="w-full rounded-xl border-none bg-white py-3 pl-10 pr-4 text-sm shadow-sm ring-1 ring-slate-200 focus:ring-2 focus:ring-primary/40"
-            placeholder="Tìm kiếm khách thuê hoặc nội dung..."
-            value={searchQuery}
-            onChange={(event) => setSearchQuery(event.target.value)}
-            type="text"
-          />
-        </div>
-      </div>
-
-      <div className="flex h-[calc(100vh-12rem)] min-h-[40rem] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <div className="flex flex-col">
+      <div className="flex h-[calc(100vh-10rem)] min-h-[40rem] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <aside className="flex h-full min-h-0 w-80 shrink-0 flex-col border-r border-slate-200 bg-white">
           <div className="border-b border-slate-100 p-4">
             <div className="flex gap-2">
-              <button className="flex-1 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-white" type="button">Tất cả</button>
-              <button className="flex-1 rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600" type="button">Chưa đọc</button>
-              <button className="flex-1 rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600" type="button">Ưu tiên</button>
+              <button className="flex-1 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-white" type="button">
+                Tất cả
+              </button>
+              <button className="flex-1 rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600" type="button">
+                Chưa đọc
+              </button>
+              <button className="flex-1 rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600" type="button">
+                Ưu tiên
+              </button>
+            </div>
+            <div className="mt-4">
+              <div className="relative">
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-lg text-slate-400">
+                  search
+                </span>
+                <input
+                  className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-4 text-sm text-slate-700 shadow-sm shadow-slate-100/70 transition focus:border-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/15"
+                  placeholder="Tìm kiếm khách thuê hoặc nội dung..."
+                  type="text"
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                />
+              </div>
+              <p className="mt-3 text-xs text-slate-400">{filteredInbox.length} hội thoại</p>
             </div>
           </div>
 
@@ -241,7 +245,9 @@ const MessagesPage = () => {
                       </p>
                       <div className="mt-1 flex items-center gap-1 text-[10px] text-slate-400">
                         <span className="material-symbols-outlined text-xs">home_work</span>
-                        <span className="truncate">{item.roomTitle || (item.roomId ? `Tin đăng #${item.roomId}` : "Chưa gắn với phòng cụ thể")}</span>
+                        <span className="truncate">
+                          {item.roomTitle || (item.roomId ? `Tin đăng #${item.roomId}` : "Chưa gắn với phòng cụ thể")}
+                        </span>
                       </div>
                     </div>
                   </button>
@@ -382,7 +388,9 @@ const MessagesPage = () => {
               <h3 className="text-base font-bold">{activeThread?.peerName || "Khách thuê"}</h3>
               <p className="mb-4 text-xs text-slate-500">{activeThread?.peerEmail || "Khách hàng tiềm năng"}</p>
               <div className="flex w-full gap-2">
-                <button className="flex-1 rounded-lg border border-slate-200 py-2 text-xs font-bold transition-colors hover:bg-slate-50" type="button">Trang cá nhân</button>
+                <button className="flex-1 rounded-lg border border-slate-200 py-2 text-xs font-bold transition-colors hover:bg-slate-50" type="button">
+                  Trang cá nhân
+                </button>
                 <button
                   className={`flex-1 rounded-lg border py-2 text-xs font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
                     activeThread?.blockedByMe

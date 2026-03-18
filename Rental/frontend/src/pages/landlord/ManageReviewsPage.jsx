@@ -1,12 +1,24 @@
 import { useEffect, useMemo, useState } from "react";
+import Pagination from "@/components/common/Pagination";
+import LandlordSearchInput from "@/components/landlord/LandlordSearchInput";
+import LandlordToolbar from "@/components/landlord/LandlordToolbar";
+import { useNotify } from "@/context/NotifyContext.jsx";
 import landlordService from "@/services/LandlordService";
 import { getApiData, getApiMessage } from "@/utils/apiResponse";
-import { useNotify } from "@/context/NotifyContext.jsx";
+
+const DEFAULT_PAGE_SIZE = 5;
+
+const tabClassName = (isActive) =>
+  `rounded-xl px-4 py-2 text-sm font-semibold transition ${
+    isActive ? "bg-primary text-white shadow-sm shadow-primary/20" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+  }`;
 
 const ManageReviewsPage = () => {
   const [rooms, setRooms] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [replyText, setReplyText] = useState({});
   const notify = useNotify();
 
@@ -22,6 +34,10 @@ const ManageReviewsPage = () => {
 
     loadRooms();
   }, [notify]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, pageSize, searchQuery]);
 
   const handleReplySubmit = async (reviewId) => {
     const content = replyText[reviewId]?.trim();
@@ -88,14 +104,32 @@ const ManageReviewsPage = () => {
       const haystack = `${review.reviewer?.fullName || ""} ${review.roomTitle || ""} ${review.content || ""}`.toLowerCase();
       return matchesTab && (!normalized || haystack.includes(normalized));
     });
-  }, [reviewItems, activeTab, searchQuery]);
+  }, [activeTab, reviewItems, searchQuery]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredReviews.length / pageSize));
+  const paginatedReviews = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredReviews.slice(start, start + pageSize);
+  }, [currentPage, filteredReviews, pageSize]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
 
   const renderStars = (rating) =>
-    Array.from({ length: 5 }, (_, index) => (
-      <span className="material-symbols-outlined !text-sm" key={`${rating}-${index}`}>
-        {index < Number(rating || 0) ? "star" : "star_outline"}
-      </span>
-    ));
+    Array.from({ length: 5 }, (_, index) => {
+      const filled = index < Number(rating || 0);
+      return (
+        <span
+          className={`material-symbols-outlined !text-sm ${filled ? "text-amber-400" : "text-slate-300"}`}
+          key={`${rating}-${index}`}
+        >
+          star
+        </span>
+      );
+    });
 
   const getReviewBadge = (rating) =>
     Number(rating || 0) >= 4
@@ -104,22 +138,33 @@ const ManageReviewsPage = () => {
 
   return (
     <div className="flex w-full flex-col gap-8">
-      <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <h2 className="text-3xl font-extrabold tracking-tight">Quản lý đánh giá</h2>
-          <p className="text-slate-500">Xem và phản hồi đánh giá thật nhanh từ khách hàng trên từng phòng.</p>
+      <LandlordToolbar>
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-wrap items-center gap-2">
+            <button className={tabClassName(activeTab === "all")} type="button" onClick={() => setActiveTab("all")}>
+              Tất cả
+            </button>
+            <button className={tabClassName(activeTab === "positive")} type="button" onClick={() => setActiveTab("positive")}>
+              Từ 4 sao
+            </button>
+            <button className={tabClassName(activeTab === "attention")} type="button" onClick={() => setActiveTab("attention")}>
+              Cần chú ý
+            </button>
+          </div>
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <LandlordSearchInput
+              className="min-w-0 sm:w-80"
+              placeholder="Tìm kiếm đánh giá..."
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+            />
+            <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-500">
+              {summary.roomsWithReviews} phòng có review
+            </div>
+          </div>
         </div>
-        <label className="relative w-full max-w-xs">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
-          <input
-            className="w-full rounded-lg border-none bg-slate-100 py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/40"
-            placeholder="Tìm kiếm đánh giá..."
-            type="text"
-            value={searchQuery}
-            onChange={(event) => setSearchQuery(event.target.value)}
-          />
-        </label>
-      </div>
+      </LandlordToolbar>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
         <div className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-6">
@@ -132,7 +177,7 @@ const ManageReviewsPage = () => {
               <span className="material-symbols-outlined">hotel_class</span>
             </div>
           </div>
-          <div className="flex gap-1 text-primary">{renderStars(Math.round(Number(summary.average || 0)))}</div>
+          <div className="flex gap-1">{renderStars(Math.round(Number(summary.average || 0)))}</div>
           <p className="text-sm italic text-slate-500">Dựa trên {summary.reviewCount} lượt đánh giá</p>
         </div>
 
@@ -152,22 +197,13 @@ const ManageReviewsPage = () => {
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200">
-        <div className="flex gap-8">
-          <button className={`pb-4 text-sm ${activeTab === "all" ? "border-b-2 border-primary font-bold text-primary" : "border-b-2 border-transparent font-medium text-slate-500 hover:text-slate-800"}`} type="button" onClick={() => setActiveTab("all")}>Tất cả</button>
-          <button className={`pb-4 text-sm ${activeTab === "positive" ? "border-b-2 border-primary font-bold text-primary" : "border-b-2 border-transparent font-medium text-slate-500 hover:text-slate-800"}`} type="button" onClick={() => setActiveTab("positive")}>Từ 4 sao</button>
-          <button className={`pb-4 text-sm ${activeTab === "attention" ? "border-b-2 border-primary font-bold text-primary" : "border-b-2 border-transparent font-medium text-slate-500 hover:text-slate-800"}`} type="button" onClick={() => setActiveTab("attention")}>Cần chú ý</button>
-        </div>
-        <div className="pb-4">
-          <span className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600">{summary.roomsWithReviews} phòng có review</span>
-        </div>
-      </div>
-
       <div className="space-y-4">
         {filteredReviews.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center text-sm text-slate-500">Chưa có đánh giá phù hợp với bộ lọc hiện tại.</div>
+          <div className="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center text-sm text-slate-500">
+            Chưa có đánh giá phù hợp với bộ lọc hiện tại.
+          </div>
         ) : (
-          filteredReviews.map((review) => {
+          paginatedReviews.map((review) => {
             const badge = getReviewBadge(review.rating);
             return (
               <div className="rounded-xl border border-slate-200 bg-white p-6 transition-all hover:shadow-md" key={review.id}>
@@ -179,8 +215,10 @@ const ManageReviewsPage = () => {
                     <div>
                       <h4 className="font-bold">{review.reviewer?.fullName || "Khách thuê"}</h4>
                       <div className="mt-0.5 flex items-center gap-2">
-                        <div className="flex text-amber-400">{renderStars(review.rating)}</div>
-                        <span className="text-xs text-slate-400">{review.roomTitle} {review.createdAt ? `• ${new Date(review.createdAt).toLocaleDateString("vi-VN")}` : ""}</span>
+                        <div className="flex">{renderStars(review.rating)}</div>
+                        <span className="text-xs text-slate-400">
+                          {review.roomTitle} {review.createdAt ? `- ${new Date(review.createdAt).toLocaleDateString("vi-VN")}` : ""}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -223,7 +261,9 @@ const ManageReviewsPage = () => {
                   </p>
                   <div className="mt-3 flex items-center justify-between text-xs text-slate-400">
                     <span>{review.roomArea || "Đang cập nhật khu vực"}</span>
-                    <a className="font-semibold text-primary hover:underline" href={`/rooms/${review.roomId}`} target="_blank" rel="noreferrer">Xem tin đăng</a>
+                    <a className="font-semibold text-primary hover:underline" href={`/rooms/${review.roomId}`} target="_blank" rel="noreferrer">
+                      Xem tin đăng
+                    </a>
                   </div>
                 </div>
               </div>
@@ -231,6 +271,15 @@ const ManageReviewsPage = () => {
           })
         )}
       </div>
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        pageSize={pageSize}
+        onPageSizeChange={setPageSize}
+        totalItems={filteredReviews.length}
+      />
     </div>
   );
 };

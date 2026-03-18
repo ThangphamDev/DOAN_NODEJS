@@ -1,11 +1,19 @@
-import { useEffect, useState } from "react";
-import { NavLink } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import Pagination from "@/components/common/Pagination";
+import Modal from "@/components/common/Modal";
+import LandlordSearchInput from "@/components/landlord/LandlordSearchInput";
+import LandlordToolbar from "@/components/landlord/LandlordToolbar";
+import AppointmentDetailModal from "@/components/landlord/AppointmentDetailModal";
+import { useNotify } from "@/context/NotifyContext.jsx";
 import landlordService from "@/services/LandlordService";
 import { getApiData, getApiMessage } from "@/utils/apiResponse";
-import { useNotify } from "@/context/NotifyContext.jsx";
-import Modal from "@/components/common/Modal";
 
-import AppointmentDetailModal from "@/components/landlord/AppointmentDetailModal";
+const DEFAULT_PAGE_SIZE = 5;
+
+const filterButtonClass = (isActive) =>
+  `rounded-xl px-4 py-2 text-sm font-semibold transition ${
+    isActive ? "bg-primary text-white shadow-sm shadow-primary/20" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+  }`;
 
 const RejectReasonModal = ({ open, value, onChange, onClose, onSubmit }) => (
   <Modal
@@ -27,12 +35,14 @@ const RejectReasonModal = ({ open, value, onChange, onClose, onSubmit }) => (
         <button
           className="rounded-xl border border-slate-200 px-6 py-2 text-sm font-bold text-slate-600 hover:bg-slate-50"
           onClick={onClose}
+          type="button"
         >
           Hủy bỏ
         </button>
         <button
           className="rounded-xl bg-rose-500 px-6 py-2 text-sm font-bold text-white shadow-sm hover:bg-rose-600"
           onClick={onSubmit}
+          type="button"
         >
           Xác nhận từ chối
         </button>
@@ -45,6 +55,9 @@ const ManageAppointmentsPage = () => {
   const [appointments, setAppointments] = useState([]);
   const [selectedFilter, setSelectedFilter] = useState("all");
   const [selectedDateFilter, setSelectedDateFilter] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [modalItem, setModalItem] = useState(null);
   const [rejectingId, setRejectingId] = useState(null);
   const [rejectReasonText, setRejectReasonText] = useState("");
@@ -58,36 +71,18 @@ const ManageAppointmentsPage = () => {
     monday.setDate(diff);
 
     return Array.from({ length: 7 }).map((_, idx) => {
-      const d = new Date(monday);
-      d.setDate(monday.getDate() + idx);
-      return d;
+      const date = new Date(monday);
+      date.setDate(monday.getDate() + idx);
+      return date;
     });
   };
 
   const currentWeekDates = getWeekDates();
+
   const formatDay = (dateObj) => {
-    // Local YYYY-MM-DD format
-    const offset = dateObj.getTimezoneOffset()
-    return new Date(dateObj.getTime() - (offset * 60 * 1000)).toISOString().split('T')[0]
+    const offset = dateObj.getTimezoneOffset();
+    return new Date(dateObj.getTime() - offset * 60 * 1000).toISOString().split("T")[0];
   };
-
-  const filteredAppointments = appointments.filter((app) => {
-    let matchFilter = true;
-    if (selectedFilter === "pending") matchFilter = app.status === "pending";
-    if (selectedFilter === "upcoming") {
-      matchFilter = app.status === "approved" && new Date(app.scheduledAt) >= new Date();
-    }
-
-    let matchDate = true;
-    if (selectedDateFilter && app.scheduledAt) {
-      const appDate = new Date(app.scheduledAt);
-      const offset = appDate.getTimezoneOffset();
-      const appDateStr = new Date(appDate.getTime() - (offset * 60 * 1000)).toISOString().split('T')[0];
-      matchDate = appDateStr === selectedDateFilter;
-    }
-
-    return matchFilter && matchDate;
-  });
 
   const loadAppointments = async () => {
     try {
@@ -102,14 +97,68 @@ const ManageAppointmentsPage = () => {
     loadAppointments();
   }, []);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [pageSize, searchQuery, selectedFilter, selectedDateFilter]);
+
+  const filteredAppointments = useMemo(() => {
+    const normalized = searchQuery.trim().toLowerCase();
+
+    return appointments.filter((appointment) => {
+      let matchFilter = true;
+      if (selectedFilter === "pending") {
+        matchFilter = appointment.status === "pending";
+      }
+      if (selectedFilter === "upcoming") {
+        matchFilter = appointment.status === "approved" && new Date(appointment.scheduledAt) >= new Date();
+      }
+
+      let matchDate = true;
+      if (selectedDateFilter && appointment.scheduledAt) {
+        const appointmentDate = new Date(appointment.scheduledAt);
+        const offset = appointmentDate.getTimezoneOffset();
+        const appointmentDateString = new Date(appointmentDate.getTime() - offset * 60 * 1000).toISOString().split("T")[0];
+        matchDate = appointmentDateString === selectedDateFilter;
+      }
+
+      const haystack = [
+        appointment.customer?.fullName,
+        appointment.room?.title,
+        appointment.phone,
+        appointment.customer?.email,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      return matchFilter && matchDate && (!normalized || haystack.includes(normalized));
+    });
+  }, [appointments, searchQuery, selectedDateFilter, selectedFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredAppointments.length / pageSize));
+  const paginatedAppointments = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredAppointments.slice(start, start + pageSize);
+  }, [currentPage, filteredAppointments, pageSize]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
   const updateStatus = async (appointmentId, status) => {
     if (status === "rejected" && (!rejectReasonText || rejectReasonText.trim() === "")) {
-      notify.warning("Vui lòng nhập lý do từ chối để khách hàng biết!");
+      notify.warning("Vui lòng nhập lý do từ chối để khách hàng biết.");
       return;
     }
 
     try {
-      await landlordService.updateAppointmentStatus(appointmentId, status, status === "rejected" ? rejectReasonText : undefined);
+      await landlordService.updateAppointmentStatus(
+        appointmentId,
+        status,
+        status === "rejected" ? rejectReasonText : undefined
+      );
       notify.success("Đã cập nhật trạng thái lịch hẹn.");
       setRejectingId(null);
       setRejectReasonText("");
@@ -118,8 +167,6 @@ const ManageAppointmentsPage = () => {
       notify.error(getApiMessage(err, "Không thể cập nhật trạng thái lịch hẹn"));
     }
   };
-
-
 
   const getStatusLabel = (status) => {
     if (status === "approved") return "Đã duyệt";
@@ -135,23 +182,39 @@ const ManageAppointmentsPage = () => {
 
   return (
     <div className="flex w-full flex-col gap-6">
-      <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <h2 className="text-3xl font-extrabold tracking-tight">Quản lý lịch hẹn</h2>
-          <p className="text-slate-500">Dễ dàng theo dõi và lên lịch xem phòng trực tiếp với khách hàng.</p>
+      <LandlordToolbar>
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-wrap items-center gap-2">
+            <button className={filterButtonClass(selectedFilter === "all")} onClick={() => setSelectedFilter("all")} type="button">
+              Tất cả
+            </button>
+            <button className={filterButtonClass(selectedFilter === "pending")} onClick={() => setSelectedFilter("pending")} type="button">
+              Chờ duyệt
+            </button>
+            <button className={filterButtonClass(selectedFilter === "upcoming")} onClick={() => setSelectedFilter("upcoming")} type="button">
+              Đã duyệt
+            </button>
+          </div>
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <LandlordSearchInput
+              className="min-w-0 sm:w-80"
+              placeholder="Tìm kiếm khách hẹn, phòng hoặc số điện thoại..."
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+            />
+            <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-500">
+              {filteredAppointments.length} lịch hẹn phù hợp
+            </div>
+          </div>
         </div>
-        <div className="flex self-start rounded-lg bg-slate-100 p-1">
-          <button onClick={() => setSelectedFilter("all")} className={`px-4 py-1.5 text-sm font-medium rounded-md transition-shadow ${selectedFilter === "all" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"}`} type="button">Tất cả</button>
-          <button onClick={() => setSelectedFilter("pending")} className={`px-4 py-1.5 text-sm font-medium rounded-md transition-shadow ${selectedFilter === "pending" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"}`} type="button">Chờ duyệt</button>
-          <button onClick={() => setSelectedFilter("upcoming")} className={`px-4 py-1.5 text-sm font-medium rounded-md transition-shadow ${selectedFilter === "upcoming" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"}`} type="button">Đã duyệt</button>
-        </div>
-      </div>
+      </LandlordToolbar>
 
       <div className="grid gap-4">
         {filteredAppointments.length === 0 ? (
           <div className="rounded-xl border border-slate-200 bg-white p-5 text-sm text-slate-500">Chưa có lịch hẹn nào phù hợp.</div>
         ) : (
-          filteredAppointments.map((item) => (
+          paginatedAppointments.map((item) => (
             <div className="flex flex-col items-start justify-between gap-4 rounded-xl border border-slate-200 bg-white p-5 transition-shadow hover:shadow-md md:flex-row md:items-center" key={item.id}>
               <div className="flex items-center gap-4">
                 <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-primary/20 bg-slate-100 text-sm font-bold text-primary">
@@ -168,18 +231,18 @@ const ManageAppointmentsPage = () => {
                   <div className="mt-1 flex items-center gap-3 text-xs text-slate-400">
                     <span className="flex items-center gap-1">
                       <span className="material-symbols-outlined text-sm">calendar_today</span>
-                      {item.scheduledAt ? new Date(item.scheduledAt).toLocaleDateString() : "Chưa rõ ngày"}
+                      {item.scheduledAt ? new Date(item.scheduledAt).toLocaleDateString("vi-VN") : "Chưa rõ ngày"}
                     </span>
                     <span className="flex items-center gap-1">
                       <span className="material-symbols-outlined text-sm">schedule</span>
-                      {item.scheduledAt ? new Date(item.scheduledAt).toLocaleTimeString() : "Chưa rõ giờ"}
+                      {item.scheduledAt ? new Date(item.scheduledAt).toLocaleTimeString("vi-VN") : "Chưa rõ giờ"}
                     </span>
-                    {item.phone && (
+                    {item.phone ? (
                       <span className="flex items-center gap-1 font-medium text-primary">
                         <span className="material-symbols-outlined text-sm">phone_iphone</span>
                         {item.phone}
                       </span>
-                    )}
+                    ) : null}
                   </div>
                 </div>
               </div>
@@ -215,7 +278,16 @@ const ManageAppointmentsPage = () => {
         )}
       </div>
 
-      <div className="mt-4 rounded-xl border border-primary/20 bg-primary/5 p-6">
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        pageSize={pageSize}
+        onPageSizeChange={setPageSize}
+        totalItems={filteredAppointments.length}
+      />
+
+      <div className="rounded-xl border border-primary/20 bg-primary/5 p-6">
         <div className="mb-4 flex items-center justify-between">
           <h4 className="flex items-center gap-2 font-bold">
             <span className="material-symbols-outlined text-primary">event_note</span>
@@ -223,42 +295,47 @@ const ManageAppointmentsPage = () => {
           </h4>
           <button
             className="text-sm font-semibold text-primary hover:underline"
-            onClick={() => { setSelectedFilter("all"); setSelectedDateFilter(null); }}
+            onClick={() => {
+              setSelectedFilter("all");
+              setSelectedDateFilter(null);
+              setSearchQuery("");
+            }}
             type="button"
           >
             Xem lịch đầy đủ
           </button>
         </div>
         <div className="grid grid-cols-4 gap-2 md:grid-cols-7">
-          {currentWeekDates.map((d, index) => {
-            const formattedDate = formatDay(d);
+          {currentWeekDates.map((date, index) => {
+            const formattedDate = formatDay(date);
             const isSelected = selectedDateFilter === formattedDate;
             const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
             return (
               <div
-                key={index}
+                key={formattedDate}
                 onClick={() => setSelectedDateFilter(isSelected ? null : formattedDate)}
-                className={`cursor-pointer rounded-lg p-2 text-center shadow-sm transition-colors ${isSelected ? "bg-primary text-white" : "border border-primary/10 bg-white hover:bg-slate-50"}`}
+                className={`cursor-pointer rounded-lg p-2 text-center shadow-sm transition-colors ${
+                  isSelected ? "bg-primary text-white" : "border border-primary/10 bg-white hover:bg-slate-50"
+                }`}
               >
                 <span className={`text-[10px] font-bold uppercase ${isSelected ? "text-white/70" : "text-slate-400"}`}>{dayNames[index]}</span>
-                <div className={`text-sm font-bold ${isSelected ? "text-white" : "text-slate-700"}`}>{d.getDate()}</div>
+                <div className={`text-sm font-bold ${isSelected ? "text-white" : "text-slate-700"}`}>{date.getDate()}</div>
               </div>
             );
           })}
         </div>
       </div>
 
-      <AppointmentDetailModal
-        open={!!modalItem}
-        item={modalItem}
-        onClose={() => setModalItem(null)}
-      />
+      <AppointmentDetailModal open={!!modalItem} item={modalItem} onClose={() => setModalItem(null)} />
 
       <RejectReasonModal
         open={!!rejectingId}
         value={rejectReasonText}
-        onChange={(e) => setRejectReasonText(e.target.value)}
-        onClose={() => { setRejectingId(null); setRejectReasonText(""); }}
+        onChange={(event) => setRejectReasonText(event.target.value)}
+        onClose={() => {
+          setRejectingId(null);
+          setRejectReasonText("");
+        }}
         onSubmit={() => updateStatus(rejectingId, "rejected")}
       />
     </div>
