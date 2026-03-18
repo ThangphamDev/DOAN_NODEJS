@@ -101,10 +101,10 @@ const ManageReviewsPage = () => {
 
   return (
     <div className="flex w-full flex-col gap-8">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h2 className="text-3xl font-black tracking-tight">Quản lý đánh giá</h2>
-          <p className="text-slate-500">Áp dụng bố cục `review manager.html`, giữ toàn bộ dữ liệu đánh giá thật theo từng phòng.</p>
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-col gap-1">
+          <h2 className="text-3xl font-extrabold tracking-tight">Quản lý đánh giá</h2>
+          <p className="text-slate-500">Xem và phản hồi đánh giá thật nhanh từ khách hàng trên từng phòng.</p>
         </div>
         <label className="relative w-full max-w-xs">
           <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>

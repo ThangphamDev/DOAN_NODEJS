@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNotify } from "@/context/NotifyContext.jsx";
 import useChatConversation from "@/hooks/useChatConversation";
 import chatService from "@/services/ChatService";
@@ -125,7 +125,7 @@ const MessagesPage = () => {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-col gap-1">
           <h2 className="text-3xl font-extrabold tracking-tight">Tin nhắn khách thuê</h2>
           <p className="text-slate-500">Trao đổi trực tiếp với khách thuê theo từng tin đăng và nhận phản hồi theo thời gian thực.</p>

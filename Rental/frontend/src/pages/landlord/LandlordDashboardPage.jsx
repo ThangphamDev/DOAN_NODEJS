@@ -1,32 +1,26 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { NavLink } from "react-router-dom";
 import landlordService from "@/services/LandlordService";
+import chatService from "@/services/ChatService";
 import { getApiData, getApiMessage } from "@/utils/apiResponse";
 
-const initialForm = {
-  title: "",
-  price: "",
-  area: "",
-  address: "",
-  description: "",
-  images: [],
-};
-
 const LandlordDashboardPage = () => {
-  const [form, setForm] = useState(initialForm);
   const [rooms, setRooms] = useState([]);
   const [appointments, setAppointments] = useState([]);
+  const [inbox, setInbox] = useState([]);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
   const loadData = async () => {
     try {
-      const [roomsRes, appointmentsRes] = await Promise.all([
+      const [roomsRes, appointmentsRes, inboxRes] = await Promise.all([
         landlordService.getMyRooms(),
         landlordService.getAppointments(),
+        chatService.getInbox()
       ]);
       setRooms(getApiData(roomsRes, []));
       setAppointments(getApiData(appointmentsRes, []));
+      setInbox(getApiData(inboxRes, []));
       setError("");
     } catch (err) {
       setError(getApiMessage(err, "Không tải được dữ liệu chủ trọ"));
@@ -37,54 +31,42 @@ const LandlordDashboardPage = () => {
     loadData();
   }, []);
 
-  const metrics = useMemo(() => {
-    const pending = appointments.filter((item) => item.status === "pending").length;
-    const newMessages = appointments.filter((item) => item.status === "approved").length;
+  const chartData = useMemo(() => {
+    const allReviews = rooms.flatMap((r) => r.reviews || []);
+    const reviewTotal = allReviews.length || 1; 
 
-    return { listings: rooms.length, pending, newMessages };
-  }, [appointments, rooms]);
+    const appTotal = appointments.length || 1;
+    const msgTotal = inbox.length || 1;
 
-  const onChange = (event) => {
-    const { name, value } = event.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const onImagesChange = (event) => {
-    setForm((prev) => ({ ...prev, images: Array.from(event.target.files || []) }));
-  };
-
-  const createRoom = async (event) => {
-    event.preventDefault();
-
-    if (!form.title || !form.price || !form.area || !form.address) {
-      setError("Vui lòng nhập đầy đủ thông tin bắt buộc");
-      setSuccessMessage("");
-      return;
-    }
-
-    try {
-      await landlordService.createRoom(form);
-      setForm(initialForm);
-      setSuccessMessage("Đăng tin mới thành công.");
-      setError("");
-      await loadData();
-    } catch (err) {
-      setError(getApiMessage(err, "Không thể đăng tin mới"));
-      setSuccessMessage("");
-    }
-  };
+    return {
+      appointments: [
+        { label: "Đã duyệt", count: appointments.filter(a => a.status === 'approved').length, color: "bg-green-500", total: appTotal },
+        { label: "Chờ duyệt", count: appointments.filter(a => a.status === 'pending').length, color: "bg-amber-400", total: appTotal },
+        { label: "Từ chối", count: appointments.filter(a => a.status === 'rejected').length, color: "bg-rose-500", total: appTotal },
+      ],
+      reviews: [
+        { label: "Rất tốt (5 sao)", count: allReviews.filter(r => Number(r.rating) === 5).length, color: "bg-green-500", total: reviewTotal },
+        { label: "Khá (4 sao)", count: allReviews.filter(r => Number(r.rating) === 4).length, color: "bg-blue-400", total: reviewTotal },
+        { label: "Cần chú ý (< 4)", count: allReviews.filter(r => Number(r.rating) < 4).length, color: "bg-amber-500", total: reviewTotal },
+      ],
+      messages: [
+        { label: "Quan tâm", count: inbox.filter(i => !i.blockedByMe).length, color: "bg-blue-500", total: msgTotal },
+        { label: "Đã chặn (Spam)", count: inbox.filter(i => i.blockedByMe).length, color: "bg-slate-400", total: msgTotal },
+      ]
+    };
+  }, [appointments, rooms, inbox]);
 
   return (
     <>
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-col gap-1">
           <h2 className="text-3xl font-extrabold tracking-tight">Bảng điều khiển chủ trọ</h2>
-          <p className="text-slate-500">Tổng quan hoạt động cho thuê hôm nay và form đăng tin mới ngay trên cùng màn hình.</p>
+          <p className="text-slate-500">Tổng quan hoạt động cho thuê và theo dõi lịch hẹn cần xử lý.</p>
         </div>
-        <button className="flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-bold text-white transition-all shadow-sm shadow-primary/20 hover:bg-primary/90" type="button">
+        <NavLink className="flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-bold text-white transition-all shadow-sm shadow-primary/20 hover:bg-primary/90" to="/landlord/rooms">
           <span className="material-symbols-outlined text-[20px]">add_circle</span>
           Thêm tin đăng mới
-        </button>
+        </NavLink>
       </div>
 
       {error && <p className="mb-6 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</p>}
@@ -97,8 +79,8 @@ const LandlordDashboardPage = () => {
             <span className="material-symbols-outlined text-primary">apartment</span>
           </div>
           <div className="flex items-baseline gap-2">
-            <p className="text-3xl font-bold">{metrics.listings}</p>
-            <p className="flex items-center text-sm font-semibold text-green-600">+2% <span className="material-symbols-outlined text-sm">trending_up</span></p>
+            <p className="text-3xl font-bold">{rooms.filter(r => r.status === 'active').length}</p>
+            <p className="flex items-center text-sm font-semibold text-slate-500">/ {rooms.length}</p>
           </div>
         </div>
         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -107,18 +89,18 @@ const LandlordDashboardPage = () => {
             <span className="material-symbols-outlined text-primary">schedule</span>
           </div>
           <div className="flex items-baseline gap-2">
-            <p className="text-3xl font-bold">{metrics.pending}</p>
-            <p className="flex items-center text-sm font-semibold text-green-600">+15% <span className="material-symbols-outlined text-sm">trending_up</span></p>
+            <p className="text-3xl font-bold">{appointments.filter(a => a.status === 'pending').length}</p>
+            <p className="flex items-center text-sm font-semibold text-green-600">Mới <span className="material-symbols-outlined text-sm">schedule</span></p>
           </div>
         </div>
         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="mb-4 flex items-center justify-between">
-            <p className="text-sm font-medium text-slate-500">Lịch đã phản hồi</p>
+            <p className="text-sm font-medium text-slate-500">Tin nhắn khách thuê</p>
             <span className="material-symbols-outlined text-primary">mail</span>
           </div>
           <div className="flex items-baseline gap-2">
-            <p className="text-3xl font-bold">{metrics.newMessages}</p>
-            <p className="flex items-center text-sm font-semibold text-red-500">-5% <span className="material-symbols-outlined text-sm">trending_down</span></p>
+            <p className="text-3xl font-bold">{inbox.length}</p>
+            <p className="flex items-center text-sm font-semibold text-blue-500">Khách <span className="material-symbols-outlined text-sm">group</span></p>
           </div>
         </div>
       </div>
@@ -184,25 +166,80 @@ const LandlordDashboardPage = () => {
         </div>
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="mb-6 flex items-center justify-between">
-          <h3 className="text-lg font-bold">Tạo tin đăng mới</h3>
-          <span className="text-sm text-slate-500">Dùng đúng API multipart hiện có</span>
-        </div>
-        <form className="grid grid-cols-1 gap-4 md:grid-cols-2" onSubmit={createRoom}>
-          <input className="rounded-lg border border-slate-200 px-4 py-3 text-sm focus:border-primary focus:outline-none" name="title" onChange={onChange} placeholder="Tiêu đề tin đăng" value={form.title} />
-          <input className="rounded-lg border border-slate-200 px-4 py-3 text-sm focus:border-primary focus:outline-none" name="price" onChange={onChange} placeholder="Giá thuê" value={form.price} />
-          <input className="rounded-lg border border-slate-200 px-4 py-3 text-sm focus:border-primary focus:outline-none" name="area" onChange={onChange} placeholder="Khu vực" value={form.area} />
-          <input className="rounded-lg border border-slate-200 px-4 py-3 text-sm focus:border-primary focus:outline-none" name="address" onChange={onChange} placeholder="Địa chỉ" value={form.address} />
-          <textarea className="min-h-32 rounded-lg border border-slate-200 px-4 py-3 text-sm focus:border-primary focus:outline-none md:col-span-2" name="description" onChange={onChange} placeholder="Mô tả chi tiết" value={form.description}></textarea>
-          <input accept="image/*" className="rounded-lg border border-slate-200 px-4 py-3 text-sm md:col-span-2" multiple onChange={onImagesChange} type="file" />
-          <div className="md:col-span-2">
-            <button className="flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-bold text-white transition-all shadow-sm shadow-primary/20 hover:bg-primary/90" type="submit">
-              <span className="material-symbols-outlined text-[20px]">add_circle</span>
-              Đăng tin mới
-            </button>
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        {/* Lịch hẹn Chart */}
+        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="mb-6 flex items-center justify-between">
+            <h3 className="text-lg font-bold">Thống kê Lịch hẹn</h3>
+            <span className="material-symbols-outlined text-slate-400">monitoring</span>
           </div>
-        </form>
+          <div className="flex flex-col gap-5">
+            {chartData.appointments.map((stat, i) => {
+              const pct = appointments.length === 0 ? 0 : Math.round((stat.count / stat.total) * 100);
+              return (
+              <div key={i}>
+                <div className="mb-1.5 flex justify-between text-sm font-semibold">
+                  <span>{stat.label}</span>
+                  <span className="text-slate-500">{stat.count} ({pct}%)</span>
+                </div>
+                <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                  <div className={`h-full ${stat.color} transition-all duration-500`} style={{ width: `${pct}%` }}></div>
+                </div>
+              </div>
+            )})}
+          </div>
+          <NavLink className="mt-6 block w-full rounded-lg bg-slate-50 py-2.5 text-center text-sm font-bold text-primary transition-colors hover:bg-slate-100" to="/landlord/appointments">Xem chi tiết lịch hẹn</NavLink>
+        </div>
+
+        {/* Đánh giá Chart */}
+        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="mb-6 flex items-center justify-between">
+            <h3 className="text-lg font-bold">Điểm đánh giá</h3>
+            <span className="material-symbols-outlined text-slate-400">star_rate</span>
+          </div>
+          <div className="flex flex-col gap-5">
+            {chartData.reviews.map((stat, i) => {
+              const allR = rooms.flatMap((r) => r.reviews || []);
+              const pct = allR.length === 0 ? 0 : Math.round((stat.count / stat.total) * 100);
+              return (
+              <div key={i}>
+                <div className="mb-1.5 flex justify-between text-sm font-semibold">
+                  <span>{stat.label}</span>
+                  <span className="text-slate-500">{stat.count} ({pct}%)</span>
+                </div>
+                <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                  <div className={`h-full ${stat.color} transition-all duration-500`} style={{ width: `${pct}%` }}></div>
+                </div>
+              </div>
+            )})}
+          </div>
+          <NavLink className="mt-6 block w-full rounded-lg bg-slate-50 py-2.5 text-center text-sm font-bold text-primary transition-colors hover:bg-slate-100" to="/landlord/reviews">Xem phản hồi khách</NavLink>
+        </div>
+
+        {/* Tin nhắn Chart */}
+        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="mb-6 flex items-center justify-between">
+            <h3 className="text-lg font-bold">Tương tác nhắn tin</h3>
+            <span className="material-symbols-outlined text-slate-400">forum</span>
+          </div>
+          <div className="flex flex-col gap-5">
+            {chartData.messages.map((stat, i) => {
+              const countInbox = inbox.length;
+              const pct = countInbox === 0 ? 0 : Math.round((stat.count / stat.total) * 100);
+              return (
+              <div key={i}>
+                <div className="mb-1.5 flex justify-between text-sm font-semibold">
+                  <span>{stat.label}</span>
+                  <span className="text-slate-500">{stat.count} ({pct}%)</span>
+                </div>
+                <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                  <div className={`h-full ${stat.color} transition-all duration-500`} style={{ width: `${pct}%` }}></div>
+                </div>
+              </div>
+            )})}
+          </div>
+          <NavLink className="mt-6 block w-full rounded-lg bg-slate-50 py-2.5 text-center text-sm font-bold text-primary transition-colors hover:bg-slate-100" to="/landlord/messages">Mở hộp thư ngay</NavLink>
+        </div>
       </div>
     </>
   );

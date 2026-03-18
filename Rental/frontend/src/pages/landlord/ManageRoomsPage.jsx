@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import landlordService from "@/services/LandlordService";
 import { getApiData, getApiMessage } from "@/utils/apiResponse";
 
@@ -169,10 +169,10 @@ const ManageRoomsPage = () => {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white px-6 py-4 shadow-sm">
-        <div>
-          <h2 className="text-2xl font-bold">Quản lý tin đăng</h2>
-          <p className="text-sm text-slate-500">Áp dụng trực tiếp cấu trúc của `postmanager.html`, giữ tạo/sửa/xóa bằng API hiện tại.</p>
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-col gap-1">
+          <h2 className="text-3xl font-extrabold tracking-tight">Quản lý tin đăng</h2>
+          <p className="text-slate-500">Tạo mới, theo dõi trạng thái và quản lý tin đăng đang kinh doanh của bạn.</p>
         </div>
         <div className="flex items-center gap-4">
           <label className="relative hidden sm:block">

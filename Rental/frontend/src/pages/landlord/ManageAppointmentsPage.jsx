@@ -56,7 +56,7 @@ const ManageAppointmentsPage = () => {
     const diff = today.getDate() - currentDay + (currentDay === 0 ? -6 : 1);
     const monday = new Date(today);
     monday.setDate(diff);
-    
+
     return Array.from({ length: 7 }).map((_, idx) => {
       const d = new Date(monday);
       d.setDate(monday.getDate() + idx);
@@ -68,22 +68,22 @@ const ManageAppointmentsPage = () => {
   const formatDay = (dateObj) => {
     // Local YYYY-MM-DD format
     const offset = dateObj.getTimezoneOffset()
-    return new Date(dateObj.getTime() - (offset*60*1000)).toISOString().split('T')[0]
+    return new Date(dateObj.getTime() - (offset * 60 * 1000)).toISOString().split('T')[0]
   };
 
   const filteredAppointments = appointments.filter((app) => {
     let matchFilter = true;
     if (selectedFilter === "pending") matchFilter = app.status === "pending";
     if (selectedFilter === "upcoming") {
-        matchFilter = app.status === "approved" && new Date(app.scheduledAt) >= new Date();
+      matchFilter = app.status === "approved" && new Date(app.scheduledAt) >= new Date();
     }
-    
+
     let matchDate = true;
     if (selectedDateFilter && app.scheduledAt) {
-       const appDate = new Date(app.scheduledAt);
-       const offset = appDate.getTimezoneOffset();
-       const appDateStr = new Date(appDate.getTime() - (offset*60*1000)).toISOString().split('T')[0];
-       matchDate = appDateStr === selectedDateFilter;
+      const appDate = new Date(app.scheduledAt);
+      const offset = appDate.getTimezoneOffset();
+      const appDateStr = new Date(appDate.getTime() - (offset * 60 * 1000)).toISOString().split('T')[0];
+      matchDate = appDateStr === selectedDateFilter;
     }
 
     return matchFilter && matchDate;
@@ -135,15 +135,15 @@ const ManageAppointmentsPage = () => {
 
   return (
     <div className="flex w-full flex-col gap-6">
-      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-        <div>
-          <h1 className="text-2xl font-bold">Yêu cầu xem phòng</h1>
-          <p className="text-slate-500">Quản lý và lên lịch xem phòng cho các căn đang cho thuê.</p>
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-col gap-1">
+          <h2 className="text-3xl font-extrabold tracking-tight">Quản lý lịch hẹn</h2>
+          <p className="text-slate-500">Dễ dàng theo dõi và lên lịch xem phòng trực tiếp với khách hàng.</p>
         </div>
         <div className="flex self-start rounded-lg bg-slate-100 p-1">
           <button onClick={() => setSelectedFilter("all")} className={`px-4 py-1.5 text-sm font-medium rounded-md transition-shadow ${selectedFilter === "all" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"}`} type="button">Tất cả</button>
           <button onClick={() => setSelectedFilter("pending")} className={`px-4 py-1.5 text-sm font-medium rounded-md transition-shadow ${selectedFilter === "pending" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"}`} type="button">Chờ duyệt</button>
-          <button onClick={() => setSelectedFilter("upcoming")} className={`px-4 py-1.5 text-sm font-medium rounded-md transition-shadow ${selectedFilter === "upcoming" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"}`} type="button">Sắp tới</button>
+          <button onClick={() => setSelectedFilter("upcoming")} className={`px-4 py-1.5 text-sm font-medium rounded-md transition-shadow ${selectedFilter === "upcoming" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"}`} type="button">Đã duyệt</button>
         </div>
       </div>
 
@@ -193,7 +193,7 @@ const ManageAppointmentsPage = () => {
                       Duyệt
                     </button>
                     <button className="shrink-0 rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-slate-500 shadow-sm hover:bg-slate-50" onClick={() => setModalItem(item)} title="Xem chi tiết" type="button">
-                        <span className="material-symbols-outlined text-sm">visibility</span>
+                      <span className="material-symbols-outlined text-sm">visibility</span>
                     </button>
                   </div>
                 ) : (
@@ -205,7 +205,7 @@ const ManageAppointmentsPage = () => {
                       {item.status === "approved" ? "Đã duyệt" : "Đã từ chối"}
                     </div>
                     <button className="rounded-lg border border-slate-200 px-2 py-1.5 text-slate-500 hover:bg-slate-50" onClick={() => setModalItem(item)} title="Xem chi tiết" type="button">
-                        <span className="material-symbols-outlined text-sm">visibility</span>
+                      <span className="material-symbols-outlined text-sm">visibility</span>
                     </button>
                   </div>
                 )}
@@ -235,7 +235,7 @@ const ManageAppointmentsPage = () => {
             const isSelected = selectedDateFilter === formattedDate;
             const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
             return (
-              <div 
+              <div
                 key={index}
                 onClick={() => setSelectedDateFilter(isSelected ? null : formattedDate)}
                 className={`cursor-pointer rounded-lg p-2 text-center shadow-sm transition-colors ${isSelected ? "bg-primary text-white" : "border border-primary/10 bg-white hover:bg-slate-50"}`}
@@ -247,11 +247,11 @@ const ManageAppointmentsPage = () => {
           })}
         </div>
       </div>
-      
-      <AppointmentDetailModal 
-        open={!!modalItem} 
-        item={modalItem} 
-        onClose={() => setModalItem(null)} 
+
+      <AppointmentDetailModal
+        open={!!modalItem}
+        item={modalItem}
+        onClose={() => setModalItem(null)}
       />
 
       <RejectReasonModal
