@@ -18,12 +18,17 @@ const toThread = (item = {}) => ({
 const isSameThread = (left, right) =>
   Number(left?.peerId) === Number(right?.peerId) && Number(left?.roomId || 0) === Number(right?.roomId || 0);
 
+const MESSAGE_PAGE_SIZE = 10;
+
 const useChatConversation = () => {
   const { user } = useAuth();
   const notify = useNotify();
   const [inbox, setInbox] = useState([]);
   const [activeThread, setActiveThread] = useState(null);
   const [messages, setMessages] = useState([]);
+  const [hasMoreMessages, setHasMoreMessages] = useState(false);
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+  const [isLoadingOlderMessages, setIsLoadingOlderMessages] = useState(false);
   const [content, setContent] = useState("");
   const [error, setError] = useState("");
   const activeThreadRef = useRef(null);
@@ -104,24 +109,70 @@ const useChatConversation = () => {
   }, [notify]);
 
   const loadMessages = useCallback(
-    async (thread) => {
+    async (thread, options = {}) => {
       if (!thread?.peerId) {
         setMessages([]);
+        setHasMoreMessages(false);
         return;
       }
 
       try {
-        const response = await chatService.getConversation(thread.peerId, thread.roomId || undefined);
-        setMessages(getApiData(response, []));
+        const requestThread = toThread(thread);
+        const isLoadingOlder = Boolean(options.beforeId);
+        if (isLoadingOlder) {
+          setIsLoadingOlderMessages(true);
+        } else {
+          setIsLoadingMessages(true);
+          setMessages([]);
+          setHasMoreMessages(false);
+        }
+
+        const response = await chatService.getConversation(thread.peerId, thread.roomId || undefined, {
+          limit: MESSAGE_PAGE_SIZE,
+          beforeId: options.beforeId,
+        });
+        const payload = getApiData(response, { items: [], hasMore: false });
+        const nextItems = Array.isArray(payload) ? payload : payload.items || [];
+        const nextHasMore = Array.isArray(payload) ? false : Boolean(payload.hasMore);
+
+        if (!isSameThread(activeThreadRef.current, requestThread)) {
+          return;
+        }
+
+        setMessages((prev) => {
+          if (!isLoadingOlder) {
+            return nextItems;
+          }
+
+          const seenIds = new Set(prev.map((item) => Number(item.id)));
+          const olderItems = nextItems.filter((item) => !seenIds.has(Number(item.id)));
+          return [...olderItems, ...prev];
+        });
+        setHasMoreMessages(nextHasMore);
         setError("");
       } catch (err) {
         const message = getApiMessage(err, "Không tải được hội thoại");
         setError(message);
         notify.error(message);
+      } finally {
+        setIsLoadingMessages(false);
+        setIsLoadingOlderMessages(false);
       }
     },
     [notify]
   );
+
+  const loadOlderMessages = useCallback(async () => {
+    const thread = activeThreadRef.current;
+    const oldestMessageId = messages[0]?.id;
+
+    if (!thread?.peerId || !oldestMessageId || !hasMoreMessages || isLoadingOlderMessages) {
+      return false;
+    }
+
+    await loadMessages(thread, { beforeId: oldestMessageId });
+    return true;
+  }, [hasMoreMessages, isLoadingOlderMessages, loadMessages, messages]);
 
   useEffect(() => {
     activeThreadRef.current = activeThread;
@@ -243,10 +294,14 @@ const useChatConversation = () => {
     inbox,
     activeThread,
     messages,
+    hasMoreMessages,
+    isLoadingMessages,
+    isLoadingOlderMessages,
     content,
     setContent,
     error,
     sendMessage,
+    loadOlderMessages,
     selectConversation,
     refreshInbox: loadInbox,
     setThreadBlockedState,

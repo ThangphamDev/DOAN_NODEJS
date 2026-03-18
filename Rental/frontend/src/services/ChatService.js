@@ -5,8 +5,12 @@ class ChatService {
     return api.get("/chat/inbox");
   }
 
-  getConversation(peerId, roomId) {
-    const params = roomId ? { roomId } : undefined;
+  getConversation(peerId, roomId, options = {}) {
+    const params = {
+      limit: options.limit ?? 10,
+      ...(roomId ? { roomId } : {}),
+      ...(options.beforeId ? { beforeId: options.beforeId } : {}),
+    };
     return api.get(`/chat/conversation/${peerId}`, { params });
   }
 

@@ -11,6 +11,8 @@ import { getApiData, getApiMessage } from "@/utils/apiResponse";
 import { getBadgeToneClasses, normalizeRoomDetails } from "@/utils/roomDetails";
 import { getToken } from "@/utils/storage";
 
+const SWIPE_THRESHOLD = 56;
+
 const formatMessageTime = (value) => {
   if (!value) return "Vừa xong";
 
@@ -18,6 +20,19 @@ const formatMessageTime = (value) => {
     hour: "2-digit",
     minute: "2-digit",
   });
+};
+
+const renderRatingStars = (rating, sizeClass = "text-sm") => {
+  const normalizedRating = Math.max(0, Math.min(5, Math.round(Number(rating) || 0)));
+
+  return Array.from({ length: 5 }, (_, index) => (
+    <span
+      className={`material-symbols-outlined ${sizeClass} ${index < normalizedRating ? "fill-1 text-amber-500" : "text-slate-300"}`}
+      key={`${normalizedRating}-${index}`}
+    >
+      star
+    </span>
+  ));
 };
 
 const RoomDetailPage = () => {
@@ -36,7 +51,11 @@ const RoomDetailPage = () => {
   const [chatLoading, setChatLoading] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [isReporting, setIsReporting] = useState(false);
+  const [activePhotoIndex, setActivePhotoIndex] = useState(0);
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const chatEndRef = useRef(null);
+  const mobileGalleryTouchRef = useRef(null);
+  const lightboxTouchRef = useRef(null);
 
   const socket = useMemo(() => {
     const token = getToken();
@@ -77,11 +96,15 @@ const RoomDetailPage = () => {
     return (total / reviews.length).toFixed(1);
   }, [room?.reviews]);
 
-  const photoGrid = useMemo(() => {
+  const galleryImages = useMemo(() => {
     const fallback = "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80";
-    const images = roomImages.length ? roomImages : [fallback];
-    return Array.from({ length: 5 }, (_, index) => images[index] || images[0]);
+    return roomImages.length ? roomImages : [fallback];
   }, [roomImages]);
+
+  const photoGrid = useMemo(
+    () => Array.from({ length: 5 }, (_, index) => galleryImages[index] || galleryImages[0]),
+    [galleryImages]
+  );
 
   const appendChatMessage = useCallback((message) => {
     setChatMessages((prev) => {
@@ -112,13 +135,116 @@ const RoomDetailPage = () => {
     setLeaseTerm(defaultLeaseTerm);
   }, [roomDetails]);
 
+  useEffect(() => {
+    setActivePhotoIndex(0);
+    setIsGalleryOpen(false);
+  }, [id]);
+
+  useEffect(() => {
+    setActivePhotoIndex((prev) => {
+      if (!galleryImages.length) return 0;
+      return prev >= galleryImages.length ? 0 : prev;
+    });
+  }, [galleryImages]);
+
+  const goToPrevPhoto = useCallback(() => {
+    setActivePhotoIndex((prev) => {
+      if (!galleryImages.length) return 0;
+      return prev === 0 ? galleryImages.length - 1 : prev - 1;
+    });
+  }, [galleryImages.length]);
+
+  const goToNextPhoto = useCallback(() => {
+    setActivePhotoIndex((prev) => {
+      if (!galleryImages.length) return 0;
+      return prev === galleryImages.length - 1 ? 0 : prev + 1;
+    });
+  }, [galleryImages.length]);
+
+  const selectPhoto = useCallback(
+    (index) => {
+      if (!galleryImages.length) return;
+      const nextIndex = ((index % galleryImages.length) + galleryImages.length) % galleryImages.length;
+      setActivePhotoIndex(nextIndex);
+    },
+    [galleryImages.length]
+  );
+
+  const openGallery = useCallback(
+    (index = 0) => {
+      selectPhoto(index);
+      setIsGalleryOpen(true);
+    },
+    [selectPhoto]
+  );
+
+  const closeGallery = useCallback(() => {
+    setIsGalleryOpen(false);
+  }, []);
+
+  const handleSwipeGesture = useCallback(
+    (deltaX) => {
+      if (Math.abs(deltaX) < SWIPE_THRESHOLD || galleryImages.length <= 1) return;
+      if (deltaX > 0) {
+        goToPrevPhoto();
+        return;
+      }
+      goToNextPhoto();
+    },
+    [galleryImages.length, goToNextPhoto, goToPrevPhoto]
+  );
+
+  const handleTouchStart = useCallback((ref, event) => {
+    ref.current = event.changedTouches?.[0]?.clientX ?? null;
+  }, []);
+
+  const handleTouchEnd = useCallback(
+    (ref, event) => {
+      if (ref.current === null) return;
+      const endX = event.changedTouches?.[0]?.clientX ?? ref.current;
+      handleSwipeGesture(endX - ref.current);
+      ref.current = null;
+    },
+    [handleSwipeGesture]
+  );
+
+  useEffect(() => {
+    if (!isGalleryOpen) return undefined;
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        closeGallery();
+        return;
+      }
+
+      if (event.key === "ArrowLeft") {
+        goToPrevPhoto();
+        return;
+      }
+
+      if (event.key === "ArrowRight") {
+        goToNextPhoto();
+      }
+    };
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [closeGallery, goToNextPhoto, goToPrevPhoto, isGalleryOpen]);
+
   const loadRoomConversation = useCallback(async () => {
     if (!room?.landlord?.id) return;
 
     try {
       setChatLoading(true);
       const response = await chatService.getConversation(room.landlord.id, room.id);
-      setChatMessages(getApiData(response, []));
+      const payload = getApiData(response, { items: [] });
+      setChatMessages(Array.isArray(payload) ? payload : payload.items || []);
     } catch (err) {
       notify.error(getApiMessage(err, "Không tải được lịch sử tin nhắn"));
     } finally {
@@ -306,19 +432,103 @@ const RoomDetailPage = () => {
         ) : null}
       </div>
 
-      <div className="mb-8 grid h-[360px] grid-cols-4 grid-rows-2 gap-3 overflow-hidden rounded-xl md:h-[500px]">
+      <div className="mb-8 md:hidden">
         <div
-          className="col-span-4 row-span-2 bg-slate-200 md:col-span-2"
-          style={{ backgroundImage: `url(${photoGrid[0]})`, backgroundPosition: "center", backgroundSize: "cover" }}
-        ></div>
-        <div className="hidden bg-slate-200 md:block" style={{ backgroundImage: `url(${photoGrid[1]})`, backgroundPosition: "center", backgroundSize: "cover" }}></div>
-        <div className="hidden bg-slate-200 md:block" style={{ backgroundImage: `url(${photoGrid[2]})`, backgroundPosition: "center", backgroundSize: "cover" }}></div>
-        <div className="hidden bg-slate-200 md:block" style={{ backgroundImage: `url(${photoGrid[3]})`, backgroundPosition: "center", backgroundSize: "cover" }}></div>
-        <div className="relative hidden bg-slate-200 md:block" style={{ backgroundImage: `url(${photoGrid[4]})`, backgroundPosition: "center", backgroundSize: "cover" }}>
-          {roomImages.length > 5 ? (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-lg font-bold text-white">+{roomImages.length - 4} ảnh</div>
-          ) : null}
+          className="overflow-hidden rounded-[28px] bg-slate-200 shadow-lg shadow-slate-200/60"
+          onTouchStart={(event) => handleTouchStart(mobileGalleryTouchRef, event)}
+          onTouchEnd={(event) => handleTouchEnd(mobileGalleryTouchRef, event)}
+        >
+          <div
+            className="flex transition-transform duration-500 ease-out"
+            style={{ transform: `translateX(-${activePhotoIndex * 100}%)` }}
+          >
+            {galleryImages.map((image, index) => (
+              <button
+                className="relative h-[280px] w-full shrink-0 overflow-hidden bg-slate-100 text-left"
+                key={`${image}-${index}`}
+                type="button"
+                onClick={() => openGallery(index)}
+              >
+                <img alt={`${room.title} - ảnh ${index + 1}`} className="h-full w-full object-cover" src={image} />
+                <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-gradient-to-t from-slate-950/80 via-slate-950/10 to-transparent px-4 py-4 text-white">
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/70">Bộ ảnh</p>
+                    <p className="text-base font-bold">
+                      {activePhotoIndex + 1} / {galleryImages.length}
+                    </p>
+                  </div>
+                  <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold backdrop-blur">
+                    Chạm để phóng to
+                  </span>
+                </div>
+              </button>
+            ))}
+          </div>
         </div>
+
+        {galleryImages.length > 1 ? (
+          <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+            {galleryImages.map((image, index) => (
+              <button
+                className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl border-2 transition ${
+                  activePhotoIndex === index ? "border-primary shadow-md shadow-primary/20" : "border-transparent"
+                }`}
+                key={`mobile-thumb-${image}-${index}`}
+                type="button"
+                onClick={() => selectPhoto(index)}
+              >
+                <img alt={`Thumbnail ${index + 1}`} className="h-full w-full object-cover" src={image} />
+              </button>
+            ))}
+          </div>
+        ) : null}
+      </div>
+
+      <div className="mb-8 hidden h-[500px] grid-cols-4 grid-rows-2 gap-3 overflow-hidden rounded-[32px] md:grid">
+        <button
+          className="group relative col-span-2 row-span-2 overflow-hidden bg-slate-200 text-left"
+          type="button"
+          onClick={() => openGallery(0)}
+        >
+          <img
+            alt={`${room.title} - ảnh 1`}
+            className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+            src={photoGrid[0]}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent opacity-80"></div>
+          <div className="absolute bottom-5 left-5 flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white backdrop-blur">
+            <span className="material-symbols-outlined text-base">zoom_in</span>
+            Xem ảnh lớn
+          </div>
+        </button>
+
+        {photoGrid.slice(1).map((image, index) => {
+          const gridIndex = index + 1;
+          const isLastTile = gridIndex === 4;
+
+          return (
+            <button
+              className="group relative overflow-hidden bg-slate-200 text-left"
+              key={`desktop-photo-${gridIndex}`}
+              type="button"
+              onClick={() => openGallery(gridIndex)}
+            >
+              <img
+                alt={`${room.title} - ảnh ${gridIndex + 1}`}
+                className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                src={image}
+              />
+              {isLastTile ? (
+                <div className="absolute inset-0 flex items-center justify-center bg-slate-950/35 text-white">
+                  <div className="rounded-2xl bg-slate-950/55 px-4 py-3 text-center backdrop-blur">
+                    <p className="text-sm font-bold">{galleryImages.length > 5 ? `+${galleryImages.length - 5} ảnh` : "Mở gallery"}</p>
+                    <p className="mt-1 text-xs text-white/75">Chuyển ảnh và phóng to</p>
+                  </div>
+                </div>
+              ) : null}
+            </button>
+          );
+        })}
       </div>
 
       <div className="flex flex-col gap-10 lg:flex-row">
@@ -342,7 +552,7 @@ const RoomDetailPage = () => {
             </p>
           </div>
 
-          <div className={`grid gap-4 border-y border-slate-200 py-6 grid-cols-2 ${quickFacts.length > 2 ? "md:grid-cols-4" : "md:grid-cols-2"}`}>
+          <div className={`grid grid-cols-2 gap-4 border-y border-slate-200 py-6 ${quickFacts.length > 2 ? "md:grid-cols-4" : "md:grid-cols-2"}`}>
             {quickFacts.map((item) => (
               <div className="flex flex-col items-center rounded-lg bg-slate-100/60 p-3 text-center" key={`${item.label}-${item.value}`}>
                 <span className="material-symbols-outlined mb-1 text-primary">{item.icon}</span>
@@ -388,12 +598,12 @@ const RoomDetailPage = () => {
           </div>
 
           <div className="border-t border-slate-200 py-8">
-            <div className="mb-8 flex items-center justify-between">
+            <div className="mb-8 flex items-center justify-between gap-3">
               <h3 className="text-2xl font-bold text-slate-900">Đánh giá ({(room.reviews || []).length})</h3>
-              <div className="flex items-center gap-1">
-                <span className="material-symbols-outlined fill-1 text-yellow-500">star</span>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center">{renderRatingStars(averageRating, "text-base")}</div>
                 <span className="text-xl font-bold text-slate-900">{averageRating}</span>
-                <span className="ml-1 text-sm text-slate-500">Điểm trung bình</span>
+                <span className="text-sm text-slate-500">Điểm trung bình</span>
               </div>
             </div>
 
@@ -403,7 +613,7 @@ const RoomDetailPage = () => {
               ) : (
                 (room.reviews || []).map((item, index) => (
                   <div className={`${index > 0 ? "border-t border-slate-100 pt-8" : ""} flex flex-col gap-4`} key={item.id}>
-                    <div className="flex items-start justify-between">
+                    <div className="flex items-start justify-between gap-4">
                       <div className="flex items-center gap-3">
                         <div className="flex size-10 items-center justify-center rounded-full bg-slate-200 font-bold text-slate-700">
                           {(item.reviewer?.fullName || "K").slice(0, 1).toUpperCase()}
@@ -415,12 +625,9 @@ const RoomDetailPage = () => {
                           </p>
                         </div>
                       </div>
-                      <div className="flex text-yellow-500">
-                        {Array.from({ length: 5 }, (_, starIndex) => (
-                          <span className="material-symbols-outlined text-sm" key={`${item.id}-${starIndex}`}>
-                            {starIndex < Number(item.rating || 0) ? "star" : "star_outline"}
-                          </span>
-                        ))}
+                      <div className="flex items-center gap-1">
+                        <div className="flex">{renderRatingStars(item.rating, "text-sm")}</div>
+                        <span className="text-xs font-semibold text-slate-500">{Number(item.rating || 0)}/5</span>
                       </div>
                     </div>
                     <p className="italic text-slate-600">"{item.content || "Không có nội dung"}"</p>
@@ -442,7 +649,9 @@ const RoomDetailPage = () => {
                     onChange={(event) => setReview((prev) => ({ ...prev, rating: Number(event.target.value) }))}
                   >
                     {[1, 2, 3, 4, 5].map((star) => (
-                      <option key={star} value={star}>{star} / 5</option>
+                      <option key={star} value={star}>
+                        {star} / 5
+                      </option>
                     ))}
                   </select>
                 </label>
@@ -638,6 +847,75 @@ const RoomDetailPage = () => {
         onSubmit={submitRoomReport}
         isSubmitting={isReporting}
       />
+
+      {isGalleryOpen ? (
+        <div className="fixed inset-0 z-[120] bg-slate-950/95 px-3 py-4 text-white md:px-6 md:py-6" role="dialog" aria-modal="true">
+          <div className="mx-auto flex h-full w-full max-w-7xl flex-col">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-white/60">Bộ ảnh phòng</p>
+                <p className="mt-1 text-lg font-bold">
+                  {activePhotoIndex + 1} / {galleryImages.length}
+                </p>
+              </div>
+              <button
+                className="inline-flex size-11 items-center justify-center rounded-full border border-white/15 bg-white/10 transition hover:bg-white/15"
+                type="button"
+                onClick={closeGallery}
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+
+            <div className="relative flex min-h-0 flex-1 items-center justify-center">
+              {galleryImages.length > 1 ? (
+                <button
+                  className="absolute left-0 top-1/2 z-10 hidden size-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-slate-950/60 backdrop-blur transition hover:bg-slate-900/80 md:inline-flex"
+                  type="button"
+                  onClick={goToPrevPhoto}
+                >
+                  <span className="material-symbols-outlined">chevron_left</span>
+                </button>
+              ) : null}
+
+              <div
+                className="flex h-full w-full items-center justify-center overflow-hidden rounded-[28px] bg-slate-900/80"
+                onTouchStart={(event) => handleTouchStart(lightboxTouchRef, event)}
+                onTouchEnd={(event) => handleTouchEnd(lightboxTouchRef, event)}
+              >
+                <img alt={`${room.title} - ảnh ${activePhotoIndex + 1}`} className="max-h-full w-full object-contain" src={galleryImages[activePhotoIndex]} />
+              </div>
+
+              {galleryImages.length > 1 ? (
+                <button
+                  className="absolute right-0 top-1/2 z-10 hidden size-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-slate-950/60 backdrop-blur transition hover:bg-slate-900/80 md:inline-flex"
+                  type="button"
+                  onClick={goToNextPhoto}
+                >
+                  <span className="material-symbols-outlined">chevron_right</span>
+                </button>
+              ) : null}
+            </div>
+
+            {galleryImages.length > 1 ? (
+              <div className="mt-4 flex gap-3 overflow-x-auto pb-1">
+                {galleryImages.map((image, index) => (
+                  <button
+                    className={`relative h-20 w-24 shrink-0 overflow-hidden rounded-2xl border-2 transition ${
+                      activePhotoIndex === index ? "border-white shadow-lg shadow-white/15" : "border-white/10 opacity-70"
+                    }`}
+                    key={`lightbox-thumb-${image}-${index}`}
+                    type="button"
+                    onClick={() => selectPhoto(index)}
+                  >
+                    <img alt={`Ảnh ${index + 1}`} className="h-full w-full object-cover" src={image} />
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 };

@@ -41,7 +41,7 @@ class ChatService {
     });
   }
 
-  async getConversation({ userId, peerId, roomId }) {
+  async getConversation({ userId, peerId, roomId, limit = 10, beforeId }) {
     const where = {
       [Op.or]: [
         { senderId: userId, receiverId: peerId },
@@ -53,12 +53,26 @@ class ChatService {
       where.roomId = Number(roomId);
     }
 
-    const messages = await this.repository.getList({
+    if (beforeId) {
+      where.id = { [Op.lt]: Number(beforeId) };
+    }
+
+    const normalizedLimit = Math.min(Math.max(Number(limit) || 10, 1), 50);
+    const rows = await this.repository.getList({
       where,
-      order: [["createdAt", "ASC"]],
+      order: [["createdAt", "DESC"]],
+      limit: normalizedLimit + 1,
     });
 
-    return messages;
+    const hasMore = rows.length > normalizedLimit;
+    const items = rows
+      .slice(0, normalizedLimit)
+      .reverse();
+
+    return {
+      items,
+      hasMore,
+    };
   }
 
   async getInbox({ userId }) {

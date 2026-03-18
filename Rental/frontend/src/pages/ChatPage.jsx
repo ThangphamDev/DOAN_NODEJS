@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import useChatConversation from "@/hooks/useChatConversation";
 
 const formatMessageTime = (value) => {
@@ -16,20 +16,74 @@ const ChatPage = () => {
     inbox,
     activeThread,
     messages,
+    hasMoreMessages,
+    isLoadingMessages,
+    isLoadingOlderMessages,
     content,
     setContent,
     sendMessage,
+    loadOlderMessages,
     selectConversation,
     hasActiveConversation,
     isOwnMessage,
     isThreadActive,
   } = useChatConversation();
   const [searchQuery, setSearchQuery] = useState("");
-  const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
+  const previousThreadKeyRef = useRef("");
+  const previousLastMessageIdRef = useRef(null);
+  const previousMessageCountRef = useRef(0);
+  const pendingOlderScrollRef = useRef(null);
+  const shouldScrollToBottomRef = useRef(false);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [messages, activeThread]);
+    const container = messagesContainerRef.current;
+    if (!container) return;
+
+    const threadKey = `${activeThread?.peerId || 0}-${activeThread?.roomId || 0}`;
+    const pendingSnapshot = pendingOlderScrollRef.current;
+    const currentLastMessageId = messages.length ? Number(messages[messages.length - 1]?.id || 0) : null;
+
+    if (pendingSnapshot) {
+      container.scrollTop = pendingSnapshot.scrollTop + (container.scrollHeight - pendingSnapshot.scrollHeight);
+      pendingOlderScrollRef.current = null;
+    } else if (previousThreadKeyRef.current !== threadKey) {
+      shouldScrollToBottomRef.current = true;
+    } else if (shouldScrollToBottomRef.current && !isLoadingMessages && messages.length > 0) {
+      container.scrollTop = container.scrollHeight;
+      shouldScrollToBottomRef.current = false;
+    } else if (
+      previousThreadKeyRef.current === threadKey &&
+      !isLoadingMessages &&
+      !isLoadingOlderMessages &&
+      messages.length > previousMessageCountRef.current &&
+      currentLastMessageId &&
+      previousLastMessageIdRef.current &&
+      currentLastMessageId !== previousLastMessageIdRef.current
+    ) {
+      container.scrollTo({
+        top: container.scrollHeight,
+        behavior: "smooth",
+      });
+    }
+
+    previousThreadKeyRef.current = threadKey;
+    previousLastMessageIdRef.current = currentLastMessageId;
+    previousMessageCountRef.current = messages.length;
+  }, [activeThread, isLoadingMessages, isLoadingOlderMessages, messages]);
+
+  const handleMessagesScroll = useCallback(async () => {
+    const container = messagesContainerRef.current;
+    if (!container || container.scrollTop > 80 || !hasMoreMessages || isLoadingOlderMessages) {
+      return;
+    }
+
+    pendingOlderScrollRef.current = {
+      scrollHeight: container.scrollHeight,
+      scrollTop: container.scrollTop,
+    };
+    await loadOlderMessages();
+  }, [hasMoreMessages, isLoadingOlderMessages, loadOlderMessages]);
 
   const filteredInbox = useMemo(() => {
     const normalized = searchQuery.trim().toLowerCase();
@@ -140,7 +194,7 @@ const ChatPage = () => {
             </div>
           </header>
 
-          <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto p-4 md:p-6">
+          <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto p-4 md:p-6" ref={messagesContainerRef} onScroll={handleMessagesScroll}>
             <div className="flex min-h-full flex-col gap-6">
               {hasActiveConversation ? (
                 <div className="flex justify-center">
@@ -148,8 +202,22 @@ const ChatPage = () => {
                 </div>
               ) : null}
 
+              {hasActiveConversation && isLoadingOlderMessages ? (
+                <div className="flex justify-center">
+                  <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold text-slate-500">Đang tải thêm tin nhắn cũ...</span>
+                </div>
+              ) : null}
+
+              {hasActiveConversation && !isLoadingOlderMessages && hasMoreMessages ? (
+                <div className="flex justify-center">
+                  <span className="rounded-full bg-slate-50 px-3 py-1 text-[11px] font-medium text-slate-400">Cuộn lên để xem 10 tin cũ hơn</span>
+                </div>
+              ) : null}
+
               {!hasActiveConversation ? (
                 <div className="flex flex-1 items-center justify-center text-sm text-slate-500">Chọn một cuộc trò chuyện để bắt đầu nhắn tin.</div>
+              ) : isLoadingMessages ? (
+                <div className="flex flex-1 items-center justify-center text-sm text-slate-500">Đang tải 10 tin nhắn gần nhất...</div>
               ) : messages.length === 0 ? (
                 <div className="flex flex-1 items-center justify-center text-sm text-slate-500">Chưa có tin nhắn trong hội thoại này.</div>
               ) : (
@@ -180,7 +248,6 @@ const ChatPage = () => {
                   );
                 })
               )}
-              <div ref={messagesEndRef}></div>
             </div>
           </div>
 

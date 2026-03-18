@@ -42,12 +42,14 @@ class ChatController {
 
 	async getConversation(req, res, next) {
 		try {
-			const messages = await this.service.getConversation({
+			const data = await this.service.getConversation({
 				userId: req.user.id,
 				peerId: Number(req.params.peerId),
 				roomId: req.query.roomId,
+				limit: req.query.limit,
+				beforeId: req.query.beforeId,
 			});
-			return sendSuccess(res, { data: messages });
+			return sendSuccess(res, { data });
 		} catch (error) {
 			return next(error);
 		}
