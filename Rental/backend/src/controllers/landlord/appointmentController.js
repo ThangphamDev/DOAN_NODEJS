@@ -18,6 +18,7 @@ class LandlordAppointmentController {
             appointmentId: req.params.id,
             landlordId: req.user.id,
             status: req.body.status,
+            rejectReason: req.body.rejectReason,
           },
           { transaction: tx }
         )

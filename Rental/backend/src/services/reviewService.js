@@ -41,6 +41,25 @@ class ReviewService {
       order: [["createdAt", "DESC"]],
     });
   }
+
+  async replyToReview({ reviewId, landlordId, content }, options = {}) {
+    if (!content) {
+      throw new ApiError(400, "Content is required");
+    }
+
+    const review = await this.repository.getById(reviewId);
+    if (!review) {
+      throw new ApiError(404, "Review not found");
+    }
+
+    const room = await this.roomRepository.getById(review.roomId);
+    if (!room || Number(room.landlordId) !== Number(landlordId)) {
+      throw new ApiError(403, "Not allowed to reply to this room's review");
+    }
+
+    await this.repository.updateById(reviewId, { landlordReply: content }, options);
+    return { ...review.toJSON(), landlordReply: content };
+  }
 }
 
 module.exports = new ReviewService(reviewRepository, roomRepository);

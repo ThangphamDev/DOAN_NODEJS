@@ -28,6 +28,12 @@ module.exports = (sequelize) =>
       note: {
         type: DataTypes.TEXT,
       },
+      phone: {
+        type: DataTypes.STRING,
+      },
+      rejectReason: {
+        type: DataTypes.TEXT,
+      },
       status: {
         type: DataTypes.ENUM("pending", "approved", "rejected", "cancelled"),
         defaultValue: "pending",

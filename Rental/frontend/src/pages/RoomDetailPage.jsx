@@ -35,6 +35,7 @@ const RoomDetailPage = () => {
   const notify = useNotify();
   const [room, setRoom] = useState(null);
   const [scheduledAt, setScheduledAt] = useState("");
+  const [phone, setPhone] = useState("");
   const [leaseTerm, setLeaseTerm] = useState("12 tháng");
   const [review, setReview] = useState({ rating: 5, content: "" });
   const [chatContent, setChatContent] = useState("");
@@ -183,9 +184,20 @@ const RoomDetailPage = () => {
       notify.warning("Vui lòng chọn thời gian xem phòng.");
       return;
     }
+    
+    if (!phone) {
+      notify.warning("Vui lòng nhập số điện thoại liên hệ.");
+      return;
+    }
+    
+    const phoneRegex = /^(0|\+84)(3|5|7|8|9)[0-9]{8}$/;
+    if (!phoneRegex.test(phone)) {
+      notify.warning("Số điện thoại không hợp lệ. Vui lòng kiểm tra lại.");
+      return;
+    }
 
     try {
-      await roomService.createAppointment(id, { scheduledAt, leaseTerm });
+      await roomService.createAppointment(id, { scheduledAt, leaseTerm, phone });
       notify.success("Đã gửi lịch xem phòng thành công.");
       setScheduledAt("");
     } catch (err) {
@@ -478,6 +490,19 @@ const RoomDetailPage = () => {
                     type="datetime-local"
                     value={scheduledAt}
                     onChange={(event) => setScheduledAt(event.target.value)}
+                  />
+                </div>
+              </label>
+              <label className="flex flex-col gap-2">
+                <span className="px-1 text-xs font-bold uppercase text-slate-500">Số điện thoại liên hệ</span>
+                <div className="relative">
+                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">phone</span>
+                  <input
+                    className="w-full rounded-lg border-none bg-slate-100 py-2 pl-10 pr-4 font-medium text-slate-700 focus:outline-primary"
+                    type="tel"
+                    placeholder="Nhập số điện thoại liên hệ"
+                    value={phone}
+                    onChange={(event) => setPhone(event.target.value)}
                   />
                 </div>
               </label>

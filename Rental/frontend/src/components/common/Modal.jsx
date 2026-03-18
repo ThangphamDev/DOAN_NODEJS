@@ -1,4 +1,4 @@
-﻿import { useEffect } from "react";
+import { useEffect } from "react";
 
 const Modal = ({
   open,
@@ -35,7 +35,7 @@ const Modal = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4">
-      <div className={`w-full ${maxWidthClass} rounded-2xl bg-white p-6 shadow-2xl`}>
+      <div className={`w-full ${maxWidthClass} max-h-[calc(100vh-2rem)] overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl`}>
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
             <h3 className="text-xl font-bold text-slate-900">{title}</h3>

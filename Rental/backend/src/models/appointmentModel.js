@@ -9,6 +9,8 @@ const toAppointmentModel = (appointment) => {
     scheduledAt: appointment.scheduledAt,
     status: appointment.status,
     note: appointment.note,
+    phone: appointment.phone,
+    rejectReason: appointment.rejectReason,
     createdAt: appointment.createdAt,
   };
 };

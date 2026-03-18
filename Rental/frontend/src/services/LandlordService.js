@@ -25,8 +25,8 @@ class LandlordService {
     return api.post("/rooms", formData);
   }
 
-  updateAppointmentStatus(id, status) {
-    return api.patch(`/appointments/${id}/status`, { status });
+  updateAppointmentStatus(id, status, rejectReason = "") {
+    return api.patch(`/appointments/${id}/status`, { status, rejectReason });
   }
 
   updateRoom(id, payload) {
@@ -35,6 +35,10 @@ class LandlordService {
 
   deleteRoom(id) {
     return api.delete(`/rooms/${id}`);
+  }
+
+  replyReview(reviewId, content) {
+    return api.put(`/reviews/${reviewId}/reply`, { content });
   }
 }
 

@@ -1,12 +1,15 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import landlordService from "@/services/LandlordService";
 import { getApiData, getApiMessage } from "@/utils/apiResponse";
+import { useNotify } from "@/context/NotifyContext.jsx";
 
 const ManageReviewsPage = () => {
   const [rooms, setRooms] = useState([]);
   const [error, setError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all");
+  const [replyText, setReplyText] = useState({});
+  const notify = useNotify();
 
   useEffect(() => {
     const loadRooms = async () => {
@@ -21,6 +24,22 @@ const ManageReviewsPage = () => {
 
     loadRooms();
   }, []);
+
+  const handleReplySubmit = async (reviewId) => {
+    const content = replyText[reviewId]?.trim();
+    if (!content) return;
+    try {
+      await landlordService.replyReview(reviewId, content);
+      notify.success("Đã gửi phản hồi đánh giá.");
+      setRooms(prevRooms => prevRooms.map(room => ({
+        ...room,
+        reviews: room.reviews?.map(r => r.id === reviewId ? { ...r, landlordReply: content } : r)
+      })));
+      setReplyText(prev => ({ ...prev, [reviewId]: "" }));
+    } catch (err) {
+      notify.error(getApiMessage(err, "Không thể gửi câu trả lời"));
+    }
+  };
 
   const reviewItems = useMemo(
     () =>
@@ -81,7 +100,7 @@ const ManageReviewsPage = () => {
       : { label: "Cần chú ý", className: "bg-red-100 text-red-600" };
 
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-8">
+    <div className="flex w-full flex-col gap-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 className="text-3xl font-black tracking-tight">Quản lý đánh giá</h2>
@@ -168,6 +187,32 @@ const ManageReviewsPage = () => {
                 </div>
 
                 <p className="mb-6 text-sm leading-relaxed text-slate-700">{review.content || "(Không có nội dung)"}</p>
+
+                {review.landlordReply ? (
+                  <div className="mb-6 rounded-lg border-l-4 border-primary bg-primary/5 p-4 pl-5">
+                    <p className="mb-1 text-xs font-bold text-primary">Chủ trọ phản hồi:</p>
+                    <p className="text-sm text-slate-700">{review.landlordReply}</p>
+                  </div>
+                ) : (
+                  <div className="mb-6 flex items-start gap-3">
+                    <div className="flex-1">
+                      <textarea
+                        className="w-full resize-none rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                        onChange={(e) => setReplyText(prev => ({ ...prev, [review.id]: e.target.value }))}
+                        placeholder="Viết câu trả lời cho đánh giá này..."
+                        rows="2"
+                        value={replyText[review.id] || ""}
+                      />
+                    </div>
+                    <button 
+                      className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-primary/90"
+                      onClick={() => handleReplySubmit(review.id)}
+                      type="button"
+                    >
+                      Gửi
+                    </button>
+                  </div>
+                )}
 
                 <div className="rounded-lg bg-slate-50 p-4">
                   <div className="mb-2 flex items-center justify-between gap-3">

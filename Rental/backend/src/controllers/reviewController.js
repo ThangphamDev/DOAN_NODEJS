@@ -9,6 +9,7 @@ class ReviewController {
 		this.service = service;
 		this.createReview = this.createReview.bind(this);
 		this.getRoomReviews = this.getRoomReviews.bind(this);
+		this.replyToReview = this.replyToReview.bind(this);
 	}
 
 	async createReview(req, res, next) {
@@ -39,6 +40,24 @@ class ReviewController {
 		}
 	}
 
+	async replyToReview(req, res, next) {
+		try {
+			const data = await runInTransaction((tx) =>
+				this.service.replyToReview(
+					{
+						reviewId: Number(req.params.reviewId),
+						landlordId: req.user.id,
+						content: req.body.content,
+					},
+					{ transaction: tx }
+				)
+			);
+			return sendSuccess(res, { data });
+		} catch (error) {
+			return next(error);
+		}
+	}
+
 	registerRoutes(app, prefix = "/api") {
 		app.get(`${prefix}/reviews/room/:roomId`, this.getRoomReviews);
 		app.post(
@@ -46,6 +65,12 @@ class ReviewController {
 			authenticate,
 			authorize("customer"),
 			this.createReview
+		);
+		app.put(
+			`${prefix}/reviews/:reviewId/reply`,
+			authenticate,
+			authorize("landlord"),
+			this.replyToReview
 		);
 	}
 }

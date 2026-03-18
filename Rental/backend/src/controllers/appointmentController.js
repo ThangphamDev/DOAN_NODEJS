@@ -20,6 +20,7 @@ class AppointmentController {
 						roomId: Number(req.params.roomId),
 						scheduledAt: req.body.scheduledAt,
 						note: req.body.note,
+						phone: req.body.phone,
 					},
 					{ transaction: tx }
 				)
