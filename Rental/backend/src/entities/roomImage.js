@@ -17,6 +17,11 @@ module.exports = (sequelize) =>
         type: DataTypes.STRING(500),
         allowNull: false,
       },
+      sortOrder: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+      },
     },
     {
       tableName: "room_images",

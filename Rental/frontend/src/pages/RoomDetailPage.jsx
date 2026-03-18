@@ -8,16 +8,8 @@ import useAuth from "@/hooks/useAuth";
 import chatService from "@/services/ChatService";
 import roomService from "@/services/RoomService";
 import { getApiData, getApiMessage } from "@/utils/apiResponse";
+import { getBadgeToneClasses, normalizeRoomDetails } from "@/utils/roomDetails";
 import { getToken } from "@/utils/storage";
-
-const amenityItems = [
-  { icon: "wifi", label: "Wifi tốc độ cao" },
-  { icon: "ac_unit", label: "Máy lạnh" },
-  { icon: "local_parking", label: "Chỗ để xe" },
-  { icon: "fitness_center", label: "Không gian thoáng" },
-  { icon: "local_laundry_service", label: "Khu giặt phơi" },
-  { icon: "security", label: "An ninh 24/7" },
-];
 
 const formatMessageTime = (value) => {
   if (!value) return "Vừa xong";
@@ -75,6 +67,8 @@ const RoomDetailPage = () => {
       .filter(Boolean);
   }, [room?.images, uploadBaseUrl]);
 
+  const roomDetails = useMemo(() => normalizeRoomDetails(room?.details, room || {}), [room]);
+
   const averageRating = useMemo(() => {
     const reviews = room?.reviews || [];
     if (!reviews.length) return "0.0";
@@ -111,6 +105,12 @@ const RoomDetailPage = () => {
   useEffect(() => {
     fetchRoom();
   }, [fetchRoom]);
+
+  useEffect(() => {
+    const defaultLeaseTerm =
+      roomDetails?.booking?.defaultLeaseTerm || roomDetails?.booking?.leaseTerms?.[0] || "12 tháng";
+    setLeaseTerm(defaultLeaseTerm);
+  }, [roomDetails]);
 
   const loadRoomConversation = useCallback(async () => {
     if (!room?.landlord?.id) return;
@@ -155,11 +155,7 @@ const RoomDetailPage = () => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [chatMessages, showChatComposer]);
 
-  useEffect(() => {
-    return () => {
-      socket?.disconnect();
-    };
-  }, [socket]);
+  useEffect(() => () => socket?.disconnect(), [socket]);
 
   const handleBack = () => {
     if (window.history.length > 1) {
@@ -184,12 +180,12 @@ const RoomDetailPage = () => {
       notify.warning("Vui lòng chọn thời gian xem phòng.");
       return;
     }
-    
+
     if (!phone) {
       notify.warning("Vui lòng nhập số điện thoại liên hệ.");
       return;
     }
-    
+
     const phoneRegex = /^(0|\+84)(3|5|7|8|9)[0-9]{8}$/;
     if (!phoneRegex.test(phone)) {
       notify.warning("Số điện thoại không hợp lệ. Vui lòng kiểm tra lại.");
@@ -275,6 +271,17 @@ const RoomDetailPage = () => {
 
   if (!room) return <LoadingState />;
 
+  const quickFacts = roomDetails.quickFacts || [];
+  const amenities = roomDetails.amenities || [];
+  const leaseTerms = roomDetails.booking?.leaseTerms?.length ? roomDetails.booking.leaseTerms : ["12 tháng"];
+  const statusClass =
+    room.status === "active"
+      ? "bg-green-500/10 text-green-600"
+      : room.status === "rented"
+        ? "bg-amber-500/10 text-amber-600"
+        : "bg-slate-200 text-slate-700";
+  const statusLabel = room.status === "active" ? "Còn trống" : room.status === "rented" ? "Đã thuê" : "Tạm ẩn";
+
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col px-4 py-6 md:px-10">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
@@ -317,19 +324,16 @@ const RoomDetailPage = () => {
       <div className="flex flex-col gap-10 lg:flex-row">
         <div className="flex-1">
           <div className="mb-6 flex flex-col gap-2">
-            <div className="flex items-center gap-2">
-              <span className="rounded bg-primary/10 px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-primary">Đã xác minh</span>
-              <span
-                className={`rounded px-2.5 py-1 text-xs font-bold uppercase tracking-wider ${
-                  room.status === "active"
-                    ? "bg-green-500/10 text-green-600"
-                    : room.status === "rented"
-                      ? "bg-amber-500/10 text-amber-600"
-                      : "bg-slate-200 text-slate-700"
-                }`}
-              >
-                {room.status === "active" ? "Còn trống" : room.status === "rented" ? "Đã thuê" : "Tạm ẩn"}
-              </span>
+            <div className="flex flex-wrap items-center gap-2">
+              {roomDetails.badges.map((badge) => (
+                <span
+                  className={`rounded px-2.5 py-1 text-xs font-bold uppercase tracking-wider ${getBadgeToneClasses(badge.tone)}`}
+                  key={`${badge.label}-${badge.tone}`}
+                >
+                  {badge.label}
+                </span>
+              ))}
+              <span className={`rounded px-2.5 py-1 text-xs font-bold uppercase tracking-wider ${statusClass}`}>{statusLabel}</span>
             </div>
             <h1 className="text-4xl font-black leading-tight tracking-tight text-slate-900">{room.title}</h1>
             <p className="flex items-center gap-1 text-slate-500">
@@ -338,27 +342,14 @@ const RoomDetailPage = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 border-y border-slate-200 py-6 md:grid-cols-4">
-            <div className="flex flex-col items-center rounded-lg bg-slate-100/60 p-3 text-center">
-              <span className="material-symbols-outlined mb-1 text-primary">square_foot</span>
-              <span className="font-bold text-slate-900">{room.area || "Đang cập nhật"}</span>
-              <span className="text-xs text-slate-500">Diện tích</span>
-            </div>
-            <div className="flex flex-col items-center rounded-lg bg-slate-100/60 p-3 text-center">
-              <span className="material-symbols-outlined mb-1 text-primary">bed</span>
-              <span className="font-bold text-slate-900">1 phòng</span>
-              <span className="text-xs text-slate-500">Không gian</span>
-            </div>
-            <div className="flex flex-col items-center rounded-lg bg-slate-100/60 p-3 text-center">
-              <span className="material-symbols-outlined mb-1 text-primary">bathtub</span>
-              <span className="font-bold text-slate-900">Tiện nghi cơ bản</span>
-              <span className="text-xs text-slate-500">Sinh hoạt</span>
-            </div>
-            <div className="flex flex-col items-center rounded-lg bg-slate-100/60 p-3 text-center">
-              <span className="material-symbols-outlined mb-1 text-primary">event_available</span>
-              <span className="font-bold text-slate-900">Linh hoạt</span>
-              <span className="text-xs text-slate-500">Hợp đồng</span>
-            </div>
+          <div className={`grid gap-4 border-y border-slate-200 py-6 grid-cols-2 ${quickFacts.length > 2 ? "md:grid-cols-4" : "md:grid-cols-2"}`}>
+            {quickFacts.map((item) => (
+              <div className="flex flex-col items-center rounded-lg bg-slate-100/60 p-3 text-center" key={`${item.label}-${item.value}`}>
+                <span className="material-symbols-outlined mb-1 text-primary">{item.icon}</span>
+                <span className="font-bold text-slate-900">{item.value}</span>
+                <span className="text-xs text-slate-500">{item.label}</span>
+              </div>
+            ))}
           </div>
 
           <div className="py-8">
@@ -370,23 +361,28 @@ const RoomDetailPage = () => {
 
           <div className="border-t border-slate-200 py-8">
             <h3 className="mb-6 text-2xl font-bold text-slate-900">Tiện ích</h3>
-            <div className="grid grid-cols-2 gap-y-4 md:grid-cols-3">
-              {amenityItems.map((item) => (
-                <div className="flex items-center gap-3" key={item.label}>
-                  <span className="material-symbols-outlined text-primary">{item.icon}</span>
-                  <span className="text-slate-700">{item.label}</span>
-                </div>
-              ))}
-            </div>
+            {amenities.length === 0 ? (
+              <p className="rounded-xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-500">Chủ trọ chưa cập nhật tiện ích cho phòng này.</p>
+            ) : (
+              <div className="grid grid-cols-2 gap-y-4 md:grid-cols-3">
+                {amenities.map((item) => (
+                  <div className="flex items-center gap-3" key={`${item.icon}-${item.label}`}>
+                    <span className="material-symbols-outlined text-primary">{item.icon}</span>
+                    <span className="text-slate-700">{item.label}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="border-t border-slate-200 py-8">
             <h3 className="mb-6 text-2xl font-bold text-slate-900">Vị trí</h3>
             <div className="relative h-80 w-full overflow-hidden rounded-xl bg-slate-200 shadow-inner">
               <div className="absolute inset-0 bg-gradient-to-br from-slate-200 via-slate-100 to-slate-300"></div>
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+              <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
                 <span className="material-symbols-outlined text-5xl text-primary drop-shadow-lg">location_on</span>
-                <div className="mt-2 rounded bg-white px-3 py-1 text-sm font-bold shadow-md">{room.address || "Vị trí phòng trọ"}</div>
+                <div className="mt-2 rounded bg-white px-3 py-1 text-sm font-bold shadow-md">{roomDetails.location?.label || room.address || "Vị trí phòng trọ"}</div>
+                <p className="mt-3 max-w-xl text-sm text-slate-600">{room.address || "Địa chỉ đang được cập nhật."}</p>
               </div>
             </div>
           </div>
@@ -469,15 +465,17 @@ const RoomDetailPage = () => {
 
         <aside className="w-full lg:w-[400px]">
           <div className="sticky top-24 rounded-xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-200/50">
-            <div className="mb-6 flex items-end justify-between">
+            <div className="mb-6 flex items-end justify-between gap-4">
               <div>
-                <p className="text-sm text-slate-500">Giá thuê mỗi tháng</p>
+                <p className="text-sm text-slate-500">{roomDetails.pricing?.label || "Giá thuê mỗi tháng"}</p>
                 <p className="text-3xl font-black text-slate-900">{Number(room.price || 0).toLocaleString("vi-VN")}đ</p>
               </div>
-              <span className="flex items-center gap-1 rounded bg-green-500/10 px-2 py-1 text-sm font-bold text-green-600">
-                <span className="material-symbols-outlined text-xs">bolt</span>
-                Ưu tiên xem nhanh
-              </span>
+              {roomDetails.pricing?.badgeText ? (
+                <span className="flex items-center gap-1 rounded bg-green-500/10 px-2 py-1 text-sm font-bold text-green-600">
+                  <span className="material-symbols-outlined text-xs">bolt</span>
+                  {roomDetails.pricing.badgeText}
+                </span>
+              ) : null}
             </div>
 
             <div className="mb-8 space-y-4">
@@ -515,9 +513,9 @@ const RoomDetailPage = () => {
                     value={leaseTerm}
                     onChange={(event) => setLeaseTerm(event.target.value)}
                   >
-                    <option>12 tháng</option>
-                    <option>6 tháng</option>
-                    <option>Linh hoạt</option>
+                    {leaseTerms.map((term) => (
+                      <option key={term}>{term}</option>
+                    ))}
                   </select>
                 </div>
               </label>
@@ -548,7 +546,8 @@ const RoomDetailPage = () => {
               </div>
               <div>
                 <p className="font-bold text-slate-900">{room.landlord?.fullName || "Chủ trọ"}</p>
-                <p className="text-xs text-slate-500">{room.landlord?.phone || "Đã xác minh"}</p>
+                <p className="text-xs text-slate-500">{roomDetails.owner?.subtitle || "Chủ trọ đã xác minh"}</p>
+                {room.landlord?.phone ? <p className="text-xs text-slate-400">{room.landlord.phone}</p> : null}
               </div>
             </div>
           </div>

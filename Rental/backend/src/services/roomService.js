@@ -1,6 +1,6 @@
 const { Op } = require("sequelize");
 const { RoomImage, User, Review } = require("@/entities");
-const { toRoomListModel } = require("@/models");
+const { toRoomListModel, parseRoomDetails, normalizeRoomDetails, attachRoomDetails } = require("@/models");
 const roomRepository = require("@/repositories/roomRepository");
 const roomReportRepository = require("@/repositories/roomReportRepository");
 const ApiError = require("@/utils/ApiError");
@@ -9,6 +9,68 @@ class RoomService {
   constructor(repository, reportRepository) {
     this.repository = repository;
     this.reportRepository = reportRepository;
+  }
+
+  parseImageManifest(rawManifest) {
+    if (rawManifest === undefined || rawManifest === null || rawManifest === "") {
+      return undefined;
+    }
+
+    try {
+      const parsed = typeof rawManifest === "string" ? JSON.parse(rawManifest) : rawManifest;
+      if (!Array.isArray(parsed)) {
+        return null;
+      }
+
+      return parsed;
+    } catch {
+      return null;
+    }
+  }
+
+  buildOrderedImages({ roomId, existingImages = [], manifest, files = [] }) {
+    if (!manifest) {
+      return files.map((file, index) => ({
+        roomId: Number(roomId),
+        imageUrl: `/uploads/${file.filename}`,
+        sortOrder: index,
+      }));
+    }
+
+    const existingImageMap = new Map(
+      (existingImages || []).map((image) => [Number(image.id), image])
+    );
+    const fileQueue = [...files];
+
+    const orderedImages = manifest.reduce((result, item, index) => {
+      if (item?.type === "existing") {
+        const existingImage = existingImageMap.get(Number(item.id));
+        if (existingImage) {
+          result.push({
+            roomId: Number(roomId),
+            imageUrl: existingImage.imageUrl,
+            sortOrder: index,
+          });
+        }
+        return result;
+      }
+
+      if (item?.type === "new") {
+        const nextFile = fileQueue.shift();
+        if (!nextFile) {
+          throw new ApiError(400, "Missing uploaded file for image manifest");
+        }
+
+        result.push({
+          roomId: Number(roomId),
+          imageUrl: `/uploads/${nextFile.filename}`,
+          sortOrder: index,
+        });
+      }
+
+      return result;
+    }, []);
+    return orderedImages;
   }
 
   async listLandlordRooms({ landlordId, status }) {
@@ -28,10 +90,14 @@ class RoomService {
           include: [{ model: User, as: "reviewer", attributes: ["id", "fullName"] }],
         },
       ],
-      order: [["createdAt", "DESC"]],
+      order: [
+        ["createdAt", "DESC"],
+        [{ model: RoomImage, as: "images" }, "sortOrder", "ASC"],
+        [{ model: RoomImage, as: "images" }, "createdAt", "ASC"],
+      ],
     });
 
-    return rooms;
+    return rooms.map((room) => attachRoomDetails(room));
   }
 
   async listRooms({ minPrice, maxPrice, area, page = 1, limit = 10 }) {
@@ -52,7 +118,11 @@ class RoomService {
     const { rows, count } = await this.repository.getListWithCount({
       where,
       include: [{ model: RoomImage, as: "images" }],
-      order: [["createdAt", "DESC"]],
+      order: [
+        ["createdAt", "DESC"],
+        [{ model: RoomImage, as: "images" }, "sortOrder", "ASC"],
+        [{ model: RoomImage, as: "images" }, "createdAt", "ASC"],
+      ],
       offset,
       limit: Number(limit),
     });
@@ -76,13 +146,17 @@ class RoomService {
           include: [{ model: User, as: "reviewer", attributes: ["id", "fullName"] }],
         },
       ],
+      order: [
+        [{ model: RoomImage, as: "images" }, "sortOrder", "ASC"],
+        [{ model: RoomImage, as: "images" }, "createdAt", "ASC"],
+      ],
     });
 
     if (!room || room.status === "deleted") {
       throw new ApiError(404, "Room not found");
     }
 
-    return room;
+    return attachRoomDetails(room);
   }
 
   async reportRoom(id, payload = {}, options = {}) {
@@ -124,24 +198,58 @@ class RoomService {
       throw new ApiError(400, "Missing required fields");
     }
 
+    const parsedDetails = parseRoomDetails(body.details);
+    if (parsedDetails === null) {
+      throw new ApiError(400, "Invalid room details payload");
+    }
+
+    const details = normalizeRoomDetails(parsedDetails, {
+      title,
+      description,
+      price,
+      area,
+      address,
+    });
+
     const room = await this.repository.insert(
-      { landlordId: userId, title, description, price, area, address },
+      {
+        landlordId: userId,
+        title,
+        description,
+        price,
+        area,
+        address,
+        status: body.status || "active",
+        details,
+      },
       options
     );
 
-    if (files?.length) {
-      const images = files.map((file) => ({
+    const imageManifest = this.parseImageManifest(body.imageManifest);
+    if (imageManifest === null) {
+      throw new ApiError(400, "Invalid image manifest payload");
+    }
+
+    if (files?.length || imageManifest) {
+      const images = this.buildOrderedImages({
         roomId: room.id,
-        imageUrl: `/uploads/${file.filename}`,
-      }));
+        manifest: imageManifest,
+        files,
+      });
       await this.repository.insertImages(images, options);
     }
 
     return { message: "Room created", roomId: room.id };
   }
 
-  async updateRoom({ roomId, userId, body }, options = {}) {
-    const room = await this.repository.getById(roomId);
+  async updateRoom({ roomId, userId, body, files }, options = {}) {
+    const room = await this.repository.getById(roomId, {
+      include: [{ model: RoomImage, as: "images" }],
+      order: [
+        [{ model: RoomImage, as: "images" }, "sortOrder", "ASC"],
+        [{ model: RoomImage, as: "images" }, "createdAt", "ASC"],
+      ],
+    });
 
     if (!room || room.status === "deleted") {
       throw new ApiError(404, "Room not found");
@@ -151,11 +259,52 @@ class RoomService {
       throw new ApiError(403, "Forbidden");
     }
 
-    const { title, description, price, area, address, status } = body;
-    await this.repository.updateById(roomId, { title, description, price, area, address, status }, options);
+    const parsedDetails = body.details === undefined ? room.details : parseRoomDetails(body.details);
+    if (parsedDetails === null) {
+      throw new ApiError(400, "Invalid room details payload");
+    }
+    const imageManifest = this.parseImageManifest(body.imageManifest);
+    if (imageManifest === null) {
+      throw new ApiError(400, "Invalid image manifest payload");
+    }
 
-    const updatedRoom = await this.repository.getById(roomId);
-    return { message: "Room updated", room: updatedRoom };
+    const nextPayload = {
+      title: body.title ?? room.title,
+      description: body.description ?? room.description,
+      price: body.price ?? room.price,
+      area: body.area ?? room.area,
+      address: body.address ?? room.address,
+      status: body.status ?? room.status,
+    };
+
+    nextPayload.details = normalizeRoomDetails(parsedDetails, {
+      ...room.get({ plain: true }),
+      ...nextPayload,
+    });
+
+    await this.repository.updateById(roomId, nextPayload, options);
+
+    if (imageManifest || files?.length) {
+      const images = this.buildOrderedImages({
+        roomId,
+        existingImages: room.images || [],
+        manifest: imageManifest || [],
+        files,
+      });
+      await this.repository.deleteImagesByRoomId(roomId, options);
+      if (images.length) {
+        await this.repository.insertImages(images, options);
+      }
+    }
+
+    const updatedRoom = await this.repository.getById(roomId, {
+      include: [{ model: RoomImage, as: "images" }],
+      order: [
+        [{ model: RoomImage, as: "images" }, "sortOrder", "ASC"],
+        [{ model: RoomImage, as: "images" }, "createdAt", "ASC"],
+      ],
+    });
+    return { message: "Room updated", room: attachRoomDetails(updatedRoom) };
   }
 
   async removeRoom({ roomId, userId, role }, options = {}) {

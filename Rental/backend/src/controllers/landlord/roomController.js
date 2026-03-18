@@ -52,6 +52,7 @@ class LandlordRoomController {
             roomId: req.params.id,
             userId: req.user.id,
             body: req.body,
+            files: req.files,
           },
           { transaction: tx }
         )
@@ -94,7 +95,13 @@ class LandlordRoomController {
       upload.array("images", 10),
       this.createRoom
     );
-    app.patch(`${prefix}/rooms/:id`, authenticate, authorize("landlord", "admin"), this.updateRoom);
+    app.patch(
+      `${prefix}/rooms/:id`,
+      authenticate,
+      authorize("landlord", "admin"),
+      upload.array("images", 10),
+      this.updateRoom
+    );
     app.delete(`${prefix}/rooms/:id`, authenticate, authorize("landlord", "admin"), this.removeRoom);
   }
 }

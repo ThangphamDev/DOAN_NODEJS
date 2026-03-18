@@ -13,8 +13,8 @@ class LandlordRoomService {
     return this.service.createRoom({ userId, body, files }, options);
   }
 
-  updateRoom({ roomId, userId, body }, options = {}) {
-    return this.service.updateRoom({ roomId, userId, body }, options);
+  updateRoom({ roomId, userId, body, files }, options = {}) {
+    return this.service.updateRoom({ roomId, userId, body, files }, options);
   }
 
   removeRoom({ roomId, userId, role }, options = {}) {

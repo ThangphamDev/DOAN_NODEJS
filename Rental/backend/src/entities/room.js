@@ -33,8 +33,12 @@ module.exports = (sequelize) =>
         allowNull: false,
       },
       status: {
-        type: DataTypes.ENUM("active", "hidden", "deleted"),
+        type: DataTypes.ENUM("active", "hidden", "rented", "deleted"),
         defaultValue: "active",
+      },
+      details: {
+        type: DataTypes.JSON,
+        allowNull: true,
       },
       reportedCount: {
         type: DataTypes.INTEGER,

@@ -20,6 +20,15 @@ const shouldReset = String(process.env.SEED_RESET || "true") === "true";
 
 const hashPassword = (plainText) => bcrypt.hash(plainText, 10);
 
+const buildRoomDetails = ({ badges = [], quickFacts = [], amenities = [], pricing = {}, booking = {}, owner = {} }) => ({
+  badges,
+  quickFacts,
+  amenities,
+  pricing,
+  booking,
+  owner,
+});
+
 const createUsers = async () => {
   const passwordHash = await hashPassword("123456");
 
@@ -75,6 +84,24 @@ const createRooms = async ({ landlordA, landlordB }) => {
       area: "Quận 3",
       address: "123 Nguyen Trai, Quan 3, TP.HCM",
       status: "active",
+      details: buildRoomDetails({
+        badges: [{ label: "Full nội thất", tone: "primary" }, { label: "Có ban công", tone: "success" }],
+        quickFacts: [
+          { icon: "square_foot", label: "Diện tích", value: "28 m²" },
+          { icon: "bed", label: "Không gian", value: "Studio riêng" },
+          { icon: "bathtub", label: "Sinh hoạt", value: "WC riêng" },
+          { icon: "event_available", label: "Hợp đồng", value: "6-12 tháng" },
+        ],
+        amenities: [
+          { icon: "wifi", label: "Wifi riêng" },
+          { icon: "ac_unit", label: "Máy lạnh" },
+          { icon: "kitchen", label: "Kệ bếp" },
+          { icon: "local_parking", label: "Giữ xe" },
+        ],
+        pricing: { label: "Giá thuê mỗi tháng", badgeText: "Dọn vào ở ngay" },
+        booking: { leaseTerms: ["12 tháng", "6 tháng", "Linh hoạt"], defaultLeaseTerm: "12 tháng" },
+        owner: { subtitle: "Hỗ trợ xem phòng trong ngày" },
+      }),
       reportedCount: 0,
     },
     {
@@ -85,6 +112,24 @@ const createRooms = async ({ landlordA, landlordB }) => {
       area: "Quận 7",
       address: "45 Nguyen Huu Tho, Quan 7, TP.HCM",
       status: "active",
+      details: buildRoomDetails({
+        badges: [{ label: "Gần RMIT", tone: "warning" }, { label: "An ninh tốt", tone: "success" }],
+        quickFacts: [
+          { icon: "square_foot", label: "Diện tích", value: "24 m²" },
+          { icon: "bed", label: "Không gian", value: "1 phòng ngủ" },
+          { icon: "bathtub", label: "Sinh hoạt", value: "Khu bếp riêng" },
+          { icon: "event_available", label: "Hợp đồng", value: "Linh hoạt" },
+        ],
+        amenities: [
+          { icon: "wifi", label: "Wifi tốc độ cao" },
+          { icon: "security", label: "Camera 24/7" },
+          { icon: "local_parking", label: "Bãi xe rộng" },
+          { icon: "local_laundry_service", label: "Máy giặt chung" },
+        ],
+        pricing: { label: "Giá thuê mỗi tháng", badgeText: "Ưu tiên sinh viên" },
+        booking: { leaseTerms: ["12 tháng", "9 tháng", "6 tháng"], defaultLeaseTerm: "9 tháng" },
+        owner: { subtitle: "Phản hồi tin nhắn rất nhanh" },
+      }),
       reportedCount: 2,
     },
     {
@@ -95,6 +140,24 @@ const createRooms = async ({ landlordA, landlordB }) => {
       area: "Bình Thạnh",
       address: "99 Dien Bien Phu, Binh Thanh, TP.HCM",
       status: "active",
+      details: buildRoomDetails({
+        badges: [{ label: "Có thang máy", tone: "primary" }, { label: "Phù hợp người đi làm", tone: "neutral" }],
+        quickFacts: [
+          { icon: "square_foot", label: "Diện tích", value: "32 m²" },
+          { icon: "bed", label: "Không gian", value: "1PN riêng biệt" },
+          { icon: "bathtub", label: "Sinh hoạt", value: "Nội thất đầy đủ" },
+          { icon: "event_available", label: "Hợp đồng", value: "12 tháng" },
+        ],
+        amenities: [
+          { icon: "wifi", label: "Internet riêng" },
+          { icon: "elevator", label: "Thang máy" },
+          { icon: "ac_unit", label: "Máy lạnh" },
+          { icon: "checkroom", label: "Tủ quần áo" },
+        ],
+        pricing: { label: "Giá thuê mỗi tháng", badgeText: "Bao phí quản lý" },
+        booking: { leaseTerms: ["12 tháng", "6 tháng"], defaultLeaseTerm: "12 tháng" },
+        owner: { subtitle: "Chủ nhà ở gần, hỗ trợ nhanh" },
+      }),
       reportedCount: 1,
     },
     {
@@ -105,6 +168,24 @@ const createRooms = async ({ landlordA, landlordB }) => {
       area: "Thủ Đức",
       address: "12 Vo Van Ngan, Thu Duc, TP.HCM",
       status: "active",
+      details: buildRoomDetails({
+        badges: [{ label: "Giá tốt", tone: "danger" }, { label: "Gần trường", tone: "warning" }],
+        quickFacts: [
+          { icon: "square_foot", label: "Diện tích", value: "18 m²" },
+          { icon: "bed", label: "Không gian", value: "Phòng riêng" },
+          { icon: "bathtub", label: "Sinh hoạt", value: "Giờ giấc tự do" },
+          { icon: "event_available", label: "Hợp đồng", value: "6 tháng" },
+        ],
+        amenities: [
+          { icon: "wifi", label: "Wifi chung" },
+          { icon: "local_parking", label: "Gửi xe" },
+          { icon: "storefront", label: "Gần chợ" },
+          { icon: "school", label: "Gần trường học" },
+        ],
+        pricing: { label: "Giá thuê mỗi tháng", badgeText: "Phù hợp sinh viên" },
+        booking: { leaseTerms: ["6 tháng", "12 tháng"], defaultLeaseTerm: "6 tháng" },
+        owner: { subtitle: "Có thể hẹn xem buổi tối" },
+      }),
       reportedCount: 0,
     },
   ]);
@@ -117,8 +198,8 @@ const createRoomImages = async (rooms) => {
 
   rooms.forEach((room) => {
     images.push(
-      { roomId: room.id, imageUrl: "/uploads/demo-room-1.jpg" },
-      { roomId: room.id, imageUrl: "/uploads/demo-room-2.jpg" }
+      { roomId: room.id, imageUrl: "/uploads/demo-room-1.jpg", sortOrder: 0 },
+      { roomId: room.id, imageUrl: "/uploads/demo-room-2.jpg", sortOrder: 1 }
     );
   });
 

@@ -33,6 +33,10 @@ class RoomRepository {
   insertImages(payload, options = {}) {
     return this.roomImageEntity.bulkCreate(payload, options);
   }
+
+  deleteImagesByRoomId(roomId, options = {}) {
+    return this.roomImageEntity.destroy({ where: { roomId }, ...options });
+  }
 }
 
 module.exports = new RoomRepository(Room, RoomImage);

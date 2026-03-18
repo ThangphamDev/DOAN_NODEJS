@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { NavLink } from "react-router-dom";
+import { useNotify } from "@/context/NotifyContext.jsx";
 import landlordService from "@/services/LandlordService";
 import chatService from "@/services/ChatService";
 import { getApiData, getApiMessage } from "@/utils/apiResponse";
@@ -8,51 +9,52 @@ const LandlordDashboardPage = () => {
   const [rooms, setRooms] = useState([]);
   const [appointments, setAppointments] = useState([]);
   const [inbox, setInbox] = useState([]);
-  const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
+  const notify = useNotify();
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const [roomsRes, appointmentsRes, inboxRes] = await Promise.all([
         landlordService.getMyRooms(),
         landlordService.getAppointments(),
-        chatService.getInbox()
+        chatService.getInbox(),
       ]);
       setRooms(getApiData(roomsRes, []));
       setAppointments(getApiData(appointmentsRes, []));
       setInbox(getApiData(inboxRes, []));
-      setError("");
     } catch (err) {
-      setError(getApiMessage(err, "Không tải được dữ liệu chủ trọ"));
+      notify.error(getApiMessage(err, "Không tải được dữ liệu chủ trọ"));
     }
-  };
+  }, [notify]);
 
   useEffect(() => {
-    loadData();
-  }, []);
+    const timeoutId = window.setTimeout(() => {
+      void loadData();
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [loadData]);
 
   const chartData = useMemo(() => {
-    const allReviews = rooms.flatMap((r) => r.reviews || []);
-    const reviewTotal = allReviews.length || 1; 
-
-    const appTotal = appointments.length || 1;
-    const msgTotal = inbox.length || 1;
+    const allReviews = rooms.flatMap((room) => room.reviews || []);
+    const reviewTotal = allReviews.length || 1;
+    const appointmentTotal = appointments.length || 1;
+    const messageTotal = inbox.length || 1;
 
     return {
       appointments: [
-        { label: "Đã duyệt", count: appointments.filter(a => a.status === 'approved').length, color: "bg-green-500", total: appTotal },
-        { label: "Chờ duyệt", count: appointments.filter(a => a.status === 'pending').length, color: "bg-amber-400", total: appTotal },
-        { label: "Từ chối", count: appointments.filter(a => a.status === 'rejected').length, color: "bg-rose-500", total: appTotal },
+        { label: "Đã duyệt", count: appointments.filter((item) => item.status === "approved").length, color: "bg-green-500", total: appointmentTotal },
+        { label: "Chờ duyệt", count: appointments.filter((item) => item.status === "pending").length, color: "bg-amber-400", total: appointmentTotal },
+        { label: "Từ chối", count: appointments.filter((item) => item.status === "rejected").length, color: "bg-rose-500", total: appointmentTotal },
       ],
       reviews: [
-        { label: "Rất tốt (5 sao)", count: allReviews.filter(r => Number(r.rating) === 5).length, color: "bg-green-500", total: reviewTotal },
-        { label: "Khá (4 sao)", count: allReviews.filter(r => Number(r.rating) === 4).length, color: "bg-blue-400", total: reviewTotal },
-        { label: "Cần chú ý (< 4)", count: allReviews.filter(r => Number(r.rating) < 4).length, color: "bg-amber-500", total: reviewTotal },
+        { label: "Rất tốt (5 sao)", count: allReviews.filter((item) => Number(item.rating) === 5).length, color: "bg-green-500", total: reviewTotal },
+        { label: "Khá (4 sao)", count: allReviews.filter((item) => Number(item.rating) === 4).length, color: "bg-blue-400", total: reviewTotal },
+        { label: "Cần chú ý (< 4)", count: allReviews.filter((item) => Number(item.rating) < 4).length, color: "bg-amber-500", total: reviewTotal },
       ],
       messages: [
-        { label: "Quan tâm", count: inbox.filter(i => !i.blockedByMe).length, color: "bg-blue-500", total: msgTotal },
-        { label: "Đã chặn (Spam)", count: inbox.filter(i => i.blockedByMe).length, color: "bg-slate-400", total: msgTotal },
-      ]
+        { label: "Quan tâm", count: inbox.filter((item) => !item.blockedByMe).length, color: "bg-blue-500", total: messageTotal },
+        { label: "Đã chặn (Spam)", count: inbox.filter((item) => item.blockedByMe).length, color: "bg-slate-400", total: messageTotal },
+      ],
     };
   }, [appointments, rooms, inbox]);
 
@@ -61,16 +63,13 @@ const LandlordDashboardPage = () => {
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-col gap-1">
           <h2 className="text-3xl font-extrabold tracking-tight">Bảng điều khiển chủ trọ</h2>
-          <p className="text-slate-500">Tổng quan hoạt động cho thuê và theo dõi lịch hẹn cần xử lý.</p>
+          <p className="text-slate-500">Tổng quan hoạt động cho thuê và theo dõi các đầu việc cần xử lý nhanh.</p>
         </div>
-        <NavLink className="flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-bold text-white transition-all shadow-sm shadow-primary/20 hover:bg-primary/90" to="/landlord/rooms">
+        <NavLink className="flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-bold text-white shadow-sm shadow-primary/20 transition-all hover:bg-primary/90" to="/landlord/rooms">
           <span className="material-symbols-outlined text-[20px]">add_circle</span>
           Thêm tin đăng mới
         </NavLink>
       </div>
-
-      {error && <p className="mb-6 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</p>}
-      {successMessage && <p className="mb-6 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{successMessage}</p>}
 
       <div className="mb-10 grid grid-cols-1 gap-6 md:grid-cols-3">
         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -79,8 +78,8 @@ const LandlordDashboardPage = () => {
             <span className="material-symbols-outlined text-primary">apartment</span>
           </div>
           <div className="flex items-baseline gap-2">
-            <p className="text-3xl font-bold">{rooms.filter(r => r.status === 'active').length}</p>
-            <p className="flex items-center text-sm font-semibold text-slate-500">/ {rooms.length}</p>
+            <p className="text-3xl font-bold">{rooms.filter((room) => room.status === "active").length}</p>
+            <p className="text-sm font-semibold text-slate-500">/ {rooms.length}</p>
           </div>
         </div>
         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -89,8 +88,8 @@ const LandlordDashboardPage = () => {
             <span className="material-symbols-outlined text-primary">schedule</span>
           </div>
           <div className="flex items-baseline gap-2">
-            <p className="text-3xl font-bold">{appointments.filter(a => a.status === 'pending').length}</p>
-            <p className="flex items-center text-sm font-semibold text-green-600">Mới <span className="material-symbols-outlined text-sm">schedule</span></p>
+            <p className="text-3xl font-bold">{appointments.filter((item) => item.status === "pending").length}</p>
+            <p className="text-sm font-semibold text-green-600">Mới</p>
           </div>
         </div>
         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -100,7 +99,7 @@ const LandlordDashboardPage = () => {
           </div>
           <div className="flex items-baseline gap-2">
             <p className="text-3xl font-bold">{inbox.length}</p>
-            <p className="flex items-center text-sm font-semibold text-blue-500">Khách <span className="material-symbols-outlined text-sm">group</span></p>
+            <p className="text-sm font-semibold text-blue-500">Khách</p>
           </div>
         </div>
       </div>
@@ -108,14 +107,9 @@ const LandlordDashboardPage = () => {
       <div className="mb-10 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         <div className="flex items-center justify-between border-b border-slate-200 p-6">
           <h3 className="text-lg font-bold">Tin đăng của tôi</h3>
-          <div className="flex items-center gap-2">
-            <button className="rounded-lg p-2 text-slate-500 hover:bg-slate-100" type="button">
-              <span className="material-symbols-outlined">filter_list</span>
-            </button>
-            <button className="rounded-lg p-2 text-slate-500 hover:bg-slate-100" type="button">
-              <span className="material-symbols-outlined">search</span>
-            </button>
-          </div>
+          <NavLink className="text-sm font-semibold text-primary hover:underline" to="/landlord/rooms">
+            Mở trang quản lý
+          </NavLink>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left">
@@ -152,11 +146,7 @@ const LandlordDashboardPage = () => {
                       {Number(room.price || 0).toLocaleString("vi-VN")} đ/tháng
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
-                      <div className="flex justify-end gap-3">
-                        <NavLink className="text-primary transition-colors hover:text-primary/80" to="/landlord/rooms">Sửa</NavLink>
-                        <span className="text-slate-300">|</span>
-                        <NavLink className="text-red-500 transition-colors hover:text-red-600" to="/landlord/rooms">Quản lý</NavLink>
-                      </div>
+                      <NavLink className="text-primary transition-colors hover:text-primary/80" to="/landlord/rooms">Quản lý</NavLink>
                     </td>
                   </tr>
                 ))
@@ -167,76 +157,75 @@ const LandlordDashboardPage = () => {
       </div>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-        {/* Lịch hẹn Chart */}
         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="mb-6 flex items-center justify-between">
-            <h3 className="text-lg font-bold">Thống kê Lịch hẹn</h3>
+            <h3 className="text-lg font-bold">Thống kê lịch hẹn</h3>
             <span className="material-symbols-outlined text-slate-400">monitoring</span>
           </div>
           <div className="flex flex-col gap-5">
-            {chartData.appointments.map((stat, i) => {
-              const pct = appointments.length === 0 ? 0 : Math.round((stat.count / stat.total) * 100);
+            {chartData.appointments.map((stat) => {
+              const percent = appointments.length === 0 ? 0 : Math.round((stat.count / stat.total) * 100);
               return (
-              <div key={i}>
-                <div className="mb-1.5 flex justify-between text-sm font-semibold">
-                  <span>{stat.label}</span>
-                  <span className="text-slate-500">{stat.count} ({pct}%)</span>
+                <div key={stat.label}>
+                  <div className="mb-1.5 flex justify-between text-sm font-semibold">
+                    <span>{stat.label}</span>
+                    <span className="text-slate-500">{stat.count} ({percent}%)</span>
+                  </div>
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                    <div className={`h-full ${stat.color}`} style={{ width: `${percent}%` }}></div>
+                  </div>
                 </div>
-                <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
-                  <div className={`h-full ${stat.color} transition-all duration-500`} style={{ width: `${pct}%` }}></div>
-                </div>
-              </div>
-            )})}
+              );
+            })}
           </div>
           <NavLink className="mt-6 block w-full rounded-lg bg-slate-50 py-2.5 text-center text-sm font-bold text-primary transition-colors hover:bg-slate-100" to="/landlord/appointments">Xem chi tiết lịch hẹn</NavLink>
         </div>
 
-        {/* Đánh giá Chart */}
         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="mb-6 flex items-center justify-between">
             <h3 className="text-lg font-bold">Điểm đánh giá</h3>
             <span className="material-symbols-outlined text-slate-400">star_rate</span>
           </div>
           <div className="flex flex-col gap-5">
-            {chartData.reviews.map((stat, i) => {
-              const allR = rooms.flatMap((r) => r.reviews || []);
-              const pct = allR.length === 0 ? 0 : Math.round((stat.count / stat.total) * 100);
+            {chartData.reviews.map((stat) => {
+              const allReviews = rooms.flatMap((room) => room.reviews || []);
+              const percent = allReviews.length === 0 ? 0 : Math.round((stat.count / stat.total) * 100);
               return (
-              <div key={i}>
-                <div className="mb-1.5 flex justify-between text-sm font-semibold">
-                  <span>{stat.label}</span>
-                  <span className="text-slate-500">{stat.count} ({pct}%)</span>
+                <div key={stat.label}>
+                  <div className="mb-1.5 flex justify-between text-sm font-semibold">
+                    <span>{stat.label}</span>
+                    <span className="text-slate-500">{stat.count} ({percent}%)</span>
+                  </div>
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                    <div className={`h-full ${stat.color}`} style={{ width: `${percent}%` }}></div>
+                  </div>
                 </div>
-                <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
-                  <div className={`h-full ${stat.color} transition-all duration-500`} style={{ width: `${pct}%` }}></div>
-                </div>
-              </div>
-            )})}
+              );
+            })}
           </div>
           <NavLink className="mt-6 block w-full rounded-lg bg-slate-50 py-2.5 text-center text-sm font-bold text-primary transition-colors hover:bg-slate-100" to="/landlord/reviews">Xem phản hồi khách</NavLink>
         </div>
 
-        {/* Tin nhắn Chart */}
         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="mb-6 flex items-center justify-between">
             <h3 className="text-lg font-bold">Tương tác nhắn tin</h3>
             <span className="material-symbols-outlined text-slate-400">forum</span>
           </div>
           <div className="flex flex-col gap-5">
-            {chartData.messages.map((stat, i) => {
-              const countInbox = inbox.length;
-              const pct = countInbox === 0 ? 0 : Math.round((stat.count / stat.total) * 100);
+            {chartData.messages.map((stat) => {
+              const percent = inbox.length === 0 ? 0 : Math.round((stat.count / stat.total) * 100);
               return (
-              <div key={i}>
-                <div className="mb-1.5 flex justify-between text-sm font-semibold">
-                  <span>{stat.label}</span>
-                  <span className="text-slate-500">{stat.count} ({pct}%)</span>
+                <div key={stat.label}>
+                  <div className="mb-1.5 flex justify-between text-sm font-semibold">
+                    <span>{stat.label}</span>
+                    <span className="text-slate-500">{stat.count} ({percent}%)</span>
+                  </div>
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                    <div className={`h-full ${stat.color}`} style={{ width: `${percent}%` }}></div>
+                  </div>
                 </div>
-                <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
-                  <div className={`h-full ${stat.color} transition-all duration-500`} style={{ width: `${pct}%` }}></div>
-                </div>
-              </div>
-            )})}
+              );
+            })}
           </div>
           <NavLink className="mt-6 block w-full rounded-lg bg-slate-50 py-2.5 text-center text-sm font-bold text-primary transition-colors hover:bg-slate-100" to="/landlord/messages">Mở hộp thư ngay</NavLink>
         </div>
