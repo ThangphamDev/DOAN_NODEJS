@@ -1,5 +1,5 @@
 import axios from "axios";
-import { clearToken, getToken } from "@/utils/storage";
+import { clearStoredUser, clearToken, getToken } from "@/utils/storage";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api",
@@ -21,6 +21,7 @@ api.interceptors.response.use(
     if (error?.response?.status === 401 && getToken() && !isHandlingUnauthorized) {
       isHandlingUnauthorized = true;
       clearToken();
+      clearStoredUser();
 
       if (typeof window !== "undefined") {
         const redirectTo = window.location.pathname.startsWith("/admin") ? "/admin/login" : "/login";

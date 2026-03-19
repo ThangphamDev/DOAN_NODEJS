@@ -190,7 +190,9 @@
 .hero-card-img-inner {
   width: 100%;
   height: 100%;
-  background: linear-gradient(160deg, #E8F5EF 0%, #B8E0CC 40%, #7FCBAA 80%, #25A97A 100%);
+  display: block;
+  object-fit: cover;
+  object-position: center;
   position: relative;
 }
 

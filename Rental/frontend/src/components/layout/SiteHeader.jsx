@@ -23,7 +23,7 @@ const renderUnreadBadge = (count) => {
 };
 
 const SiteHeader = () => {
-  const { user, logout } = useAuth();
+  const { user, loading, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -222,7 +222,12 @@ const SiteHeader = () => {
           </ul>
 
           <div className="nav-actions">
-            {!user ? (
+            {loading ? (
+              <div className="flex items-center gap-3">
+                <div className="h-11 w-28 animate-pulse rounded-full bg-slate-100" />
+                <div className="h-11 w-32 animate-pulse rounded-full bg-slate-100" />
+              </div>
+            ) : !user ? (
               <>
                 <Link to={loginLink} className="ui-button ui-button--outline nav-button">
                   Đăng nhập

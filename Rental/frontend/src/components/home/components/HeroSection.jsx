@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
 
+const HERO_IMAGE_SRC = "/images/18.jpg";
+
 const HeroSection = () => {
   return (
     <section className="hero-wrapper">
@@ -70,7 +72,11 @@ const HeroSection = () => {
 
           <div className="hero-card-main">
             <div className="hero-card-img">
-              <div className="hero-card-img-inner" />
+              <img
+                src={HERO_IMAGE_SRC}
+                alt="Không gian phòng trọ nổi bật"
+                className="hero-card-img-inner"
+              />
             </div>
             <div className="hero-card-body">
               <div className="card-location">

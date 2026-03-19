@@ -1,14 +1,15 @@
 import { createContext, useCallback, useEffect, useMemo, useState } from "react";
 import authService from "@/services/AuthService";
-import { clearToken, getToken, setToken } from "@/utils/storage";
+import { clearStoredUser, clearToken, getStoredUser, getToken, setStoredUser, setToken } from "@/utils/storage";
 
 const AuthContext = createContext(null);
 
 const getPayloadData = (response) => response?.data?.data ?? response?.data ?? {};
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const hasStoredToken = Boolean(getToken());
+  const [user, setUser] = useState(() => (hasStoredToken ? getStoredUser() : null));
+  const [loading, setLoading] = useState(hasStoredToken);
 
   const fetchMe = useCallback(async () => {
     const token = getToken();
@@ -20,9 +21,12 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await authService.me();
       const payload = getPayloadData(response);
-      setUser(payload.user || null);
+      const nextUser = payload.user || null;
+      setUser(nextUser);
+      setStoredUser(nextUser);
     } catch {
       clearToken();
+      clearStoredUser();
       setUser(null);
     } finally {
       setLoading(false);
@@ -38,6 +42,7 @@ export const AuthProvider = ({ children }) => {
     const payload = getPayloadData(response);
     setToken(payload.token);
     setUser(payload.user);
+    setStoredUser(payload.user);
     return payload.user;
   }, []);
 
@@ -46,18 +51,22 @@ export const AuthProvider = ({ children }) => {
     const responsePayload = getPayloadData(response);
     setToken(responsePayload.token);
     setUser(responsePayload.user);
+    setStoredUser(responsePayload.user);
     return responsePayload.user;
   }, []);
 
   const updateProfile = useCallback(async (payload) => {
     const response = await authService.updateProfile(payload);
     const responsePayload = getPayloadData(response);
-    setUser(responsePayload.user || null);
+    const nextUser = responsePayload.user || null;
+    setUser(nextUser);
+    setStoredUser(nextUser);
     return responsePayload.user;
   }, []);
 
   const logout = useCallback(() => {
     clearToken();
+    clearStoredUser();
     setUser(null);
   }, []);
 
