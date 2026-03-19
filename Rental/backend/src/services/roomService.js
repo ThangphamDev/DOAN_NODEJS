@@ -11,6 +11,47 @@ class RoomService {
     this.reportRepository = reportRepository;
   }
 
+  normalizeSearchText(value = "") {
+    return String(value || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/đ/g, "d")
+      .replace(/Đ/g, "d")
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  matchesKeyword(room, keyword) {
+    const normalizedKeyword = this.normalizeSearchText(keyword);
+    if (!normalizedKeyword) return true;
+
+    const normalizedRoomText = this.normalizeSearchText(
+      [
+        room?.title,
+        room?.description,
+        room?.address,
+        room?.area,
+        room?.details?.location?.label,
+        ...(room?.details?.quickFacts || []).map((item) => item?.value),
+        ...(room?.details?.amenities || []).map((item) => item?.label),
+      ]
+        .filter(Boolean)
+        .join(" ")
+    );
+
+    if (!normalizedRoomText) return false;
+    if (normalizedRoomText.includes(normalizedKeyword)) return true;
+
+    const compactKeyword = normalizedKeyword.replace(/\s+/g, "");
+    const compactRoomText = normalizedRoomText.replace(/\s+/g, "");
+    if (compactKeyword && compactRoomText.includes(compactKeyword)) return true;
+
+    const keywordTokens = normalizedKeyword.split(" ").filter(Boolean);
+    return keywordTokens.every((token) => normalizedRoomText.includes(token));
+  }
+
   parseImageManifest(rawManifest) {
     if (rawManifest === undefined || rawManifest === null || rawManifest === "") {
       return undefined;
@@ -103,17 +144,39 @@ class RoomService {
   async listRooms({ minPrice, maxPrice, area, page = 1, limit = 10 }) {
     const where = { status: "active" };
 
-    if (area) {
-      where.area = { [Op.like]: `%${area}%` };
-    }
-
     if (minPrice || maxPrice) {
       where.price = {};
       if (minPrice) where.price[Op.gte] = Number(minPrice);
       if (maxPrice) where.price[Op.lte] = Number(maxPrice);
     }
 
-    const offset = (Number(page) - 1) * Number(limit);
+    const normalizedPage = Number(page) || 1;
+    const normalizedLimit = Number(limit) || 10;
+    const offset = (normalizedPage - 1) * normalizedLimit;
+    const normalizedKeyword = this.normalizeSearchText(area);
+
+    if (normalizedKeyword) {
+      const rows = await this.repository.getList({
+        where,
+        include: [{ model: RoomImage, as: "images" }],
+        order: [
+          ["createdAt", "DESC"],
+          [{ model: RoomImage, as: "images" }, "sortOrder", "ASC"],
+          [{ model: RoomImage, as: "images" }, "createdAt", "ASC"],
+        ],
+      });
+
+      const filteredRows = rows
+        .map((room) => attachRoomDetails(room))
+        .filter((room) => this.matchesKeyword(room, normalizedKeyword));
+
+      return {
+        total: filteredRows.length,
+        page: normalizedPage,
+        limit: normalizedLimit,
+        data: filteredRows.slice(offset, offset + normalizedLimit).map(toRoomListModel),
+      };
+    }
 
     const { rows, count } = await this.repository.getListWithCount({
       where,
@@ -129,8 +192,8 @@ class RoomService {
 
     return {
       total: count,
-      page: Number(page),
-      limit: Number(limit),
+      page: normalizedPage,
+      limit: normalizedLimit,
       data: rows.map(toRoomListModel),
     };
   }

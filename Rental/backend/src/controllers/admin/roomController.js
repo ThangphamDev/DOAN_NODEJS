@@ -7,11 +7,21 @@ const { runInTransaction } = require("@/utils/transaction");
 class AdminRoomController {
   constructor(service) {
     this.service = service;
+    this.getActiveListingsCount = this.getActiveListingsCount.bind(this);
     this.getReportedRooms = this.getReportedRooms.bind(this);
     this.getReportedRoomDetail = this.getReportedRoomDetail.bind(this);
     this.getReportedContent = this.getReportedContent.bind(this);
     this.updateReportStatus = this.updateReportStatus.bind(this);
     this.deleteViolationRoom = this.deleteViolationRoom.bind(this);
+  }
+
+  async getActiveListingsCount(req, res, next) {
+    try {
+      const data = await this.service.getActiveListingsCount();
+      return sendSuccess(res, { data });
+    } catch (error) {
+      return next(error);
+    }
   }
 
   async getReportedRooms(req, res, next) {
@@ -64,6 +74,7 @@ class AdminRoomController {
   }
 
   registerRoutes(app, prefix = "/api") {
+    app.get(`${prefix}/admin/rooms/active-count`, authenticate, authorize("admin"), this.getActiveListingsCount);
     app.get(`${prefix}/admin/rooms/reported`, authenticate, authorize("admin"), this.getReportedRooms);
     app.get(`${prefix}/admin/rooms/reported/:id`, authenticate, authorize("admin"), this.getReportedRoomDetail);
     app.get(`${prefix}/admin/reports`, authenticate, authorize("admin"), this.getReportedContent);

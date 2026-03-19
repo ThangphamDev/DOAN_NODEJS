@@ -13,9 +13,35 @@ const LoginPage = ({ adminOnly = false }) => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [roleHint, setRoleHint] = useState("customer");
   const { login, logout } = useAuth();
   const navigate = useNavigate();
+
+  const getLoginErrorMessage = (err) => {
+    const status = err?.response?.status;
+    const message = err?.response?.data?.message;
+
+    if (status === 400) {
+      return message || "Vui lòng nhập đầy đủ email và mật khẩu.";
+    }
+
+    if (status === 401) {
+      return message || "Email hoặc mật khẩu không đúng.";
+    }
+
+    if (status === 403) {
+      if (message?.toLowerCase().includes("khóa")) {
+        return "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.";
+      }
+
+      return message || "Bạn không có quyền truy cập vào khu vực này.";
+    }
+
+    if (!err?.response) {
+      return "Không thể kết nối tới máy chủ. Vui lòng thử lại sau.";
+    }
+
+    return message || "Đăng nhập thất bại. Vui lòng thử lại.";
+  };
 
   const validate = () => {
     if (!email.trim() || !password.trim()) {
@@ -63,7 +89,7 @@ const LoginPage = ({ adminOnly = false }) => {
 
       navigate(getRedirectByRole(loggedInUser?.role), { replace: true });
     } catch (err) {
-      setError(err?.response?.data?.message || "Đăng nhập thất bại, vui lòng thử lại");
+      setError(getLoginErrorMessage(err));
     } finally {
       setSubmitting(false);
     }
@@ -112,36 +138,6 @@ const LoginPage = ({ adminOnly = false }) => {
                 : "Vui lòng đăng nhập để tiếp tục trải nghiệm tìm phòng và trò chuyện với chủ trọ."}
             </p>
           </div>
-
-          {!adminOnly ? (
-            <div className="mb-6 grid grid-cols-2 gap-4">
-              <button
-                className={`rounded-xl border-2 p-3 transition-all ${
-                  roleHint === "customer" ? "border-primary bg-primary/5" : "border-slate-200"
-                }`}
-                onClick={() => setRoleHint("customer")}
-                type="button"
-              >
-                <div className="flex flex-col items-center">
-                  <span className={`material-symbols-outlined mb-1 ${roleHint === "customer" ? "text-primary" : "text-slate-400"}`}>person_search</span>
-                  <span className={`text-sm font-semibold ${roleHint === "customer" ? "text-primary" : "text-slate-600"}`}>Người tìm phòng</span>
-                </div>
-              </button>
-
-              <button
-                className={`rounded-xl border-2 p-3 transition-all ${
-                  roleHint === "landlord" ? "border-primary bg-primary/5" : "border-slate-200"
-                }`}
-                onClick={() => setRoleHint("landlord")}
-                type="button"
-              >
-                <div className="flex flex-col items-center">
-                  <span className={`material-symbols-outlined mb-1 ${roleHint === "landlord" ? "text-primary" : "text-slate-400"}`}>real_estate_agent</span>
-                  <span className={`text-sm font-semibold ${roleHint === "landlord" ? "text-primary" : "text-slate-600"}`}>Chủ trọ</span>
-                </div>
-              </button>
-            </div>
-          ) : null}
 
           <form className="space-y-5" onSubmit={handleSubmit}>
             <div>

@@ -10,11 +10,25 @@ class AdminRoomService {
     this.reportRepository = reportRepository;
   }
 
+  normalizeReportStatus(status) {
+    return status === "dismissed" ? "resolved" : status;
+  }
+
+  async getActiveListingsCount() {
+    const rooms = await this.repository.getList({
+      where: {
+        status: "active",
+      },
+      attributes: ["id"],
+    });
+
+    return {
+      count: rooms.length,
+    };
+  }
+
   async getReportedRooms() {
     const reports = await this.reportRepository.getList({
-      where: {
-        status: "pending",
-      },
       include: [
         {
           model: Room,
@@ -34,6 +48,11 @@ class AdminRoomService {
     const groupedRooms = new Map();
 
     reports.forEach((report) => {
+      const normalizedStatus = this.normalizeReportStatus(report.status);
+      if (normalizedStatus === "deleted") {
+        return;
+      }
+
       const room = report.room?.toJSON?.() || report.room;
       if (!room) {
         return;
@@ -42,14 +61,21 @@ class AdminRoomService {
       const roomItem = groupedRooms.get(room.id) || {
         ...room,
         reportedCount: 0,
+        pendingReportCount: 0,
+        resolvedReportCount: 0,
+        deletedReportCount: 0,
         latestReportReason: report.reason,
         latestReportAt: report.createdAt,
+        latestReportStatus: normalizedStatus,
       };
 
       roomItem.reportedCount += 1;
+      if (normalizedStatus === "pending") roomItem.pendingReportCount += 1;
+      if (normalizedStatus === "resolved") roomItem.resolvedReportCount += 1;
       if (!roomItem.latestReportAt || new Date(report.createdAt) > new Date(roomItem.latestReportAt)) {
         roomItem.latestReportAt = report.createdAt;
         roomItem.latestReportReason = report.reason;
+        roomItem.latestReportStatus = normalizedStatus;
       }
 
       groupedRooms.set(room.id, roomItem);
@@ -75,17 +101,23 @@ class AdminRoomService {
       ],
     });
 
-    if (!room || room.status === "deleted") {
+    if (!room) {
       throw new ApiError(404, "Room not found");
     }
 
+    const payload = room.toJSON();
+
     return {
-      ...room.toJSON(),
+      ...payload,
+      reports: (payload.reports || []).map((report) => ({
+        ...report,
+        status: this.normalizeReportStatus(report.status),
+      })),
       roomLink: `/rooms/${room.id}`,
     };
   }
 
-  async getReportedContent({ status = "pending" } = {}) {
+  async getReportedContent({ status = "all" } = {}) {
     const where = {};
 
     if (status && status !== "all") {
@@ -113,13 +145,14 @@ class AdminRoomService {
 
       return {
         ...payload,
+        status: this.normalizeReportStatus(payload.status),
         roomLink: payload.room ? `/rooms/${payload.room.id}` : null,
       };
     });
   }
 
   async updateReportStatus(reportId, status, options = {}) {
-    if (!["pending", "resolved", "dismissed"].includes(status)) {
+    if (!["pending", "resolved", "deleted"].includes(status)) {
       throw new ApiError(400, "Invalid report status");
     }
 
@@ -141,7 +174,7 @@ class AdminRoomService {
     );
 
     return {
-      message: status === "dismissed" ? "Report dismissed" : "Report updated",
+      message: status === "deleted" ? "Report deleted" : "Report updated",
       reportId: report.id,
       status,
     };
@@ -156,8 +189,8 @@ class AdminRoomService {
 
     await this.repository.updateById(roomId, { status: "deleted" }, options);
     await this.reportRepository.updateWhere(
-      { roomId, status: "pending" },
-      { status: "resolved", reviewedAt: new Date() },
+      { roomId, status: { [Op.ne]: "deleted" } },
+      { status: "deleted", reviewedAt: new Date() },
       options
     );
     return { message: "Room removed" };

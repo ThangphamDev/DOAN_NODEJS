@@ -9,6 +9,12 @@ import { getApiData } from "@/utils/apiResponse";
 import { normalizeRoomDetails, resolveRoomImageUrl } from "@/utils/roomDetails";
 
 const quickAreas = ["Tất cả", "Quận 1", "Quận 3", "Quận 7", "Bình Thạnh", "Thủ Đức"];
+const searchPlaceholderOptions = [
+  "Quận 3, Bình Thạnh...",
+  "Đường Nguyễn Trãi...",
+  "Nguyễn Hữu Thọ, Quận 7...",
+  "Studio gần RMIT...",
+];
 
 const RoomCard = ({ room, uploadBaseUrl }) => {
   const details = normalizeRoomDetails(room.details, room);
@@ -82,6 +88,8 @@ const RoomsPage = () => {
   const [activeQuickFilter, setActiveQuickFilter] = useState("Tất cả");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(9);
+  const [searchInput, setSearchInput] = useState("");
+  const [searchPlaceholder, setSearchPlaceholder] = useState(searchPlaceholderOptions[0]);
 
   const uploadBaseUrl = useMemo(() => {
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
@@ -118,6 +126,32 @@ const RoomsPage = () => {
   useEffect(() => {
     void loadRooms(filters);
   }, []);
+
+  useEffect(() => {
+    setSearchInput(filters.area || "");
+  }, [filters.area]);
+
+  useEffect(() => {
+    let placeholderIndex = 0;
+    const intervalId = setInterval(() => {
+      placeholderIndex = (placeholderIndex + 1) % searchPlaceholderOptions.length;
+      setSearchPlaceholder(searchPlaceholderOptions[placeholderIndex]);
+    }, 2500);
+
+    return () => clearInterval(intervalId);
+  }, []);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (searchInput === (filters.area || "")) return;
+      const nextFilters = { ...filters, area: searchInput };
+      setFilters(nextFilters);
+      setCurrentPage(1);
+      void loadRooms(nextFilters);
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [filters, loadRooms, searchInput]);
 
   const totalPages = Math.max(1, Math.ceil(rooms.length / pageSize));
   const paginatedRooms = useMemo(() => {
@@ -177,16 +211,16 @@ const RoomsPage = () => {
           <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-200/50">
             <div className="grid grid-cols-1 divide-y divide-slate-100 lg:grid-cols-12 lg:divide-x lg:divide-y-0">
               <div className="p-5 transition-colors hover:bg-slate-50/50 lg:col-span-4">
-                <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-slate-400">Khu vực</label>
+                <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-slate-400">Khu vực / tuyến đường</label>
                 <div className="flex items-center gap-2">
                   <span className="material-symbols-outlined text-slate-300">location_on</span>
                   <input
                     className="w-full border-none bg-transparent p-0 text-sm font-semibold text-slate-900 outline-none placeholder:text-slate-300 focus:ring-0"
                     name="area"
-                    onChange={handleFilterChange}
-                    placeholder="Quận 3, Bình Thạnh..."
+                    onChange={(event) => setSearchInput(event.target.value)}
+                    placeholder={searchPlaceholder}
                     type="text"
-                    value={filters.area}
+                    value={searchInput}
                   />
                 </div>
               </div>

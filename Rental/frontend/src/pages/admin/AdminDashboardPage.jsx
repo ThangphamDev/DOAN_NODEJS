@@ -6,6 +6,7 @@ import { getApiData, getApiMessage } from "@/utils/apiResponse";
 const AdminDashboardPage = () => {
   const [rooms, setRooms] = useState([]);
   const [users, setUsers] = useState([]);
+  const [activeRoomsCount, setActiveRoomsCount] = useState(0);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -13,15 +14,17 @@ const AdminDashboardPage = () => {
 
     const loadData = async () => {
       try {
-        const [roomsRes, usersRes] = await Promise.all([
+        const [roomsRes, usersRes, activeRoomsRes] = await Promise.all([
           adminService.getReportedRooms(),
           adminService.getUsers(),
+          adminService.getActiveRoomsCount(),
         ]);
 
         if (!isMounted) return;
 
         setRooms(getApiData(roomsRes, []));
         setUsers(getApiData(usersRes, []));
+        setActiveRoomsCount(Number(getApiData(activeRoomsRes, { count: 0 })?.count || 0));
         setError("");
       } catch (err) {
         if (!isMounted) return;
@@ -37,17 +40,16 @@ const AdminDashboardPage = () => {
   }, []);
 
   const stats = useMemo(() => {
-    const activeUsers = users.filter((item) => item.isActive).length;
     const totalReports = rooms.reduce((sum, item) => sum + Number(item.reportedCount || 0), 0);
     const verificationQueue = users.filter((item) => item.role === "landlord" && item.isActive).length;
 
     return {
-      activeListings: activeUsers,
+      activeListings: activeRoomsCount,
       totalUsers: users.length,
       totalReports,
       verificationQueue,
     };
-  }, [rooms, users]);
+  }, [activeRoomsCount, rooms, users]);
 
   const previewRooms = useMemo(() => rooms.slice(0, 3), [rooms]);
   const previewUsers = useMemo(() => users.slice(0, 3), [users]);

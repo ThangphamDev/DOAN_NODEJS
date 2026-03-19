@@ -47,11 +47,39 @@ describe("RoomService", () => {
     });
 
     test("applies price and area filters", async () => {
-      roomService.repository.getListWithCount.mockResolvedValue({ rows: [], count: 0 });
+      roomService.repository.getList.mockResolvedValue([]);
       await roomService.listRooms({ minPrice: 200, maxPrice: 800, area: "HCM", page: 2, limit: 5 });
-      const callArg = roomService.repository.getListWithCount.mock.calls[0][0];
+      const callArg = roomService.repository.getList.mock.calls[0][0];
       expect(callArg.where.price).toBeDefined();
-      expect(callArg.offset).toBe(5);
+    });
+
+    test("matches street keyword without accents and with partial text", async () => {
+      roomService.repository.getList.mockResolvedValue([
+        {
+          ...mockRoom,
+          title: "Phòng trọ gần RMIT",
+          address: "45 Nguyễn Hữu Thọ, Quận 7, TP.HCM",
+          details: { quickFacts: [], amenities: [], location: { label: "Đường Nguyễn Hữu Thọ" } },
+          get() {
+            return { ...this };
+          },
+        },
+        {
+          ...mockRoom,
+          id: 2,
+          title: "Studio trung tâm",
+          address: "12 Điện Biên Phủ, Quận 3",
+          details: { quickFacts: [], amenities: [], location: { label: "Điện Biên Phủ" } },
+          get() {
+            return { ...this };
+          },
+        },
+      ]);
+
+      const result = await roomService.listRooms({ area: "nguyen huu", page: 1, limit: 10 });
+
+      expect(result.total).toBe(1);
+      expect(result.data[0].address).toContain("Nguyễn Hữu Thọ");
     });
   });
 

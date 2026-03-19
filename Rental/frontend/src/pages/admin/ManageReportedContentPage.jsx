@@ -11,12 +11,12 @@ const statusMap = {
     className: "bg-amber-100 text-amber-700",
   },
   resolved: {
-    label: "Đã xóa tin",
+    label: "Đã xử lý",
     className: "bg-emerald-100 text-emerald-700",
   },
-  dismissed: {
-    label: "Bỏ qua báo cáo",
-    className: "bg-slate-200 text-slate-700",
+  deleted: {
+    label: "Đã xóa",
+    className: "bg-rose-100 text-rose-700",
   },
 };
 
@@ -47,23 +47,27 @@ const toImageUrl = (imageUrl) => {
 const ManageReportedContentPage = () => {
   const [reports, setReports] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState("pending");
+  const [activeTab, setActiveTab] = useState("all");
+  const [loadError, setLoadError] = useState("");
   const [selectedRoomId, setSelectedRoomId] = useState(null);
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [isDetailLoading, setIsDetailLoading] = useState(false);
   const [detailError, setDetailError] = useState("");
-  const [roomPendingDelete, setRoomPendingDelete] = useState(null);
-  const [reportPendingDismiss, setReportPendingDismiss] = useState(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [isUpdatingReport, setIsUpdatingReport] = useState(false);
+  const [reportPendingResolve, setReportPendingResolve] = useState(null);
+  const [reportPendingDelete, setReportPendingDelete] = useState(null);
+  const [isResolving, setIsResolving] = useState(false);
+  const [isDeletingReport, setIsDeletingReport] = useState(false);
   const notify = useNotify();
 
   const loadReports = async () => {
     try {
       const response = await adminService.getReportedContent("all");
       setReports(getApiData(response, []));
+      setLoadError("");
     } catch (err) {
-      notify.error(getApiMessage(err, "Không tải được nội dung bị báo cáo"));
+      const message = getApiMessage(err, "Không tải được nội dung bị báo cáo");
+      setLoadError(message);
+      notify.error(message);
     }
   };
 
@@ -86,40 +90,41 @@ const ManageReportedContentPage = () => {
     loadReports();
   }, []);
 
-  const dismissReport = async (reportId) => {
+  const deleteReport = async (reportId) => {
     try {
-      setIsUpdatingReport(true);
-      await adminService.updateReportStatus(reportId, "dismissed");
-      notify.success("Đã bỏ qua báo cáo.");
-      setReportPendingDismiss(null);
+      setIsDeletingReport(true);
+      await adminService.updateReportStatus(reportId, "deleted");
+      notify.success("Đã chuyển báo cáo sang trạng thái đã xóa.");
+      setReportPendingDelete(null);
+      setActiveTab("deleted");
       await loadReports();
     } catch (err) {
       notify.error(getApiMessage(err, "Không thể cập nhật trạng thái báo cáo"));
     } finally {
-      setIsUpdatingReport(false);
+      setIsDeletingReport(false);
     }
   };
 
-  const deleteReportedRoom = async (roomId) => {
+  const resolveReport = async (reportId) => {
     try {
-      setIsDeleting(true);
-      await adminService.deleteRoom(roomId);
-      notify.success("Đã xóa tin bị báo cáo.");
-      setRoomPendingDelete(null);
-      setSelectedRoomId(null);
-      setSelectedRoom(null);
+      setIsResolving(true);
+      await adminService.updateReportStatus(reportId, "resolved");
+      notify.success("Đã xử lý báo cáo.");
+      setReportPendingResolve(null);
+      setActiveTab("resolved");
       await loadReports();
     } catch (err) {
-      notify.error(getApiMessage(err, "Không thể xóa tin bị báo cáo"));
+      notify.error(getApiMessage(err, "Không thể xử lý báo cáo"));
     } finally {
-      setIsDeleting(false);
+      setIsResolving(false);
     }
   };
 
   const metrics = useMemo(() => ({
+    total: reports.length,
     pending: reports.filter((report) => report.status === "pending").length,
     resolved: reports.filter((report) => report.status === "resolved").length,
-    dismissed: reports.filter((report) => report.status === "dismissed").length,
+    deleted: reports.filter((report) => report.status === "deleted").length,
     highTrust: reports.filter((report) => Number(report.reporter?.id || 0) > 0).length,
   }), [reports]);
 
@@ -142,6 +147,12 @@ const ManageReportedContentPage = () => {
         </div>
       </div>
 
+      {loadError ? (
+        <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+          {loadError}
+        </div>
+      ) : null}
+
       <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="mb-2 flex items-center gap-3 text-amber-500">
@@ -153,16 +164,16 @@ const ManageReportedContentPage = () => {
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="mb-2 flex items-center gap-3 text-emerald-500">
             <span className="material-symbols-outlined">delete</span>
-            <span className="text-xs font-bold uppercase tracking-wider">Đã xóa</span>
+            <span className="text-xs font-bold uppercase tracking-wider">Đã xử lý</span>
           </div>
           <div className="text-2xl font-bold">{metrics.resolved}</div>
         </div>
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="mb-2 flex items-center gap-3 text-slate-500">
-            <span className="material-symbols-outlined">close</span>
-            <span className="text-xs font-bold uppercase tracking-wider">Bỏ qua</span>
+            <span className="material-symbols-outlined">delete</span>
+            <span className="text-xs font-bold uppercase tracking-wider">Đã xóa</span>
           </div>
-          <div className="text-2xl font-bold">{metrics.dismissed}</div>
+          <div className="text-2xl font-bold">{metrics.deleted}</div>
         </div>
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="mb-2 flex items-center gap-3 text-primary">
@@ -176,9 +187,10 @@ const ManageReportedContentPage = () => {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex gap-8 border-b border-slate-200">
           {[
+            ["all", `Tất cả (${metrics.total})`],
             ["pending", `Chờ xử lý (${metrics.pending})`],
-            ["resolved", `Đã xóa (${metrics.resolved})`],
-            ["dismissed", `Bỏ qua (${metrics.dismissed})`],
+            ["resolved", `Đã xử lý (${metrics.resolved})`],
+            ["deleted", `Đã xóa (${metrics.deleted})`],
           ].map(([key, label]) => (
             <button
               key={key}
@@ -258,7 +270,7 @@ const ManageReportedContentPage = () => {
                       <td className="px-6 py-4 text-sm text-slate-500">{formatDateTime(report.createdAt)}</td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex justify-end gap-2">
-                          {report.room?.status !== "deleted" ? (
+                          {report.room?.id ? (
                             <button
                               className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
                               onClick={() => loadRoomDetail(report.room.id)}
@@ -268,7 +280,7 @@ const ManageReportedContentPage = () => {
                               <span className="material-symbols-outlined text-xl">visibility</span>
                             </button>
                           ) : null}
-                          {report.roomLink ? (
+                          {report.roomLink && report.room?.status !== "deleted" ? (
                             <a
                               className="rounded-lg p-2 text-primary transition-colors hover:bg-primary/10"
                               href={report.roomLink}
@@ -279,24 +291,24 @@ const ManageReportedContentPage = () => {
                               <span className="material-symbols-outlined text-xl">open_in_new</span>
                             </a>
                           ) : null}
-                          {report.status === "pending" && report.room?.status !== "deleted" ? (
+                          {report.status === "pending" ? (
                             <button
                               className="rounded-lg p-2 text-red-500 transition-colors hover:bg-red-50"
-                              onClick={() => setRoomPendingDelete(report)}
-                              title="Xóa tin"
+                              onClick={() => setReportPendingResolve(report)}
+                              title="Đánh dấu đã xử lý"
                               type="button"
                             >
-                              <span className="material-symbols-outlined text-xl">delete</span>
+                              <span className="material-symbols-outlined text-xl">task_alt</span>
                             </button>
                           ) : null}
                           {report.status === "pending" ? (
                             <button
-                              className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100"
-                              onClick={() => setReportPendingDismiss(report)}
-                              title="Bỏ qua báo cáo"
+                              className="rounded-lg p-2 text-rose-500 transition-colors hover:bg-rose-50"
+                              onClick={() => setReportPendingDelete(report)}
+                              title="Đánh dấu đã xóa"
                               type="button"
                             >
-                              <span className="material-symbols-outlined text-xl">close</span>
+                              <span className="material-symbols-outlined text-xl">delete</span>
                             </button>
                           ) : null}
                         </div>
@@ -311,6 +323,17 @@ const ManageReportedContentPage = () => {
       </div>
 
       <ReportedRoomDetailModal
+        actionSlot={
+          selectedRoom?.roomLink ? (
+            <a
+              className="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              href="/admin/rooms"
+            >
+              <span className="material-symbols-outlined text-lg">shield</span>
+              Quản lý tin vi phạm
+            </a>
+          ) : null
+        }
         error={detailError}
         isLoading={isDetailLoading}
         onClose={() => {
@@ -318,36 +341,30 @@ const ManageReportedContentPage = () => {
           setSelectedRoom(null);
           setDetailError("");
         }}
-        onDelete={(roomId) => {
-          const matchedReport = reports.find((report) => Number(report.room?.id) === Number(roomId) && report.status === "pending");
-          if (matchedReport) {
-            setRoomPendingDelete(matchedReport);
-          }
-        }}
         open={Boolean(selectedRoomId)}
         room={selectedRoom}
       />
 
       <ConfirmActionModal
         confirmClassName="bg-red-500 hover:bg-red-600"
-        confirmLabel="Xóa tin"
-        description={`Bạn có chắc muốn xóa tin "${roomPendingDelete?.room?.title || ""}"? Tất cả báo cáo chờ xử lý của tin này sẽ được chuyển sang trạng thái đã xử lý.`}
-        isSubmitting={isDeleting}
-        onClose={() => setRoomPendingDelete(null)}
-        onConfirm={() => deleteReportedRoom(roomPendingDelete.room.id)}
-        open={Boolean(roomPendingDelete)}
-        title="Xác nhận xóa tin bị báo cáo"
+        confirmLabel="Xử lý báo cáo"
+        description={`Bạn có chắc muốn đánh dấu báo cáo của "${reportPendingResolve?.reporter?.fullName || reportPendingResolve?.reporter?.email || "người dùng"}" là đã xử lý? Tin đăng sẽ không bị xóa ở màn hình này.`}
+        isSubmitting={isResolving}
+        onClose={() => setReportPendingResolve(null)}
+        onConfirm={() => resolveReport(reportPendingResolve.id)}
+        open={Boolean(reportPendingResolve)}
+        title="Xác nhận xử lý báo cáo"
       />
 
       <ConfirmActionModal
         confirmClassName="bg-slate-700 hover:bg-slate-800"
-        confirmLabel="Bỏ qua báo cáo"
-        description={`Bạn có chắc muốn bỏ qua báo cáo của "${reportPendingDismiss?.reporter?.fullName || reportPendingDismiss?.reporter?.email || "người dùng"}"?`}
-        isSubmitting={isUpdatingReport}
-        onClose={() => setReportPendingDismiss(null)}
-        onConfirm={() => dismissReport(reportPendingDismiss.id)}
-        open={Boolean(reportPendingDismiss)}
-        title="Xác nhận bỏ qua báo cáo"
+        confirmLabel="Đánh dấu đã xóa"
+        description={`Bạn có chắc muốn chuyển báo cáo của "${reportPendingDelete?.reporter?.fullName || reportPendingDelete?.reporter?.email || "người dùng"}" sang trạng thái đã xóa? Báo cáo vẫn được lưu trong cơ sở dữ liệu.`}
+        isSubmitting={isDeletingReport}
+        onClose={() => setReportPendingDelete(null)}
+        onConfirm={() => deleteReport(reportPendingDelete.id)}
+        open={Boolean(reportPendingDelete)}
+        title="Xác nhận xóa báo cáo"
       />
     </div>
   );

@@ -40,7 +40,7 @@ const ReportedRoomDetailModal = ({
   error,
   isLoading,
   onClose,
-  onDelete,
+  actionSlot = null,
 }) => {
   return (
     <Modal
@@ -148,14 +148,7 @@ const ReportedRoomDetailModal = ({
                   <span className="material-symbols-outlined text-lg">travel_explore</span>
                   Mở tin đăng công khai
                 </a>
-                <button
-                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-red-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-red-600"
-                  onClick={() => onDelete(room.id)}
-                  type="button"
-                >
-                  <span className="material-symbols-outlined text-lg">delete</span>
-                  Xóa tin vi phạm
-                </button>
+                {actionSlot}
               </div>
             </div>
 

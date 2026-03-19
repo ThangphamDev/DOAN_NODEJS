@@ -38,7 +38,7 @@ const getReportMeta = (count) => {
 const ManageRoomsPage = () => {
   const [rooms, setRooms] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState("pending");
+  const [activeTab, setActiveTab] = useState("all");
   const [selectedRoomId, setSelectedRoomId] = useState(null);
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [isDetailLoading, setIsDetailLoading] = useState(false);
@@ -68,7 +68,11 @@ const ManageRoomsPage = () => {
       setIsDetailLoading(true);
       setDetailError("");
       const response = await adminService.getReportedRoomDetail(roomId);
-      setSelectedRoom(getApiData(response, null));
+      const nextRoom = getApiData(response, null);
+      if (nextRoom) {
+        nextRoom.reports = (nextRoom.reports || []).filter((report) => report.status !== "deleted");
+      }
+      setSelectedRoom(nextRoom);
     } catch (err) {
       setSelectedRoom(null);
       setDetailError(getApiMessage(err, "Không tải được chi tiết báo cáo"));
@@ -104,10 +108,10 @@ const ManageRoomsPage = () => {
   const metrics = useMemo(() => {
     const totalReports = rooms.reduce((sum, room) => sum + Number(room.reportedCount || 0), 0);
     return {
-      pending: rooms.length,
-      severe: rooms.filter((room) => Number(room.reportedCount || 0) >= 3).length,
+      total: rooms.length,
+      pending: rooms.filter((room) => Number(room.pendingReportCount || 0) > 0).length,
+      resolved: rooms.filter((room) => Number(room.pendingReportCount || 0) === 0 && Number(room.resolvedReportCount || 0) > 0).length,
       totalReports,
-      impactedAreas: new Set(rooms.map((room) => room.area || room.address || `#${room.id}`)).size,
     };
   }, [rooms]);
 
@@ -115,13 +119,14 @@ const ManageRoomsPage = () => {
     const normalized = searchQuery.trim().toLowerCase();
 
     return rooms.filter((room) => {
-      const reportCount = Number(room.reportedCount || 0);
       const matchesTab =
-        activeTab === "pending"
+        activeTab === "all"
           ? true
-          : activeTab === "severe"
-            ? reportCount >= 3
-            : reportCount <= 1;
+          : activeTab === "pending"
+            ? Number(room.pendingReportCount || 0) > 0
+            : activeTab === "resolved"
+              ? Number(room.pendingReportCount || 0) === 0 && Number(room.resolvedReportCount || 0) > 0
+              : false;
       const haystack = `${room.id} ${room.title || ""} ${room.address || ""} ${room.landlord?.fullName || ""}`.toLowerCase();
       return matchesTab && (!normalized || haystack.includes(normalized));
     });
@@ -140,58 +145,58 @@ const ManageRoomsPage = () => {
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="mb-2 flex items-center gap-3 text-amber-500">
             <span className="material-symbols-outlined">pending_actions</span>
-            <span className="text-xs font-bold uppercase tracking-wider">Chờ xử lý</span>
+            <span className="text-xs font-bold uppercase tracking-wider">Từng bị báo cáo</span>
+          </div>
+          <div className="text-2xl font-bold">{metrics.total}</div>
+        </div>
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="mb-2 flex items-center gap-3 text-red-500">
+            <span className="material-symbols-outlined">pending_actions</span>
+            <span className="text-xs font-bold uppercase tracking-wider">Còn chờ xử lý</span>
           </div>
           <div className="text-2xl font-bold">{metrics.pending}</div>
         </div>
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="mb-2 flex items-center gap-3 text-red-500">
-            <span className="material-symbols-outlined">report</span>
-            <span className="text-xs font-bold uppercase tracking-wider">Vi phạm nặng</span>
-          </div>
-          <div className="text-2xl font-bold">{metrics.severe}</div>
-        </div>
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="mb-2 flex items-center gap-3 text-emerald-500">
             <span className="material-symbols-outlined">flag</span>
-            <span className="text-xs font-bold uppercase tracking-wider">Lượt báo cáo</span>
+            <span className="text-xs font-bold uppercase tracking-wider">Đã xử lý</span>
           </div>
-          <div className="text-2xl font-bold">{metrics.totalReports}</div>
+          <div className="text-2xl font-bold">{metrics.resolved}</div>
         </div>
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="mb-2 flex items-center gap-3 text-primary">
-            <span className="material-symbols-outlined">location_on</span>
-            <span className="text-xs font-bold uppercase tracking-wider">Khu vực</span>
+            <span className="material-symbols-outlined">assignment</span>
+            <span className="text-xs font-bold uppercase tracking-wider">Lượt báo cáo</span>
           </div>
-          <div className="text-2xl font-bold">{metrics.impactedAreas}</div>
+          <div className="text-2xl font-bold">{metrics.totalReports}</div>
         </div>
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex gap-8 border-b border-slate-200">
           <button
+            className={`flex items-center gap-2 border-b-2 px-1 pb-3 text-sm ${activeTab === "all" ? "border-primary font-bold text-primary" : "border-transparent font-medium text-slate-500 hover:text-slate-700"}`}
+            type="button"
+            onClick={() => setActiveTab("all")}
+          >
+            <span className="material-symbols-outlined text-lg">inbox</span>
+            Tất cả ({metrics.total})
+          </button>
+          <button
             className={`flex items-center gap-2 border-b-2 px-1 pb-3 text-sm ${activeTab === "pending" ? "border-primary font-bold text-primary" : "border-transparent font-medium text-slate-500 hover:text-slate-700"}`}
             type="button"
             onClick={() => setActiveTab("pending")}
           >
-            <span className="material-symbols-outlined text-lg">inbox</span>
+            <span className="material-symbols-outlined text-lg">pending_actions</span>
             Chờ xử lý ({metrics.pending})
           </button>
           <button
-            className={`flex items-center gap-2 border-b-2 px-1 pb-3 text-sm ${activeTab === "severe" ? "border-primary font-bold text-primary" : "border-transparent font-medium text-slate-500 hover:text-slate-700"}`}
+            className={`flex items-center gap-2 border-b-2 px-1 pb-3 text-sm ${activeTab === "resolved" ? "border-primary font-bold text-primary" : "border-transparent font-medium text-slate-500 hover:text-slate-700"}`}
             type="button"
-            onClick={() => setActiveTab("severe")}
+            onClick={() => setActiveTab("resolved")}
           >
-            <span className="material-symbols-outlined text-lg">priority_high</span>
-            Vi phạm nặng ({metrics.severe})
-          </button>
-          <button
-            className={`flex items-center gap-2 border-b-2 px-1 pb-3 text-sm ${activeTab === "recent" ? "border-primary font-bold text-primary" : "border-transparent font-medium text-slate-500 hover:text-slate-700"}`}
-            type="button"
-            onClick={() => setActiveTab("recent")}
-          >
-            <span className="material-symbols-outlined text-lg">new_releases</span>
-            Mới phát sinh
+            <span className="material-symbols-outlined text-lg">task_alt</span>
+            Đã xử lý ({metrics.resolved})
           </button>
         </div>
 
@@ -250,7 +255,12 @@ const ManageRoomsPage = () => {
                           {reportMeta.label}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm text-slate-600">{room.reportedCount || 0} lượt</td>
+                      <td className="px-6 py-4 text-sm text-slate-600">
+                        <div>{room.reportedCount || 0} lượt</div>
+                        <div className="text-xs text-slate-400">
+                          Chờ {room.pendingReportCount || 0} • Xử lý {room.resolvedReportCount || 0}
+                        </div>
+                      </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex justify-end gap-2">
                           <button
@@ -290,6 +300,16 @@ const ManageRoomsPage = () => {
       </div>
 
       <ReportedRoomDetailModal
+        actionSlot={
+          <button
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-red-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-red-600"
+            onClick={() => setRoomPendingDelete(rooms.find((room) => room.id === selectedRoom?.id) || selectedRoom)}
+            type="button"
+          >
+            <span className="material-symbols-outlined text-lg">delete</span>
+            Xóa tin vi phạm
+          </button>
+        }
         error={detailError}
         isLoading={isDetailLoading}
         onClose={() => {
@@ -297,7 +317,6 @@ const ManageRoomsPage = () => {
           setSelectedRoom(null);
           setDetailError("");
         }}
-        onDelete={(roomId) => setRoomPendingDelete(rooms.find((room) => room.id === roomId) || selectedRoom)}
         open={Boolean(selectedRoomId)}
         room={selectedRoom}
       />

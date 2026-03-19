@@ -12,7 +12,79 @@ describe("AdminRoomService", () => {
       getById: jest.fn(),
       updateById: jest.fn(),
     };
+    adminRoomService.reportRepository = {
+      getList: jest.fn(),
+      getById: jest.fn(),
+      updateById: jest.fn(),
+      updateWhere: jest.fn(),
+    };
     jest.clearAllMocks();
+  });
+
+  describe("getActiveListingsCount", () => {
+    test("PASS – returns count of active listings", async () => {
+      adminRoomService.repository.getList.mockResolvedValue([{ id: 1 }, { id: 2 }, { id: 3 }]);
+
+      const result = await adminRoomService.getActiveListingsCount();
+
+      expect(adminRoomService.repository.getList).toHaveBeenCalledWith({
+        where: { status: "active" },
+        attributes: ["id"],
+      });
+      expect(result).toEqual({ count: 3 });
+    });
+  });
+
+  describe("getReportedContent", () => {
+    test("PASS – defaults to all statuses when no status is provided", async () => {
+      adminRoomService.reportRepository.getList.mockResolvedValue([]);
+
+      await adminRoomService.getReportedContent();
+
+      expect(adminRoomService.reportRepository.getList).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {},
+        })
+      );
+    });
+  });
+
+  describe("getReportedRooms", () => {
+    test("PASS – excludes deleted reports from room-level violation summary", async () => {
+      adminRoomService.reportRepository.getList.mockResolvedValue([
+        {
+          status: "deleted",
+          reason: "Old deleted report",
+          createdAt: new Date("2026-03-19T10:00:00Z"),
+          room: {
+            toJSON() {
+              return { id: 1, title: "Room A", address: "123", status: "active" };
+            },
+          },
+        },
+        {
+          status: "resolved",
+          reason: "Handled report",
+          createdAt: new Date("2026-03-19T09:00:00Z"),
+          room: {
+            toJSON() {
+              return { id: 1, title: "Room A", address: "123", status: "active" };
+            },
+          },
+        },
+      ]);
+
+      const result = await adminRoomService.getReportedRooms();
+
+      expect(result).toHaveLength(1);
+      expect(result[0]).toMatchObject({
+        id: 1,
+        reportedCount: 1,
+        pendingReportCount: 0,
+        resolvedReportCount: 1,
+        deletedReportCount: 0,
+      });
+    });
   });
 
   describe("deleteViolationRoom", () => {
@@ -39,10 +111,16 @@ describe("AdminRoomService", () => {
     test("PASS – marks room as deleted", async () => {
       adminRoomService.repository.getById.mockResolvedValue(mockRoom);
       adminRoomService.repository.updateById.mockResolvedValue([1]);
+      adminRoomService.reportRepository.updateWhere.mockResolvedValue([1]);
       const result = await adminRoomService.deleteViolationRoom(1);
       expect(result.message).toBe("Room removed");
       expect(adminRoomService.repository.updateById).toHaveBeenCalledWith(
         1, { status: "deleted" }, expect.any(Object)
+      );
+      expect(adminRoomService.reportRepository.updateWhere).toHaveBeenCalledWith(
+        { roomId: 1, status: { [require("sequelize").Op.ne]: "deleted" } },
+        { status: "deleted", reviewedAt: expect.any(Date) },
+        expect.any(Object)
       );
     });
   });

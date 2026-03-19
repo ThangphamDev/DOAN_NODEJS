@@ -1,6 +1,10 @@
 ﻿import api from "@/api/client";
 
 class AdminService {
+  getActiveRoomsCount() {
+    return api.get("/admin/rooms/active-count");
+  }
+
   getReportedRooms() {
     return api.get("/admin/rooms/reported");
   }
@@ -10,7 +14,7 @@ class AdminService {
   }
 
   getReportedContent(status = "all") {
-    const params = status && status !== "all" ? { status } : undefined;
+    const params = status ? { status } : undefined;
     return api.get("/admin/reports", { params });
   }
 

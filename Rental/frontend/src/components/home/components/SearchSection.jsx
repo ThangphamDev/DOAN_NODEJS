@@ -1,8 +1,14 @@
 import { useEffect, useState } from "react";
 import { quickFilters } from "@/components/home/homeData";
 
+const placeholderOptions = [
+  "Quận 3, TP.HCM",
+  "Bình Thạnh...",
+  "Đường Nguyễn Trãi...",
+  "Nguyễn Hữu Thọ, Quận 7...",
+];
+
 const SearchSection = ({ filters, onFilterChange, onSubmit, activeQuickFilter, onQuickFilterChange, onPriceRangeChange }) => {
-  const placeholderOptions = ["Quận 3, TP.HCM", "Bình Thạnh...", "Đường Nguyễn Trãi...", "Quận 7, gần RMIT..."];
   const [placeholderText, setPlaceholderText] = useState(placeholderOptions[0]);
   const [areaInput, setAreaInput] = useState(filters.area || "");
 
@@ -40,7 +46,7 @@ const SearchSection = ({ filters, onFilterChange, onSubmit, activeQuickFilter, o
     <section className="search-section" id="search">
       <div className="search-box">
         <div className="search-field">
-          <label>Địa điểm</label>
+          <label>Khu vực / tuyến đường</label>
           <input
             type="text"
             name="area"

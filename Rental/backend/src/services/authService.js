@@ -50,19 +50,23 @@ class AuthService {
 
   async login({ email, password }) {
     if (!email || !password) {
-      throw new ApiError(400, "Missing email or password");
+      throw new ApiError(400, "Vui lòng nhập email và mật khẩu");
     }
 
     const user = await this.repository.getOne({ where: { email: email.toLowerCase() } });
 
-    if (!user || !user.isActive) {
-      throw new ApiError(401, "Invalid credentials");
+    if (!user) {
+      throw new ApiError(401, "Email hoặc mật khẩu không đúng");
+    }
+
+    if (!user.isActive) {
+      throw new ApiError(403, "Tài khoản của bạn đã bị khóa");
     }
 
     const isValid = await bcrypt.compare(password, user.passwordHash);
 
     if (!isValid) {
-      throw new ApiError(401, "Invalid credentials");
+      throw new ApiError(401, "Email hoặc mật khẩu không đúng");
     }
 
     const token = signToken({ id: user.id, role: user.role });

@@ -84,13 +84,13 @@ describe("AuthService", () => {
     test("FAIL – throws 401 when user not found", async () => {
       authService.repository.getOne.mockResolvedValue(null);
       await expect(authService.login({ email: "x@test.com", password: "123" }))
-        .rejects.toMatchObject({ statusCode: 401 });
+        .rejects.toMatchObject({ statusCode: 401, message: "Email hoặc mật khẩu không đúng" });
     });
 
-    test("FAIL – throws 401 when account inactive", async () => {
+    test("FAIL – throws 403 when account inactive", async () => {
       authService.repository.getOne.mockResolvedValue({ id: 1, isActive: false });
       await expect(authService.login({ email: "x@test.com", password: "123" }))
-        .rejects.toMatchObject({ statusCode: 401 });
+        .rejects.toMatchObject({ statusCode: 403, message: "Tài khoản của bạn đã bị khóa" });
     });
 
     test("FAIL – throws 401 when password wrong", async () => {
@@ -99,7 +99,7 @@ describe("AuthService", () => {
       });
       bcrypt.compare.mockResolvedValue(false);
       await expect(authService.login({ email: "x@test.com", password: "wrong" }))
-        .rejects.toMatchObject({ statusCode: 401 });
+        .rejects.toMatchObject({ statusCode: 401, message: "Email hoặc mật khẩu không đúng" });
     });
 
     test("PASS – returns token and user", async () => {
