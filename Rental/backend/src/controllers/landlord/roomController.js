@@ -2,6 +2,8 @@ const roomService = require("@/services/landlord/roomService");
 const { authenticate } = require("@/middleware/auth");
 const authorize = require("@/middleware/authorize");
 const upload = require("@/utils/upload");
+const validate = require("@/middleware/validate");
+const { validateCreateRoom, validateUpdateRoom } = require("@/validators/roomValidator");
 const { sendSuccess } = require("@/utils/response");
 const { runInTransaction } = require("@/utils/transaction");
 
@@ -93,6 +95,7 @@ class LandlordRoomController {
       authenticate,
       authorize("landlord", "admin"),
       upload.array("images", 10),
+      validate(validateCreateRoom),
       this.createRoom
     );
     app.patch(
@@ -100,9 +103,10 @@ class LandlordRoomController {
       authenticate,
       authorize("landlord", "admin"),
       upload.array("images", 10),
+      validate(validateUpdateRoom),
       this.updateRoom
     );
-    app.delete(`${prefix}/rooms/:id`, authenticate, authorize("landlord", "admin"), this.removeRoom);
+    app.delete(`${prefix}/landlord/rooms/:id`, authenticate, authorize("landlord"), this.removeRoom);
   }
 }
 

@@ -16,10 +16,21 @@ const adminRoomController = require("@/controllers/admin/roomController");
 const adminUserController = require("@/controllers/admin/userController");
 const { authenticate } = require("@/middleware/auth");
 const authorize = require("@/middleware/authorize");
+const createRateLimiter = require("@/middleware/rateLimit");
 const { sendSuccess } = require("@/utils/response");
 const errorHandler = require("@/middleware/errorHandler");
 
 const app = express();
+const authRateLimiter = createRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: "Bạn đã thử đăng nhập quá nhiều lần. Vui lòng thử lại sau 15 phút.",
+});
+const globalRateLimiter = createRateLimiter({
+  windowMs: 1 * 60 * 1000,
+  max: 100,
+  message: "Có quá nhiều yêu cầu từ thiết bị của bạn. Vui lòng thử lại sau.",
+});
 
 app.use(
   cors({
@@ -31,6 +42,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+app.use("/api", globalRateLimiter);
+app.use("/api/auth", authRateLimiter);
 
 authController.registerRoutes(app, "/api");
 roomController.registerRoutes(app, "/api");

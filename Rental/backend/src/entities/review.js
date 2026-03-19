@@ -24,6 +24,10 @@ module.exports = (sequelize) =>
       content: {
         type: DataTypes.TEXT,
       },
+      landlordReply: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
     },
     {
       tableName: "reviews",

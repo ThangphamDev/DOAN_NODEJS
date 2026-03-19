@@ -1,6 +1,8 @@
 const roomService = require("@/services/roomService");
 const { authenticate } = require("@/middleware/auth");
 const authorize = require("@/middleware/authorize");
+const validate = require("@/middleware/validate");
+const { validateReportRoom } = require("@/validators/roomValidator");
 const { sendSuccess } = require("@/utils/response");
 const { runInTransaction } = require("@/utils/transaction");
 
@@ -63,7 +65,7 @@ class RoomController {
 		app.get(`${prefix}/rooms`, this.listRooms);
 		app.get(`${prefix}/rooms/:id`, this.getRoomDetail);
 		app.get(`${prefix}/rooms/:id/report-status`, authenticate, authorize("customer"), this.getReportStatus);
-		app.post(`${prefix}/rooms/:id/report`, authenticate, authorize("customer"), this.reportRoom);
+		app.post(`${prefix}/rooms/:id/report`, authenticate, authorize("customer"), validate(validateReportRoom), this.reportRoom);
 	}
 }
 

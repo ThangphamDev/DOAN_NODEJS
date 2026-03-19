@@ -57,7 +57,7 @@ class LandlordService {
   }
 
   deleteRoom(id) {
-    return api.delete(`/rooms/${id}`);
+    return api.delete(`/landlord/rooms/${id}`);
   }
 
   replyReview(reviewId, content) {

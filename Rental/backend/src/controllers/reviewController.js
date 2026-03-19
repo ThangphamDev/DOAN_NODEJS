@@ -1,6 +1,8 @@
 const reviewService = require("@/services/reviewService");
 const { authenticate } = require("@/middleware/auth");
 const authorize = require("@/middleware/authorize");
+const validate = require("@/middleware/validate");
+const { validateCreateReview, validateReplyReview } = require("@/validators/reviewValidator");
 const { sendSuccess } = require("@/utils/response");
 const { runInTransaction } = require("@/utils/transaction");
 
@@ -64,12 +66,14 @@ class ReviewController {
 			`${prefix}/reviews/room/:roomId`,
 			authenticate,
 			authorize("customer"),
+			validate(validateCreateReview),
 			this.createReview
 		);
 		app.put(
 			`${prefix}/reviews/:reviewId/reply`,
 			authenticate,
 			authorize("landlord"),
+			validate(validateReplyReview),
 			this.replyToReview
 		);
 	}

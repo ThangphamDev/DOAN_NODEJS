@@ -1,5 +1,7 @@
 const authService = require("@/services/authService");
 const { authenticate } = require("@/middleware/auth");
+const validate = require("@/middleware/validate");
+const { validateRegister, validateLogin, validateUpdateProfile } = require("@/validators/authValidator");
 const { sendSuccess } = require("@/utils/response");
 const { runInTransaction } = require("@/utils/transaction");
 
@@ -51,10 +53,10 @@ class AuthController {
 	}
 
 	registerRoutes(app, prefix = "/api") {
-		app.post(`${prefix}/auth/register`, this.register);
-		app.post(`${prefix}/auth/login`, this.login);
+		app.post(`${prefix}/auth/register`, validate(validateRegister), this.register);
+		app.post(`${prefix}/auth/login`, validate(validateLogin), this.login);
 		app.get(`${prefix}/auth/me`, authenticate, this.me);
-		app.patch(`${prefix}/auth/me`, authenticate, this.updateProfile);
+		app.patch(`${prefix}/auth/me`, authenticate, validate(validateUpdateProfile), this.updateProfile);
 	}
 }
 

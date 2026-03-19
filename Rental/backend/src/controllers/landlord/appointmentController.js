@@ -1,6 +1,8 @@
 const appointmentService = require("@/services/landlord/appointmentService");
 const { authenticate } = require("@/middleware/auth");
 const authorize = require("@/middleware/authorize");
+const validate = require("@/middleware/validate");
+const { validateUpdateAppointmentStatus } = require("@/validators/appointmentValidator");
 const { sendSuccess } = require("@/utils/response");
 const { runInTransaction } = require("@/utils/transaction");
 
@@ -34,6 +36,7 @@ class LandlordAppointmentController {
       `${prefix}/appointments/:id/status`,
       authenticate,
       authorize("landlord", "admin"),
+      validate(validateUpdateAppointmentStatus),
       this.updateAppointmentStatus
     );
   }

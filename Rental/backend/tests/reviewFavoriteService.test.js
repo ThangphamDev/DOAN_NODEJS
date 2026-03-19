@@ -9,6 +9,8 @@ describe("ReviewService", () => {
     reviewService.repository = {
       getOne: jest.fn(),
       getList: jest.fn(),
+      getById: jest.fn(),
+      updateById: jest.fn(),
       insert: jest.fn(),
     };
     reviewService.roomRepository = { getById: jest.fn() };
@@ -63,6 +65,50 @@ describe("ReviewService", () => {
       reviewService.repository.insert.mockResolvedValue(mock);
       const result = await reviewService.createReview({ userId: 1, roomId: 1, rating: 5, content: "great" });
       expect(result.rating).toBe(5);
+    });
+  });
+
+  describe("replyToReview", () => {
+    test("FAIL – throws 404 when review not found", async () => {
+      reviewService.repository.getById.mockResolvedValue(null);
+
+      await expect(
+        reviewService.replyToReview({ reviewId: 99, landlordId: 7, content: "Cảm ơn bạn" })
+      ).rejects.toMatchObject({ statusCode: 404 });
+    });
+
+    test("FAIL – throws 403 when landlord does not own room", async () => {
+      reviewService.repository.getById.mockResolvedValue({ id: 1, roomId: 10 });
+      reviewService.roomRepository.getById.mockResolvedValue({ id: 10, landlordId: 99 });
+
+      await expect(
+        reviewService.replyToReview({ reviewId: 1, landlordId: 7, content: "Cảm ơn bạn" })
+      ).rejects.toMatchObject({ statusCode: 403 });
+    });
+
+    test("PASS – saves landlordReply to review", async () => {
+      reviewService.repository.getById.mockResolvedValue({
+        id: 1,
+        roomId: 10,
+        toJSON() {
+          return { id: 1, roomId: 10 };
+        },
+      });
+      reviewService.roomRepository.getById.mockResolvedValue({ id: 10, landlordId: 7 });
+      reviewService.repository.updateById.mockResolvedValue([1]);
+
+      const result = await reviewService.replyToReview({
+        reviewId: 1,
+        landlordId: 7,
+        content: "Cảm ơn bạn đã phản hồi",
+      });
+
+      expect(reviewService.repository.updateById).toHaveBeenCalledWith(
+        1,
+        { landlordReply: "Cảm ơn bạn đã phản hồi" },
+        expect.any(Object)
+      );
+      expect(result.landlordReply).toBe("Cảm ơn bạn đã phản hồi");
     });
   });
 });

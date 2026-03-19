@@ -82,21 +82,11 @@ const AdminLayout = () => {
 
           <NavLink className={navClassName} to="/admin/reports">
             <span className="material-symbols-outlined">flag</span>
-            <span>Nội dung bị báo cáo</span>
+            <span>Phiếu báo cáo</span>
             <span className="ml-auto rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
               {pendingReportsCount}
             </span>
           </NavLink>
-
-          <div className="mb-2 mt-6 px-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Operations</div>
-          <div className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-600">
-            <span className="material-symbols-outlined">payments</span>
-            <span>Doanh thu</span>
-          </div>
-          <div className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-600">
-            <span className="material-symbols-outlined">settings</span>
-            <span>Cài đặt hệ thống</span>
-          </div>
         </nav>
 
         <div className="mt-auto border-t border-slate-200 p-4">

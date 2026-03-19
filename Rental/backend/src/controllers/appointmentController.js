@@ -1,6 +1,8 @@
 const appointmentService = require("@/services/appointmentService");
 const { authenticate } = require("@/middleware/auth");
 const authorize = require("@/middleware/authorize");
+const validate = require("@/middleware/validate");
+const { validateCreateAppointment } = require("@/validators/appointmentValidator");
 const { sendSuccess } = require("@/utils/response");
 const { runInTransaction } = require("@/utils/transaction");
 
@@ -66,6 +68,7 @@ class AppointmentController {
 			`${prefix}/appointments/room/:roomId`,
 			authenticate,
 			authorize("customer"),
+			validate(validateCreateAppointment),
 			this.createAppointment
 		);
 		app.get(

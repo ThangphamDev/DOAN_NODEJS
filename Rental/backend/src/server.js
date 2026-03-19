@@ -12,6 +12,7 @@ const { sequelize } = require("@/entities");
 const port = Number(process.env.PORT || 5000);
 
 const requiredEnvVars = ["JWT_SECRET", "DB_HOST", "DB_PORT", "DB_NAME", "DB_USER"];
+const isProduction = process.env.NODE_ENV === "production";
 
 const validateRequiredEnv = () => {
   const missingVars = requiredEnvVars.filter((envVar) => !process.env[envVar]);
@@ -26,10 +27,23 @@ const bootstrap = async () => {
     await ensureDatabaseExists();
     await sequelize.authenticate();
 
-    if (String(process.env.DB_SYNC || "true") === "true") {
+    const shouldSync = process.env.DB_SYNC !== undefined
+      ? String(process.env.DB_SYNC) === "true"
+      : !isProduction;
+    const shouldAlter = process.env.DB_SYNC_ALTER !== undefined
+      ? String(process.env.DB_SYNC_ALTER) === "true"
+      : !isProduction;
+
+    if (shouldSync) {
+      if (shouldAlter) {
+        console.warn(`[DB] sequelize.sync is running with alter=true in ${isProduction ? "production" : "development"} mode.`);
+      }
+
       await sequelize.sync({
-        alter: String(process.env.DB_SYNC_ALTER || "true") === "true",
+        alter: shouldAlter,
       });
+    } else if (isProduction) {
+      console.log("[DB] sequelize.sync is disabled in production mode.");
     }
 
     const server = http.createServer(app);
