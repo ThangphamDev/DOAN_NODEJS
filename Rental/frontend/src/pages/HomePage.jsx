@@ -10,6 +10,7 @@ import useAuth from "@/hooks/useAuth";
 import landlordService from "@/services/LandlordService";
 import roomService from "@/services/RoomService";
 import { getApiData } from "@/utils/apiResponse";
+import { subscribeToPublicCacheInvalidation } from "@/utils/publicCache";
 
 const HomePage = () => {
   const { user } = useAuth();
@@ -18,7 +19,8 @@ const HomePage = () => {
   const [activeQuickFilter, setActiveQuickFilter] = useState("Tất cả");
 
   const loadRooms = useCallback(
-    async (nextFilters = filters) => {
+    async (nextFilters = filters, options = {}) => {
+      const { preferCache = true } = options;
       try {
         if (user?.role === "landlord") {
           const response = await landlordService.getMyRooms();
@@ -26,13 +28,22 @@ const HomePage = () => {
           return;
         }
 
-        const response = await roomService.listRooms({
+        const requestParams = {
           minPrice: nextFilters.minPrice || undefined,
           maxPrice: nextFilters.maxPrice || undefined,
           area: nextFilters.area || undefined,
           limit: 12,
-        });
+        };
+        if (preferCache) {
+          const cachedPayload = roomService.getCachedRoomList(requestParams);
+          if (cachedPayload?.data) {
+            setRooms(cachedPayload.data);
+          }
+        }
+
+        const response = await roomService.listRooms(requestParams);
         const payload = getApiData(response, {});
+        roomService.setCachedRoomList(requestParams, payload);
         setRooms(payload?.data || []);
       } catch {
         setRooms([]);
@@ -44,6 +55,27 @@ const HomePage = () => {
   useEffect(() => {
     void loadRooms(filters);
   }, [filters, loadRooms]);
+
+  useEffect(() => {
+    if (user?.role === "landlord") return undefined;
+
+    const unsubscribe = subscribeToPublicCacheInvalidation((detail) => {
+      if (detail.scope === "rooms") {
+        void loadRooms(filters, { preferCache: false });
+      }
+    });
+
+    const handleFocus = () => {
+      void loadRooms(filters, { preferCache: true });
+    };
+
+    window.addEventListener("focus", handleFocus);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, [filters, loadRooms, user?.role]);
 
   const handleFilterChange = (event) => {
     setFilters((prev) => ({ ...prev, [event.target.name]: event.target.value }));
@@ -81,7 +113,7 @@ const HomePage = () => {
         filters={filters}
         onFilterChange={handleFilterChange}
         onPriceRangeChange={handlePriceRangeChange}
-        onSubmit={() => loadRooms(filters)}
+        onSubmit={() => loadRooms(filters, { preferCache: false })}
         activeQuickFilter={activeQuickFilter}
         onQuickFilterChange={handleQuickFilterChange}
       />

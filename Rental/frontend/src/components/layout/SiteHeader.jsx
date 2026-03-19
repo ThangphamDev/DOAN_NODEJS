@@ -1,11 +1,25 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { io } from "socket.io-client";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import useAuth from "@/hooks/useAuth";
+import chatService from "@/services/ChatService";
+import { getApiData } from "@/utils/apiResponse";
+import { getToken } from "@/utils/storage";
 
 const roleLabelMap = {
   admin: "Quản trị viên",
   landlord: "Chủ trọ",
   customer: "Khách hàng",
+};
+
+const renderUnreadBadge = (count) => {
+  if (!count) return null;
+
+  return (
+    <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">
+      {count > 99 ? "99+" : count}
+    </span>
+  );
 };
 
 const SiteHeader = () => {
@@ -14,6 +28,7 @@ const SiteHeader = () => {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const [customerUnreadCount, setCustomerUnreadCount] = useState(0);
   const accountMenuRef = useRef(null);
 
   useEffect(() => {
@@ -47,6 +62,78 @@ const SiteHeader = () => {
     window.addEventListener("mousedown", handleClickOutside);
     return () => window.removeEventListener("mousedown", handleClickOutside);
   }, [accountMenuOpen]);
+
+  useEffect(() => {
+    if (user?.role !== "customer") {
+      setCustomerUnreadCount(0);
+      return undefined;
+    }
+
+    let isMounted = true;
+
+    const loadUnreadCount = async () => {
+      try {
+        const response = await chatService.getInbox();
+        if (!isMounted) return;
+        const items = getApiData(response, []);
+        setCustomerUnreadCount(items.reduce((sum, item) => sum + Number(item.unreadCount || 0), 0));
+      } catch {
+        if (!isMounted) return;
+        setCustomerUnreadCount(0);
+      }
+    };
+
+    void loadUnreadCount();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [location.pathname, user?.role]);
+
+  useEffect(() => {
+    if (user?.role !== "customer") {
+      return undefined;
+    }
+
+    const handleUnreadSync = (event) => {
+      setCustomerUnreadCount(Number(event.detail?.count || 0));
+    };
+
+    window.addEventListener("chat:unread-sync", handleUnreadSync);
+    return () => window.removeEventListener("chat:unread-sync", handleUnreadSync);
+  }, [user?.role]);
+
+  useEffect(() => {
+    if (user?.role !== "customer") {
+      return undefined;
+    }
+
+    const token = getToken();
+    if (!token) {
+      return undefined;
+    }
+
+    const socket = io(import.meta.env.VITE_SOCKET_URL || "http://localhost:5000", {
+      auth: { token },
+      autoConnect: true,
+      transports: ["websocket", "polling"],
+    });
+
+    const handleNewMessage = (message) => {
+      if (Number(message?.receiverId) !== Number(user?.id) || Number(message?.senderId) === Number(user?.id)) {
+        return;
+      }
+
+      setCustomerUnreadCount((prev) => prev + 1);
+    };
+
+    socket.on("chat:new", handleNewMessage);
+
+    return () => {
+      socket.off("chat:new", handleNewMessage);
+      socket.disconnect();
+    };
+  }, [user?.id, user?.role]);
 
   const handleLogout = () => {
     logout();
@@ -115,7 +202,10 @@ const SiteHeader = () => {
           <ul id="site-primary-nav" className="nav-links">
             {primaryLinks.map((item) => (
               <li key={item.to}>
-                <Link to={item.to}>{item.label}</Link>
+                <Link className="inline-flex items-center gap-2" to={item.to}>
+                  <span>{item.label}</span>
+                  {item.to === "/messages" ? renderUnreadBadge(customerUnreadCount) : null}
+                </Link>
               </li>
             ))}
           </ul>
@@ -164,12 +254,6 @@ const SiteHeader = () => {
               </div>
             )}
           </div>
-
-          {user?.role === "customer" ? (
-            <Link to="/messages" className="ui-button ui-button--outline nav-mobile-message" onClick={() => setMobileMenuOpen(false)}>
-              Tin nhắn
-            </Link>
-          ) : null}
 
           <button
             type="button"
@@ -224,6 +308,7 @@ const SiteHeader = () => {
             <li key={item.to}>
               <Link to={item.to} onClick={() => setMobileMenuOpen(false)}>
                 {item.label}
+                {item.to === "/messages" ? renderUnreadBadge(customerUnreadCount) : null}
               </Link>
             </li>
           ))}

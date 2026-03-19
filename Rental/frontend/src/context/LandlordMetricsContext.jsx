@@ -1,8 +1,10 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { io } from "socket.io-client";
 import useAuth from "@/hooks/useAuth";
 import chatService from "@/services/ChatService";
 import landlordService from "@/services/LandlordService";
 import { getApiData } from "@/utils/apiResponse";
+import { getToken } from "@/utils/storage";
 
 const defaultMetrics = {
   roomsCount: 0,
@@ -62,6 +64,41 @@ export const LandlordMetricsProvider = ({ children }) => {
   useEffect(() => {
     void refreshMetrics();
   }, [refreshMetrics]);
+
+  useEffect(() => {
+    if (user?.role !== "landlord") {
+      return undefined;
+    }
+
+    const token = getToken();
+    if (!token) {
+      return undefined;
+    }
+
+    const socket = io(import.meta.env.VITE_SOCKET_URL || "http://localhost:5000", {
+      auth: { token },
+      autoConnect: true,
+      transports: ["websocket", "polling"],
+    });
+
+    const handleIncomingMessage = (message) => {
+      if (Number(message?.receiverId) !== Number(user?.id) || Number(message?.senderId) === Number(user?.id)) {
+        return;
+      }
+
+      setMetrics((prev) => ({
+        ...prev,
+        unreadMessagesCount: Number(prev.unreadMessagesCount || 0) + 1,
+      }));
+    };
+
+    socket.on("chat:new", handleIncomingMessage);
+
+    return () => {
+      socket.off("chat:new", handleIncomingMessage);
+      socket.disconnect();
+    };
+  }, [user?.id, user?.role]);
 
   const value = useMemo(
     () => ({

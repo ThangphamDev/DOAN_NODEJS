@@ -1,4 +1,5 @@
-﻿import api from "@/api/client";
+import api from "@/api/client";
+import { invalidatePublicRoomCache } from "@/utils/publicCache";
 
 class AdminService {
   getActiveRoomsCount() {
@@ -35,7 +36,10 @@ class AdminService {
   }
 
   deleteRoom(id) {
-    return api.delete(`/admin/rooms/${id}`);
+    return api.delete(`/admin/rooms/${id}`).then((response) => {
+      invalidatePublicRoomCache({ roomId: id });
+      return response;
+    });
   }
 
   lockUser(id) {

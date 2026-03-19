@@ -281,12 +281,12 @@ const ChatPage = () => {
           </div>
 
           <div className="shrink-0 border-t border-slate-200 bg-white p-4 md:p-6">
-            <div className="flex items-end gap-3 rounded-xl border border-slate-200 bg-slate-50 p-2 transition-all focus-within:ring-2 focus-within:ring-primary/20">
-              <button className="hidden p-2 text-slate-400 transition-colors hover:text-primary sm:block" type="button">
+            <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-2 transition-all focus-within:ring-2 focus-within:ring-primary/20">
+              <button className="hidden size-10 shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-white hover:text-primary sm:flex" type="button">
                 <span className="material-symbols-outlined">add_circle</span>
               </button>
               <textarea
-                className="max-h-32 flex-1 resize-none border-none bg-transparent px-0 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:ring-0"
+                className="min-h-10 max-h-32 flex-1 resize-none border-none bg-transparent px-0 py-2 text-sm leading-6 text-slate-800 placeholder:text-slate-400 focus:ring-0"
                 placeholder="Nhập tin nhắn..."
                 rows="1"
                 value={content}
@@ -294,7 +294,7 @@ const ChatPage = () => {
                 onKeyDown={handleComposerKeyDown}
               />
               <button
-                className="flex size-10 items-center justify-center rounded-lg bg-primary text-white shadow-lg shadow-primary/30 transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary text-white shadow-lg shadow-primary/30 transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
                 type="button"
                 onClick={sendMessage}
                 disabled={!hasActiveConversation}

@@ -1,4 +1,5 @@
 import api from "@/api/client";
+import { invalidatePublicRoomCache } from "@/utils/publicCache";
 import { buildRoomImageManifest } from "@/utils/roomDetails";
 
 const buildRoomFormData = (payload) => {
@@ -44,7 +45,10 @@ class LandlordService {
 
   createRoom(payload) {
     const { formData } = buildRoomFormData(payload);
-    return api.post("/rooms", formData, multipartConfig);
+    return api.post("/rooms", formData, multipartConfig).then((response) => {
+      invalidatePublicRoomCache();
+      return response;
+    });
   }
 
   updateAppointmentStatus(id, status, rejectReason = "") {
@@ -53,15 +57,24 @@ class LandlordService {
 
   updateRoom(id, payload) {
     const { formData } = buildRoomFormData(payload);
-    return api.patch(`/rooms/${id}`, formData, multipartConfig);
+    return api.patch(`/rooms/${id}`, formData, multipartConfig).then((response) => {
+      invalidatePublicRoomCache({ roomId: id });
+      return response;
+    });
   }
 
   deleteRoom(id) {
-    return api.delete(`/landlord/rooms/${id}`);
+    return api.delete(`/landlord/rooms/${id}`).then((response) => {
+      invalidatePublicRoomCache({ roomId: id });
+      return response;
+    });
   }
 
   replyReview(reviewId, content) {
-    return api.put(`/reviews/${reviewId}/reply`, { content });
+    return api.put(`/reviews/${reviewId}/reply`, { content }).then((response) => {
+      invalidatePublicRoomCache();
+      return response;
+    });
   }
 }
 

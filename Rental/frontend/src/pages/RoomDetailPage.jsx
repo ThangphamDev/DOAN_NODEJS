@@ -9,6 +9,7 @@ import useAuth from "@/hooks/useAuth";
 import chatService from "@/services/ChatService";
 import roomService from "@/services/RoomService";
 import { getApiData, getApiMessage } from "@/utils/apiResponse";
+import { subscribeToPublicCacheInvalidation } from "@/utils/publicCache";
 import { getBadgeToneClasses, normalizeRoomDetails } from "@/utils/roomDetails";
 import { getToken } from "@/utils/storage";
 
@@ -107,20 +108,53 @@ const RoomDetailPage = () => {
     });
   }, []);
 
-  const fetchRoom = useCallback(() => {
-    roomService
-      .getRoomDetail(id)
-      .then((response) => {
-        setRoom(getApiData(response));
-      })
-      .catch((err) => {
-        notify.error(getApiMessage(err, "Không tải được thông tin phòng"));
-      });
-  }, [id, notify]);
+  const fetchRoom = useCallback(
+    async (options = {}) => {
+      const { preferCache = true, silent = false } = options;
+
+      if (preferCache) {
+        const cachedRoom = roomService.getCachedRoomDetail(id);
+        if (cachedRoom) {
+          setRoom(cachedRoom);
+        }
+      }
+
+      try {
+        const response = await roomService.getRoomDetail(id);
+        const nextRoom = getApiData(response);
+        roomService.setCachedRoomDetail(id, nextRoom);
+        setRoom(nextRoom);
+      } catch (err) {
+        if (!silent) {
+          notify.error(getApiMessage(err, "Kh??ng t???i ???????c th??ng tin ph??ng"));
+        }
+      }
+    },
+    [id, notify]
+  );
 
   useEffect(() => {
-    fetchRoom();
+    void fetchRoom();
   }, [fetchRoom]);
+
+  useEffect(() => {
+    const unsubscribe = subscribeToPublicCacheInvalidation((detail) => {
+      if (detail.scope === "rooms" && (!detail.roomId || Number(detail.roomId) === Number(id))) {
+        void fetchRoom({ preferCache: false, silent: true });
+      }
+    });
+
+    const handleFocus = () => {
+      void fetchRoom({ preferCache: true, silent: true });
+    };
+
+    window.addEventListener("focus", handleFocus);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, [fetchRoom, id]);
 
   useEffect(() => {
     if (!room || !user) return;
@@ -390,7 +424,7 @@ const RoomDetailPage = () => {
       await roomService.createReview(id, review);
       setReview({ rating: 5, content: "" });
       notify.success("Đánh giá của bạn đã được ghi nhận.");
-      fetchRoom();
+      void fetchRoom({ preferCache: false });
     } catch (err) {
       notify.error(getApiMessage(err, "Không thể gửi đánh giá"));
     }

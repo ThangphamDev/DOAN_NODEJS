@@ -1,5 +1,6 @@
 ﻿import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { io } from "socket.io-client";
+import { useLandlordMetrics } from "@/context/LandlordMetricsContext.jsx";
 import chatService from "@/services/ChatService";
 import { useNotify } from "@/context/NotifyContext.jsx";
 import useAuth from "@/hooks/useAuth";
@@ -24,6 +25,7 @@ const MESSAGE_PAGE_SIZE = 10;
 const useChatConversation = () => {
   const { user } = useAuth();
   const notify = useNotify();
+  const { syncUnreadMessagesCount } = useLandlordMetrics();
   const [inbox, setInbox] = useState([]);
   const [activeThread, setActiveThread] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -236,6 +238,16 @@ const useChatConversation = () => {
   useEffect(() => {
     activeThreadRef.current = activeThread;
   }, [activeThread]);
+
+  useEffect(() => {
+    const unreadCount = inbox.reduce((sum, item) => sum + Number(item.unreadCount || 0), 0);
+    syncUnreadMessagesCount(unreadCount);
+    window.dispatchEvent(
+      new CustomEvent("chat:unread-sync", {
+        detail: { count: unreadCount },
+      })
+    );
+  }, [inbox, syncUnreadMessagesCount]);
 
   useEffect(() => {
     loadInbox();

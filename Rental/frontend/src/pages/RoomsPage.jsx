@@ -6,6 +6,7 @@ import useAuth from "@/hooks/useAuth";
 import landlordService from "@/services/LandlordService";
 import roomService from "@/services/RoomService";
 import { getApiData } from "@/utils/apiResponse";
+import { subscribeToPublicCacheInvalidation } from "@/utils/publicCache";
 import { normalizeRoomDetails, resolveRoomImageUrl } from "@/utils/roomDetails";
 
 const quickAreas = ["Tất cả", "Quận 1", "Quận 3", "Quận 7", "Bình Thạnh", "Thủ Đức"];
@@ -97,22 +98,33 @@ const RoomsPage = () => {
   }, []);
 
   const loadRooms = useCallback(
-    async (nextFilters = filters) => {
-      setLoading(true);
+    async (nextFilters = filters, options = {}) => {
+      const { preferCache = true } = options;
       try {
         if (user?.role === "landlord") {
+          setLoading(true);
           const response = await landlordService.getMyRooms();
           setRooms(getApiData(response, []));
           return;
         }
 
-        const response = await roomService.listRooms({
+        const requestParams = {
           minPrice: nextFilters.minPrice || undefined,
           maxPrice: nextFilters.maxPrice || undefined,
           area: nextFilters.area || undefined,
           limit: 50,
-        });
+        };
+        const cachedPayload = preferCache ? roomService.getCachedRoomList(requestParams) : null;
+        if (cachedPayload?.data) {
+          setRooms(cachedPayload.data);
+          setLoading(false);
+        } else {
+          setLoading(true);
+        }
+
+        const response = await roomService.listRooms(requestParams);
         const payload = getApiData(response, {});
+        roomService.setCachedRoomList(requestParams, payload);
         setRooms(payload?.data || []);
       } catch {
         setRooms([]);
@@ -126,6 +138,29 @@ const RoomsPage = () => {
   useEffect(() => {
     void loadRooms(filters);
   }, []);
+
+  const isLandlord = user?.role === "landlord";
+
+  useEffect(() => {
+    if (isLandlord) return undefined;
+
+    const unsubscribe = subscribeToPublicCacheInvalidation((detail) => {
+      if (detail.scope === "rooms") {
+        void loadRooms(filters, { preferCache: false });
+      }
+    });
+
+    const handleFocus = () => {
+      void loadRooms(filters, { preferCache: true });
+    };
+
+    window.addEventListener("focus", handleFocus);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, [filters, isLandlord, loadRooms]);
 
   useEffect(() => {
     setSearchInput(filters.area || "");
@@ -147,7 +182,7 @@ const RoomsPage = () => {
       const nextFilters = { ...filters, area: searchInput };
       setFilters(nextFilters);
       setCurrentPage(1);
-      void loadRooms(nextFilters);
+      void loadRooms(nextFilters, { preferCache: false });
     }, 300);
 
     return () => clearTimeout(timeoutId);
@@ -175,7 +210,7 @@ const RoomsPage = () => {
     const next = { ...filters, minPrice: min || "", maxPrice: max || "" };
     setFilters(next);
     setCurrentPage(1);
-    void loadRooms(next);
+    void loadRooms(next, { preferCache: false });
   };
 
   const handleQuickFilterChange = (chip) => {
@@ -183,15 +218,13 @@ const RoomsPage = () => {
     const next = { ...filters, area: chip === "Tất cả" ? "" : chip };
     setFilters(next);
     setCurrentPage(1);
-    void loadRooms(next);
+    void loadRooms(next, { preferCache: false });
   };
 
   const handleSubmit = () => {
     setCurrentPage(1);
-    void loadRooms(filters);
+    void loadRooms(filters, { preferCache: false });
   };
-
-  const isLandlord = user?.role === "landlord";
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
