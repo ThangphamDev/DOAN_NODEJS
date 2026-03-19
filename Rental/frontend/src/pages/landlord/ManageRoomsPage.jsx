@@ -3,6 +3,7 @@ import Pagination from "@/components/common/Pagination";
 import LandlordSearchInput from "@/components/landlord/LandlordSearchInput";
 import LandlordToolbar from "@/components/landlord/LandlordToolbar";
 import RoomUpsertModal from "@/components/landlord/RoomUpsertModal";
+import { useLandlordMetrics } from "@/context/LandlordMetricsContext.jsx";
 import { useNotify } from "@/context/NotifyContext.jsx";
 import landlordService from "@/services/LandlordService";
 import { getApiData, getApiMessage } from "@/utils/apiResponse";
@@ -26,6 +27,7 @@ const ManageRoomsPage = () => {
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const notify = useNotify();
+  const { refreshMetrics } = useLandlordMetrics();
 
   const uploadBaseUrl = useMemo(() => {
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
@@ -125,6 +127,7 @@ const ManageRoomsPage = () => {
 
       closeEditor();
       await loadRooms();
+      await refreshMetrics();
     } catch (err) {
       notify.error(getApiMessage(err, editingRoom?.id ? "Không thể cập nhật tin" : "Không thể đăng tin"));
     } finally {
@@ -143,6 +146,7 @@ const ManageRoomsPage = () => {
       });
       notify.success(nextStatus === "hidden" ? "Đã ẩn tin đăng." : "Đã hiển thị lại tin đăng.");
       await loadRooms();
+      await refreshMetrics();
     } catch (err) {
       notify.error(getApiMessage(err, "Không thể cập nhật trạng thái hiển thị"));
     }
@@ -153,6 +157,7 @@ const ManageRoomsPage = () => {
       await landlordService.deleteRoom(roomId);
       notify.success("Đã xóa tin đăng.");
       await loadRooms();
+      await refreshMetrics();
     } catch (err) {
       notify.error(getApiMessage(err, "Không thể xóa tin"));
     }

@@ -4,6 +4,7 @@ import Modal from "@/components/common/Modal";
 import LandlordSearchInput from "@/components/landlord/LandlordSearchInput";
 import LandlordToolbar from "@/components/landlord/LandlordToolbar";
 import AppointmentDetailModal from "@/components/landlord/AppointmentDetailModal";
+import { useLandlordMetrics } from "@/context/LandlordMetricsContext.jsx";
 import { useNotify } from "@/context/NotifyContext.jsx";
 import landlordService from "@/services/LandlordService";
 import { getApiData, getApiMessage } from "@/utils/apiResponse";
@@ -62,6 +63,7 @@ const ManageAppointmentsPage = () => {
   const [rejectingId, setRejectingId] = useState(null);
   const [rejectReasonText, setRejectReasonText] = useState("");
   const notify = useNotify();
+  const { refreshMetrics } = useLandlordMetrics();
 
   const getWeekDates = () => {
     const today = new Date();
@@ -163,6 +165,7 @@ const ManageAppointmentsPage = () => {
       setRejectingId(null);
       setRejectReasonText("");
       await loadAppointments();
+      await refreshMetrics();
     } catch (err) {
       notify.error(getApiMessage(err, "Không thể cập nhật trạng thái lịch hẹn"));
     }

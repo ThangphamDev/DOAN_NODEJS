@@ -1,8 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
-import landlordService from "@/services/LandlordService";
+import { LandlordMetricsProvider, useLandlordMetrics } from "@/context/LandlordMetricsContext.jsx";
 import useAuth from "@/hooks/useAuth";
-import { getApiData } from "@/utils/apiResponse";
 
 const LANDLORD_PAGE_META = {
   "/landlord": {
@@ -27,37 +25,28 @@ const LANDLORD_PAGE_META = {
   },
 };
 
-const LandlordLayout = () => {
+const renderCountBadge = (value, tone = "slate") => {
+  if (!value) return null;
+
+  const toneClassMap = {
+    red: "bg-red-500 text-white",
+    amber: "bg-amber-100 text-amber-700",
+    blue: "bg-blue-100 text-blue-700",
+    slate: "bg-slate-100 text-slate-600",
+  };
+
+  return (
+    <span className={`ml-auto rounded-full px-1.5 py-0.5 text-[10px] font-bold ${toneClassMap[tone] || toneClassMap.slate}`}>
+      {value > 99 ? "99+" : value}
+    </span>
+  );
+};
+
+const LandlordLayoutContent = () => {
   const { user, logout } = useAuth();
+  const { metrics } = useLandlordMetrics();
   const navigate = useNavigate();
   const location = useLocation();
-  const [appointments, setAppointments] = useState([]);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadAppointments = async () => {
-      try {
-        const response = await landlordService.getAppointments();
-        if (!isMounted) return;
-        setAppointments(getApiData(response, []));
-      } catch {
-        if (!isMounted) return;
-        setAppointments([]);
-      }
-    };
-
-    loadAppointments();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  const metrics = useMemo(() => {
-    const newMessages = appointments.filter((item) => item.status === "approved").length;
-    return { newMessages };
-  }, [appointments]);
 
   const pageMeta = LANDLORD_PAGE_META[location.pathname] || LANDLORD_PAGE_META["/landlord"];
 
@@ -89,7 +78,7 @@ const LandlordLayout = () => {
           </div>
           <div>
             <h1 className="text-base font-bold leading-tight">Landlord Pro</h1>
-            <p className="text-xs text-slate-500">Khu vực Chủ trọ</p>
+            <p className="text-xs text-slate-500">Khu vực chủ trọ</p>
           </div>
         </div>
 
@@ -104,24 +93,25 @@ const LandlordLayout = () => {
           <NavLink className={navClassName} to="/landlord/rooms">
             <span className="material-symbols-outlined">home_work</span>
             <span>Đăng tin bài</span>
+            {renderCountBadge(metrics.roomsCount)}
           </NavLink>
 
           <NavLink className={navClassName} to="/landlord/appointments">
             <span className="material-symbols-outlined">event_note</span>
             <span>Quản lý lịch hẹn</span>
+            {renderCountBadge(metrics.pendingAppointmentsCount, "amber")}
           </NavLink>
 
           <NavLink className={navClassName} to="/landlord/messages">
             <span className="material-symbols-outlined">forum</span>
             <span>Tin nhắn</span>
-            <span className="ml-auto rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
-              {metrics.newMessages}
-            </span>
+            {renderCountBadge(metrics.unreadMessagesCount, "red")}
           </NavLink>
 
           <NavLink className={navClassName} to="/landlord/reviews">
             <span className="material-symbols-outlined">reviews</span>
             <span>Đánh giá khách</span>
+            {renderCountBadge(metrics.pendingReviewsCount, "blue")}
           </NavLink>
         </nav>
 
@@ -171,5 +161,11 @@ const LandlordLayout = () => {
     </div>
   );
 };
+
+const LandlordLayout = () => (
+  <LandlordMetricsProvider>
+    <LandlordLayoutContent />
+  </LandlordMetricsProvider>
+);
 
 export default LandlordLayout;

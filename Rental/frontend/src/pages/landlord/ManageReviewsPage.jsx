@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import Pagination from "@/components/common/Pagination";
 import LandlordSearchInput from "@/components/landlord/LandlordSearchInput";
 import LandlordToolbar from "@/components/landlord/LandlordToolbar";
+import { useLandlordMetrics } from "@/context/LandlordMetricsContext.jsx";
 import { useNotify } from "@/context/NotifyContext.jsx";
 import landlordService from "@/services/LandlordService";
 import { getApiData, getApiMessage } from "@/utils/apiResponse";
@@ -21,6 +22,7 @@ const ManageReviewsPage = () => {
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [replyText, setReplyText] = useState({});
   const notify = useNotify();
+  const { refreshMetrics } = useLandlordMetrics();
 
   useEffect(() => {
     const loadRooms = async () => {
@@ -56,6 +58,7 @@ const ManageReviewsPage = () => {
         }))
       );
       setReplyText((prev) => ({ ...prev, [reviewId]: "" }));
+      await refreshMetrics();
     } catch (err) {
       notify.error(getApiMessage(err, "Không thể gửi câu trả lời"));
     }

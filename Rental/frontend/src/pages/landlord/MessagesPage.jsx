@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useLandlordMetrics } from "@/context/LandlordMetricsContext.jsx";
 import { useNotify } from "@/context/NotifyContext.jsx";
 import useChatConversation from "@/hooks/useChatConversation";
 import chatService from "@/services/ChatService";
@@ -35,6 +36,7 @@ const MessagesPage = () => {
     isThreadActive,
   } = useChatConversation();
   const notify = useNotify();
+  const { syncUnreadMessagesCount } = useLandlordMetrics();
   const [rooms, setRooms] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isUpdatingBlock, setIsUpdatingBlock] = useState(false);
@@ -66,6 +68,10 @@ const MessagesPage = () => {
       isMounted = false;
     };
   }, [notify]);
+
+  useEffect(() => {
+    syncUnreadMessagesCount(inbox.reduce((sum, item) => sum + Number(item.unreadCount || 0), 0));
+  }, [inbox, syncUnreadMessagesCount]);
 
   useEffect(() => {
     const container = messagesContainerRef.current;
