@@ -9,6 +9,10 @@ class ChatService {
     this.repository = repository;
   }
 
+  buildThreadKey({ peerId, roomId }) {
+    return `${Number(peerId || 0)}-${Number(roomId || 0)}`;
+  }
+
   async sendMessage({ senderId, receiverId, roomId, content }, options = {}) {
     if (!receiverId || !content) {
       throw new ApiError(400, "receiverId and content are required");
@@ -34,9 +38,18 @@ class ChatService {
       content,
     }, options);
 
+    const include = [
+      { model: User, as: "sender", attributes: ["id", "fullName", "email"] },
+      { model: User, as: "receiver", attributes: ["id", "fullName", "email"] },
+    ];
+
+    if (roomId) {
+      include.push({ model: Room, as: "room", attributes: ["id", "title"] });
+    }
+
     return this.repository.getOne({
       where: { id: message.id },
-      include: roomId ? [{ model: Room, as: "room", attributes: ["id", "title"] }] : [],
+      include,
       transaction: options.transaction,
     });
   }
@@ -97,11 +110,27 @@ class ChatService {
     });
 
     const seenThreadKeys = new Set();
+    const unreadCountByThread = new Map();
     const inbox = [];
 
     messages.forEach((message) => {
+      const peerId = Number(message.senderId) === Number(userId) ? Number(message.receiverId) : Number(message.senderId);
+      const threadKey = this.buildThreadKey({
+        peerId,
+        roomId: message.roomId,
+      });
+
+      if (Number(message.receiverId) === Number(userId) && !message.isRead) {
+        unreadCountByThread.set(threadKey, Number(unreadCountByThread.get(threadKey) || 0) + 1);
+      }
+    });
+
+    messages.forEach((message) => {
       const peer = message.senderId === userId ? message.receiver : message.sender;
-      const threadKey = `${peer?.id || 0}-${Number(message.roomId || 0)}`;
+      const threadKey = this.buildThreadKey({
+        peerId: peer?.id,
+        roomId: message.roomId,
+      });
 
       if (!peer || seenThreadKeys.has(threadKey)) {
         return;
@@ -118,10 +147,35 @@ class ChatService {
         roomId: message.roomId,
         roomTitle: message.room?.title || "",
         blockedByMe: blockedUserIds.has(Number(peer.id)),
+        unreadCount: Number(unreadCountByThread.get(threadKey) || 0),
       });
     });
 
     return inbox;
+  }
+
+  async markConversationAsRead({ userId, peerId, roomId }, options = {}) {
+    if (!peerId) {
+      throw new ApiError(400, "peerId is required");
+    }
+
+    const where = {
+      senderId: Number(peerId),
+      receiverId: Number(userId),
+      isRead: false,
+    };
+
+    if (roomId !== undefined && roomId !== null && roomId !== "") {
+      where.roomId = Number(roomId);
+    }
+
+    const [updatedCount] = await this.repository.updateWhere(
+      where,
+      { isRead: true },
+      options
+    );
+
+    return { updatedCount };
   }
 
   async blockUser({ blockerId, blockedUserId }, options = {}) {

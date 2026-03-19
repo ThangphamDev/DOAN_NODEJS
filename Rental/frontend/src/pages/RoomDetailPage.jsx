@@ -286,12 +286,15 @@ const RoomDetailPage = () => {
       const response = await chatService.getConversation(room.landlord.id, room.id);
       const payload = getApiData(response, { items: [] });
       setChatMessages(Array.isArray(payload) ? payload : payload.items || []);
+      if (user?.id) {
+        await chatService.markConversationAsRead(room.landlord.id, room.id);
+      }
     } catch (err) {
       notify.error(getApiMessage(err, "Không tải được lịch sử tin nhắn"));
     } finally {
       setChatLoading(false);
     }
-  }, [notify, room?.id, room?.landlord?.id]);
+  }, [notify, room?.id, room?.landlord?.id, user?.id]);
 
   useEffect(() => {
     if (!socket || !showChatComposer || !room?.landlord?.id) return undefined;
@@ -308,6 +311,9 @@ const RoomDetailPage = () => {
 
       if (!isCurrentThread) return;
       appendChatMessage(message);
+      if (Number(message.senderId) === Number(room.landlord.id)) {
+        void chatService.markConversationAsRead(room.landlord.id, room.id);
+      }
     };
 
     socket.on("chat:new", handleNewMessage);

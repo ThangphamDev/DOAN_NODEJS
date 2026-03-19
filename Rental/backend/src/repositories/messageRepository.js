@@ -16,6 +16,10 @@ class MessageRepository {
   insert(payload, options = {}) {
     return this.messageEntity.create(payload, options);
   }
+
+  updateWhere(where, payload, options = {}) {
+    return this.messageEntity.update(payload, { where, ...options });
+  }
 }
 
 module.exports = new MessageRepository(Message);

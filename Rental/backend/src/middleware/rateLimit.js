@@ -3,6 +3,7 @@ const createRateLimiter = ({
   max,
   message = "Too many requests, please try again later.",
   keyGenerator = (req) => req.ip || req.socket?.remoteAddress || "anonymous",
+  skip = () => false,
 } = {}) => {
   if (!windowMs || !max) {
     throw new Error("windowMs and max are required for rate limiter");
@@ -11,6 +12,10 @@ const createRateLimiter = ({
   const store = new Map();
 
   return (req, res, next) => {
+    if (skip(req)) {
+      return next();
+    }
+
     const now = Date.now();
     const key = keyGenerator(req);
     const existingEntry = store.get(key);

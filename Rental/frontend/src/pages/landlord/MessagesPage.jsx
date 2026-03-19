@@ -229,8 +229,10 @@ const MessagesPage = () => {
                       <div className="flex size-12 items-center justify-center rounded-full bg-slate-100 font-bold text-primary">
                         {(item.peerName || "K").slice(0, 1).toUpperCase()}
                       </div>
-                      {item.lastSenderId !== user?.id ? (
-                        <div className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white">1</div>
+                      {Number(item.unreadCount || 0) > 0 ? (
+                        <div className="absolute -right-1 -top-1 flex min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
+                          {item.unreadCount > 99 ? "99+" : item.unreadCount}
+                        </div>
                       ) : null}
                     </div>
                     <div className="min-w-0 flex-1 overflow-hidden">
@@ -240,7 +242,7 @@ const MessagesPage = () => {
                           {formatMessageTime(item.lastMessageAt)}
                         </span>
                       </div>
-                      <p className={`truncate text-xs ${item.lastSenderId === user?.id ? "text-slate-500" : "font-bold text-slate-900"}`}>
+                      <p className={`truncate text-xs ${item.lastSenderId === user?.id ? "text-slate-500" : Number(item.unreadCount || 0) > 0 ? "font-bold text-slate-900" : "text-slate-700"}`}>
                         {item.lastSenderId === user?.id ? `Bạn: ${item.lastMessage}` : item.lastMessage}
                       </p>
                       <div className="mt-1 flex items-center gap-1 text-[10px] text-slate-400">

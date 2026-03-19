@@ -1,4 +1,5 @@
 const multer = require("multer");
+const fs = require("fs/promises");
 const path = require("path");
 
 const ALLOWED_MIME_TYPES = new Set([
@@ -39,4 +40,26 @@ const upload = multer({
   },
 });
 
+const removeUploadedFiles = async (files = []) => {
+  const normalizedFiles = Array.isArray(files) ? files : [files];
+
+  await Promise.all(
+    normalizedFiles
+      .filter(Boolean)
+      .map(async (file) => {
+        const targetPath = file.path || (file.filename ? path.join(process.cwd(), "uploads", file.filename) : null);
+        if (!targetPath) return;
+
+        try {
+          await fs.unlink(targetPath);
+        } catch (error) {
+          if (error?.code !== "ENOENT") {
+            throw error;
+          }
+        }
+      })
+  );
+};
+
 module.exports = upload;
+module.exports.removeUploadedFiles = removeUploadedFiles;

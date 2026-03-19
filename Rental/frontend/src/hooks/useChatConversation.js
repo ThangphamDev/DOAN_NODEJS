@@ -13,6 +13,7 @@ const toThread = (item = {}) => ({
   roomId: item.roomId ? Number(item.roomId) : null,
   roomTitle: item.roomTitle || "",
   blockedByMe: Boolean(item.blockedByMe),
+  unreadCount: Number(item.unreadCount || 0),
 });
 
 const isSameThread = (left, right) =>
@@ -61,22 +62,80 @@ const useChatConversation = () => {
       const nextThread = { peerId, roomId };
       const matched = previousInbox.find((item) => isSameThread(item, nextThread));
       const activeMatched = isSameThread(activeThreadRef.current, nextThread) ? activeThreadRef.current : null;
+      const isIncoming = Number(message.senderId) !== Number(user?.id);
+      const isActiveThread = isSameThread(activeThreadRef.current, nextThread);
+      const peerPayload = Number(message.senderId) === Number(user?.id) ? message.receiver : message.sender;
 
       const nextItem = {
         peerId,
-        peerName: matched?.peerName || activeMatched?.peerName || `User ${peerId}`,
-        peerEmail: matched?.peerEmail || activeMatched?.peerEmail || "",
+        peerName:
+          matched?.peerName ||
+          activeMatched?.peerName ||
+          peerPayload?.fullName ||
+          peerPayload?.email ||
+          `User ${peerId}`,
+        peerEmail: matched?.peerEmail || activeMatched?.peerEmail || peerPayload?.email || "",
         lastMessage: message.content,
         lastMessageAt: message.createdAt,
         lastSenderId: message.senderId,
         roomId,
         roomTitle: matched?.roomTitle || activeMatched?.roomTitle || message.roomTitle || message.room?.title || "",
         blockedByMe: Boolean(matched?.blockedByMe || activeMatched?.blockedByMe),
+        unreadCount: isIncoming
+          ? (isActiveThread ? 0 : Number(matched?.unreadCount || 0) + 1)
+          : Number(matched?.unreadCount || 0),
       };
 
       return [nextItem, ...previousInbox.filter((item) => !isSameThread(item, nextThread))];
     },
     [user?.id]
+  );
+
+  const clearThreadUnreadCount = useCallback((thread) => {
+    setInbox((prev) =>
+      prev.map((item) => {
+        if (!isSameThread(item, thread) || Number(item.unreadCount || 0) === 0) {
+          return item;
+        }
+
+        return {
+          ...item,
+          unreadCount: 0,
+        };
+      })
+    );
+
+    setActiveThread((prev) => {
+      if (!isSameThread(prev, thread)) {
+        return prev;
+      }
+
+      if (Number(prev?.unreadCount || 0) === 0) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        unreadCount: 0,
+      };
+    });
+  }, []);
+
+  const markThreadAsRead = useCallback(
+    async (thread, options = {}) => {
+      if (!thread?.peerId) return;
+
+      clearThreadUnreadCount(thread);
+
+      try {
+        await chatService.markConversationAsRead(thread.peerId, thread.roomId || undefined);
+      } catch (err) {
+        if (!options.silent) {
+          notify.error(getApiMessage(err, "Không cập nhật được trạng thái đã đọc"));
+        }
+      }
+    },
+    [clearThreadUnreadCount, notify]
   );
 
   const loadInbox = useCallback(async () => {
@@ -187,6 +246,11 @@ const useChatConversation = () => {
   }, [activeThread, loadMessages]);
 
   useEffect(() => {
+    if (!activeThread?.peerId) return;
+    void markThreadAsRead(activeThread, { silent: true });
+  }, [activeThread, markThreadAsRead]);
+
+  useEffect(() => {
     if (!socket) return undefined;
 
     if (!socket.connected) {
@@ -204,6 +268,9 @@ const useChatConversation = () => {
 
       if (isSameThread(activeThreadRef.current, nextThread)) {
         appendMessage(message);
+        if (Number(message.senderId) !== Number(user?.id)) {
+          void markThreadAsRead(nextThread, { silent: true });
+        }
       }
     };
 
@@ -212,7 +279,7 @@ const useChatConversation = () => {
     return () => {
       socket.off("chat:new", handleNewMessage);
     };
-  }, [appendMessage, socket, upsertInboxItem, user?.id]);
+  }, [appendMessage, markThreadAsRead, socket, upsertInboxItem, user?.id]);
 
   useEffect(() => {
     if (!socket) return undefined;
@@ -223,8 +290,10 @@ const useChatConversation = () => {
   }, [socket]);
 
   const selectConversation = useCallback((item) => {
-    setActiveThread(toThread(item));
-  }, []);
+    const nextThread = toThread(item);
+    clearThreadUnreadCount(nextThread);
+    setActiveThread(nextThread);
+  }, [clearThreadUnreadCount]);
 
   const setThreadBlockedState = useCallback((peerId, blockedByMe) => {
     setInbox((prev) =>
@@ -304,6 +373,7 @@ const useChatConversation = () => {
     loadOlderMessages,
     selectConversation,
     refreshInbox: loadInbox,
+    markThreadAsRead,
     setThreadBlockedState,
     hasActiveConversation: Boolean(activeThread?.peerId),
     isOwnMessage: (message) => Number(message.senderId) === Number(user?.id),

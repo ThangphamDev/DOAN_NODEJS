@@ -10,6 +10,7 @@ class ChatController {
 		this.sendMessage = this.sendMessage.bind(this);
 		this.getConversation = this.getConversation.bind(this);
 		this.getInbox = this.getInbox.bind(this);
+		this.markConversationAsRead = this.markConversationAsRead.bind(this);
 		this.blockUser = this.blockUser.bind(this);
 		this.unblockUser = this.unblockUser.bind(this);
 	}
@@ -66,6 +67,24 @@ class ChatController {
 		}
 	}
 
+	async markConversationAsRead(req, res, next) {
+		try {
+			const data = await runInTransaction((tx) =>
+				this.service.markConversationAsRead(
+					{
+						userId: req.user.id,
+						peerId: Number(req.params.peerId),
+						roomId: req.query.roomId,
+					},
+					{ transaction: tx }
+				)
+			);
+			return sendSuccess(res, { data });
+		} catch (error) {
+			return next(error);
+		}
+	}
+
 	async blockUser(req, res, next) {
 		try {
 			const data = await runInTransaction((tx) =>
@@ -103,6 +122,7 @@ class ChatController {
 	registerRoutes(app, prefix = "/api") {
 		app.post(`${prefix}/chat/send`, authenticate, authorize("customer", "landlord"), this.sendMessage);
 		app.get(`${prefix}/chat/inbox`, authenticate, authorize("customer", "landlord"), this.getInbox);
+		app.patch(`${prefix}/chat/read/:peerId`, authenticate, authorize("customer", "landlord"), this.markConversationAsRead);
 		app.post(`${prefix}/chat/block/:userId`, authenticate, authorize("customer", "landlord"), this.blockUser);
 		app.delete(`${prefix}/chat/block/:userId`, authenticate, authorize("customer", "landlord"), this.unblockUser);
 		app.get(

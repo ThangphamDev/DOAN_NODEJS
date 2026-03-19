@@ -148,8 +148,13 @@ const ChatPage = () => {
                     type="button"
                     onClick={() => { selectConversation(item); setMobileTab("chat"); }}
                   >
-                    <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-slate-100 font-bold text-primary">
+                    <div className="relative flex size-12 shrink-0 items-center justify-center rounded-full bg-slate-100 font-bold text-primary">
                       {(item.peerName || "C").slice(0, 1).toUpperCase()}
+                      {Number(item.unreadCount || 0) > 0 ? (
+                        <div className="absolute -right-1 -top-1 flex min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
+                          {item.unreadCount > 99 ? "99+" : item.unreadCount}
+                        </div>
+                      ) : null}
                     </div>
                     <div className="min-w-0 flex-1 overflow-hidden">
                       <div className="flex justify-between gap-2">
@@ -158,7 +163,7 @@ const ChatPage = () => {
                           {formatMessageTime(item.lastMessageAt)}
                         </span>
                       </div>
-                      <p className={`truncate text-xs ${item.lastSenderId === user?.id ? "text-slate-500" : "font-medium text-slate-700"}`}>
+                      <p className={`truncate text-xs ${item.lastSenderId === user?.id ? "text-slate-500" : Number(item.unreadCount || 0) > 0 ? "font-bold text-slate-900" : "font-medium text-slate-700"}`}>
                         {item.lastSenderId === user?.id ? `Bạn: ${item.lastMessage}` : item.lastMessage}
                       </p>
                       <p className="mt-1 truncate text-[10px] text-slate-400">

@@ -2,6 +2,7 @@ const roomService = require("@/services/landlord/roomService");
 const { authenticate } = require("@/middleware/auth");
 const authorize = require("@/middleware/authorize");
 const upload = require("@/utils/upload");
+const { removeUploadedFiles } = require("@/utils/upload");
 const validate = require("@/middleware/validate");
 const { validateCreateRoom, validateUpdateRoom } = require("@/validators/roomValidator");
 const { sendSuccess } = require("@/utils/response");
@@ -42,6 +43,7 @@ class LandlordRoomController {
       );
       return sendSuccess(res, { status: 201, data });
     } catch (error) {
+      await removeUploadedFiles(req.files).catch(() => undefined);
       return next(error);
     }
   }
@@ -61,6 +63,7 @@ class LandlordRoomController {
       );
       return sendSuccess(res, { data });
     } catch (error) {
+      await removeUploadedFiles(req.files).catch(() => undefined);
       return next(error);
     }
   }

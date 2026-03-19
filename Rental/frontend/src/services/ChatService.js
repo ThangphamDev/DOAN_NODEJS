@@ -18,6 +18,12 @@ class ChatService {
     return api.post("/chat/send", payload);
   }
 
+  markConversationAsRead(peerId, roomId) {
+    return api.patch(`/chat/read/${peerId}`, null, {
+      params: roomId ? { roomId } : {},
+    });
+  }
+
   blockUser(userId) {
     return api.post(`/chat/block/${userId}`);
   }
