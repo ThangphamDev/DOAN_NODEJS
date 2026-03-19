@@ -70,20 +70,7 @@ const HeroSection = () => {
 
           <div className="hero-card-main">
             <div className="hero-card-img">
-              <div className="hero-card-img-inner">
-                <svg className="room-svg-preview" viewBox="0 0 400 160" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="20" y="40" width="120" height="80" rx="4" fill="rgba(255,255,255,0.12)" />
-                  <rect x="30" y="60" width="40" height="30" rx="3" fill="rgba(255,255,255,0.2)" />
-                  <rect x="80" y="70" width="50" height="20" rx="3" fill="rgba(255,255,255,0.15)" />
-                  <rect x="160" y="60" width="80" height="60" rx="4" fill="rgba(255,255,255,0.1)" />
-                  <rect x="170" y="80" width="30" height="25" rx="2" fill="rgba(255,255,255,0.2)" />
-                  <rect x="210" y="85" width="25" height="20" rx="2" fill="rgba(255,255,255,0.15)" />
-                  <rect x="260" y="50" width="110" height="70" rx="4" fill="rgba(255,255,255,0.12)" />
-                  <rect x="270" y="65" width="90" height="40" rx="3" fill="rgba(255,255,255,0.18)" />
-                  <line x1="0" y1="140" x2="400" y2="140" stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
-                  <rect x="0" y="140" width="400" height="20" fill="rgba(0,0,0,0.12)" />
-                </svg>
-              </div>
+              <div className="hero-card-img-inner" />
             </div>
             <div className="hero-card-body">
               <div className="card-location">

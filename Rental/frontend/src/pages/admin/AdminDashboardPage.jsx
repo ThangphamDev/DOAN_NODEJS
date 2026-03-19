@@ -142,9 +142,18 @@ const AdminDashboardPage = () => {
                     <td className="px-6 py-4 font-mono text-xs text-slate-400">#{room.id}</td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded bg-slate-100 text-xs font-bold text-slate-500">
-                          {getInitials(room.title)}
-                        </div>
+                        {(() => {
+                          const imgUrl = room.images?.[0]?.imageUrl || "";
+                          const apiBase = (import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api").replace(/\/api\/?$/, "");
+                          const src = imgUrl ? (/^https?:\/\//i.test(imgUrl) ? imgUrl : `${apiBase}${imgUrl.startsWith("/") ? imgUrl : `/${imgUrl}`}`) : "";
+                          return src ? (
+                            <img className="h-10 w-10 flex-shrink-0 rounded object-cover" src={src} alt={room.title} />
+                          ) : (
+                            <div className="flex h-10 w-10 items-center justify-center rounded bg-slate-100 text-xs font-bold text-slate-500">
+                              {getInitials(room.title)}
+                            </div>
+                          );
+                        })()}
                         <span className="font-medium">{room.title}</span>
                       </div>
                     </td>

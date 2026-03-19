@@ -29,7 +29,18 @@ const SiteHeader = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [customerUnreadCount, setCustomerUnreadCount] = useState(0);
+  const [scrolled, setScrolled] = useState(false);
   const accountMenuRef = useRef(null);
+
+  const isLinkActive = (to) =>
+    to === "/" ? location.pathname === "/" : location.pathname.startsWith(to);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 10);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useEffect(() => {
     setMobileMenuOpen(false);
@@ -188,7 +199,7 @@ const SiteHeader = () => {
 
   return (
     <>
-      <nav aria-label="Điều hướng chính">
+      <nav aria-label="Điều hướng chính" className={scrolled ? "nav--scrolled" : ""}>
         <div className="nav-inner">
           <Link to={user?.role === "admin" ? "/admin" : "/"} className="logo">
             <div className="logo-icon">
@@ -202,7 +213,7 @@ const SiteHeader = () => {
           <ul id="site-primary-nav" className="nav-links">
             {primaryLinks.map((item) => (
               <li key={item.to}>
-                <Link className="inline-flex items-center gap-2" to={item.to}>
+                <Link className={`nav-link-item${isLinkActive(item.to) ? " nav-link--active" : ""}`} to={item.to}>
                   <span>{item.label}</span>
                   {item.to === "/messages" ? renderUnreadBadge(customerUnreadCount) : null}
                 </Link>

@@ -25,8 +25,8 @@ const RoomCard = ({ room, uploadBaseUrl }) => {
 
   return (
     <Link to={`/rooms/${room.id}`} className="group block">
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-slate-300 hover:shadow-lg">
-        <div className="relative h-52 w-full overflow-hidden bg-gradient-to-br from-emerald-50 to-green-100">
+      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white transition-all duration-200 hover:-translate-y-1 hover:border-slate-300 hover:shadow-md">
+        <div className="relative h-48 w-full overflow-hidden bg-gradient-to-br from-emerald-50 to-green-100">
           {imageUrl ? (
             <img
               alt={room.title}
@@ -228,11 +228,11 @@ const RoomsPage = () => {
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-      <div className="mb-10 max-w-2xl">
-        <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl" style={{ fontFamily: "var(--font-display)" }}>
+      <div className="mb-8 max-w-2xl">
+        <h1 className="text-3xl font-extrabold tracking-tight text-slate-900" style={{ fontFamily: "var(--font-display)" }}>
           {isLandlord ? "Bài đăng của tôi" : "Tìm nơi ở ưng ý"}
         </h1>
-        <p className="mt-4 text-lg text-slate-500">
+        <p className="mt-2 text-base text-slate-500">
           {isLandlord
             ? "Quản lý các bài đăng cho thuê của bạn một cách hiệu quả."
             : "Hàng nghìn lựa chọn phòng trọ, căn hộ dịch vụ cao cấp đang chờ đón bạn."}
@@ -240,8 +240,8 @@ const RoomsPage = () => {
       </div>
 
       {!isLandlord ? (
-        <div className="mb-12">
-          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-200/50">
+        <div className="mb-10">
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
             <div className="grid grid-cols-1 divide-y divide-slate-100 lg:grid-cols-12 lg:divide-x lg:divide-y-0">
               <div className="p-5 transition-colors hover:bg-slate-50/50 lg:col-span-4">
                 <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-slate-400">Khu vực / tuyến đường</label>

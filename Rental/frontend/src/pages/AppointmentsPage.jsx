@@ -11,6 +11,7 @@ const STATUS_CONFIG = {
     label: "Tất cả",
     bgClass: "bg-slate-100 text-slate-600 border-slate-200",
     activeClass: "bg-slate-900 text-white border-slate-900 shadow-lg shadow-slate-200",
+    borderColor: "border-l-slate-300",
   },
   pending: {
     label: "Chờ duyệt",
@@ -18,6 +19,7 @@ const STATUS_CONFIG = {
     bgClass: "bg-amber-50 text-amber-700 border-amber-100",
     activeClass: "bg-amber-500 text-white border-amber-500 shadow-lg shadow-amber-200",
     dotClass: "bg-amber-500",
+    borderColor: "border-l-amber-400",
   },
   approved: {
     label: "Đã duyệt",
@@ -25,6 +27,7 @@ const STATUS_CONFIG = {
     bgClass: "bg-emerald-50 text-emerald-700 border-emerald-100",
     activeClass: "bg-emerald-600 text-white border-emerald-600 shadow-lg shadow-emerald-200",
     dotClass: "bg-emerald-500",
+    borderColor: "border-l-emerald-500",
   },
   rejected: {
     label: "Từ chối",
@@ -32,6 +35,7 @@ const STATUS_CONFIG = {
     bgClass: "bg-rose-50 text-rose-700 border-rose-100",
     activeClass: "bg-rose-600 text-white border-rose-600 shadow-lg shadow-rose-200",
     dotClass: "bg-rose-500",
+    borderColor: "border-l-rose-500",
   },
   cancelled: {
     label: "Đã hủy",
@@ -39,6 +43,7 @@ const STATUS_CONFIG = {
     bgClass: "bg-slate-100 text-slate-600 border-slate-200",
     activeClass: "bg-slate-700 text-white border-slate-700 shadow-lg shadow-slate-200",
     dotClass: "bg-slate-400",
+    borderColor: "border-l-slate-400",
   },
 };
 
@@ -130,20 +135,20 @@ const AppointmentsPage = () => {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-      <div className="mb-10 flex flex-col gap-6 border-b border-slate-100 pb-10 sm:flex-row sm:items-end sm:justify-between">
+      <div className="mb-10 flex flex-col gap-4 border-b border-slate-100 pb-8 sm:flex-row sm:items-end sm:justify-between">
         <div className="max-w-xl">
-          <h1 className="text-4xl font-extrabold tracking-tight text-slate-900" style={{ fontFamily: "var(--font-display)" }}>
+          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900" style={{ fontFamily: "var(--font-display)" }}>
             Lịch hẹn của tôi
           </h1>
-          <p className="mt-4 text-lg font-medium text-slate-500">
+          <p className="mt-2 text-base text-slate-500">
             Theo dõi trạng thái các yêu cầu xem phòng và chủ động hủy lịch nếu bạn thay đổi kế hoạch.
           </p>
         </div>
         <Link
-          className="inline-flex w-fit items-center gap-2 rounded-full bg-primary/10 px-5 py-2.5 text-sm font-bold text-primary transition-all hover:bg-primary hover:text-white"
+          className="inline-flex w-fit items-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition-all hover:border-primary hover:text-primary"
           to="/rooms"
         >
-          <span className="material-symbols-outlined text-xl">search</span>
+          <span className="material-symbols-outlined text-lg">search</span>
           Tìm thêm phòng
         </Link>
       </div>
@@ -210,26 +215,28 @@ const AppointmentsPage = () => {
 
             return (
               <div key={item.id} className="group relative">
-                <div className="relative flex flex-col gap-6 rounded-3xl border border-slate-100 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-xl hover:shadow-slate-200/50 sm:flex-row sm:items-center">
-                  <div className="relative h-40 w-full overflow-hidden rounded-2xl bg-slate-100 sm:h-32 sm:w-48">
+                <div className={`relative flex flex-col gap-5 rounded-2xl border border-slate-100 bg-white p-5 transition-all duration-200 hover:border-slate-200 hover:shadow-md sm:flex-row sm:items-center border-l-[3px] ${status.borderColor}`}>
+                  <div className="relative h-36 w-full overflow-hidden rounded-xl bg-slate-100 sm:h-28 sm:w-44">
                     {imageUrl ? (
-                      <img alt={item.room?.title || "Phòng quan tâm"} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" src={imageUrl} />
+                      <img alt={item.room?.title || "Phòng quan tâm"} className="h-full w-full object-cover" src={imageUrl} />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center text-slate-300">
                         <span className="material-symbols-outlined text-4xl">home_work</span>
                       </div>
                     )}
-                    <span className={`absolute left-2 top-2 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[9px] font-black uppercase tracking-wider shadow-sm ${status.bgClass}`}>
-                      <span className="material-symbols-outlined text-[10px]">{status.icon}</span>
-                      {status.label}
-                    </span>
                   </div>
 
                   <div className="min-w-0 flex-1">
-                    <div className="mb-1 text-xs font-bold uppercase tracking-widest text-primary">
-                      Gửi vào {formatDateTime(item.createdAt).split(",")[1] || formatDateTime(item.createdAt)}
+                    <div className="mb-2 flex items-center gap-3">
+                      <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${status.bgClass}`}>
+                        <span className="material-symbols-outlined text-xs">{status.icon}</span>
+                        {status.label}
+                      </span>
+                      <span className="text-xs text-slate-400">
+                        {formatDateTime(item.createdAt).split(",")[1] || formatDateTime(item.createdAt)}
+                      </span>
                     </div>
-                    <h2 className="mb-2 line-clamp-1 text-xl font-bold text-slate-900 transition-colors group-hover:text-primary" style={{ fontFamily: "var(--font-display)" }}>
+                    <h2 className="mb-2 line-clamp-1 text-lg font-bold text-slate-900 transition-colors group-hover:text-primary" style={{ fontFamily: "var(--font-display)" }}>
                       {item.room?.title || "Yêu cầu xem phòng"}
                     </h2>
 
@@ -262,7 +269,7 @@ const AppointmentsPage = () => {
                     ) : null}
                   </div>
 
-                  <div className="flex w-full shrink-0 items-center justify-end gap-3 border-t border-slate-50 pt-4 sm:w-auto sm:flex-col sm:justify-center sm:border-t-0 sm:pt-0">
+                  <div className="flex w-full shrink-0 items-center justify-end gap-2 border-t border-slate-50 pt-3 sm:w-auto sm:flex-col sm:justify-center sm:border-t-0 sm:pt-0">
                     {item.room?.id ? (
                       <Link
                         className="flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-400 transition-all hover:border-primary hover:text-primary hover:shadow-lg"
@@ -273,23 +280,23 @@ const AppointmentsPage = () => {
                       </Link>
                     ) : null}
 
-                    <a
-                      className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-6 py-3 text-sm font-bold text-white transition-all hover:bg-slate-800 hover:shadow-lg active:scale-95"
+                      <a
+                      className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-slate-800 active:scale-[0.98]"
                       href={item.phone ? `tel:${item.phone}` : "#"}
                       onClick={(event) => !item.phone && event.preventDefault()}
                     >
-                      <span className="material-symbols-outlined text-lg">call</span>
+                      <span className="material-symbols-outlined text-base">call</span>
                       Liên hệ
                     </a>
 
                     {canCancel ? (
                       <button
-                        className="inline-flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-5 py-3 text-sm font-bold text-rose-600 transition-all hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="inline-flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-sm font-semibold text-rose-600 transition-all hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
                         disabled={isCancelling}
                         onClick={() => handleCancelAppointment(item.id)}
                         type="button"
                       >
-                        <span className="material-symbols-outlined text-lg">event_busy</span>
+                        <span className="material-symbols-outlined text-base">event_busy</span>
                         {isCancelling ? "Đang hủy..." : "Hủy lịch"}
                       </button>
                     ) : null}

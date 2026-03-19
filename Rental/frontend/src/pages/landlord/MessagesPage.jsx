@@ -288,11 +288,25 @@ const MessagesPage = () => {
 
           <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto p-6" ref={messagesContainerRef} onScroll={handleMessagesScroll}>
             <div className="flex min-h-full flex-col gap-6">
-              {hasActiveConversation ? (
-                <div className="flex justify-center">
-                  <span className="rounded-full bg-slate-200 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-slate-500">Hôm nay</span>
-                </div>
-              ) : null}
+              {hasActiveConversation ? (() => {
+                const oldest = messages[0];
+                let label = "Hôm nay";
+                if (oldest?.createdAt) {
+                  const msgDate = new Date(oldest.createdAt);
+                  const now = new Date();
+                  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                  const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
+                  const msgDay = new Date(msgDate.getFullYear(), msgDate.getMonth(), msgDate.getDate());
+                  if (msgDay.getTime() === today.getTime()) label = "Hôm nay";
+                  else if (msgDay.getTime() === yesterday.getTime()) label = "Hôm qua";
+                  else label = msgDate.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
+                }
+                return (
+                  <div className="flex justify-center">
+                    <span className="rounded-full bg-slate-200 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-slate-500">{label}</span>
+                  </div>
+                );
+              })() : null}
 
               {hasActiveConversation && isLoadingOlderMessages ? (
                 <div className="flex justify-center">
