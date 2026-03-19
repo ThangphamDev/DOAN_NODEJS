@@ -20,8 +20,10 @@ const createRateLimiter = require("@/middleware/rateLimit");
 const { sendSuccess } = require("@/utils/response");
 const errorHandler = require("@/middleware/errorHandler");
 
+const getRequestPath = (req) => `${req.baseUrl || ""}${req.path || ""}`;
+
 const isAuthWriteRequest = (req) =>
-  req.method === "POST" && ["/api/auth/login", "/api/auth/register"].includes(req.path);
+  req.method === "POST" && ["/api/auth/login", "/api/auth/register"].includes(getRequestPath(req));
 
 const app = express();
 const authRateLimiter = createRateLimiter({
