@@ -48,6 +48,9 @@ nav {
 .nav-mobile-message { display: none; }
 .mobile-menu,
 .mobile-menu-backdrop { display: none; }
+.nav-account {
+  position: relative;
+}
 .nav-button {
   padding: 10px 20px;
   font-size: 14px;
@@ -78,6 +81,72 @@ nav {
   transition: all 0.2s;
 }
 .nav-user-pill:hover { color: var(--text-primary); border-color: var(--border); }
+.nav-user-pill--button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+.nav-user-pill__name {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.nav-user-pill__icon {
+  font-size: 18px;
+}
+.nav-account__menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 10px);
+  width: 240px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.16);
+  overflow: hidden;
+  z-index: 120;
+}
+.nav-account__meta {
+  display: grid;
+  gap: 4px;
+  padding: 16px 18px;
+  background: linear-gradient(180deg, rgba(37,99,235,0.08), rgba(37,99,235,0.02));
+  border-bottom: 1px solid var(--border);
+}
+.nav-account__meta strong {
+  font-size: 14px;
+  color: var(--text-primary);
+}
+.nav-account__meta span {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.nav-account__links {
+  display: grid;
+  padding: 10px;
+}
+.nav-account__links a,
+.nav-account__links button {
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.nav-account__links a:hover,
+.nav-account__links button:hover {
+  background: var(--surface-hover, #f3f4f6);
+  color: var(--primary);
+}
 
 /* ─── FOOTER ─── */
 footer {
@@ -119,7 +188,7 @@ footer {
 
 /* ─── SHARED PAGE STYLES ─── */
 .page-section {
-  max-width: 980px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 2rem 1.5rem;
 }
@@ -539,7 +608,7 @@ footer {
 }
 
 .app-main > section {
-  width: min(980px, calc(100% - 2rem));
+  width: min(1200px, calc(100% - 2rem));
   margin: 1.5rem auto;
 }
 
@@ -692,7 +761,7 @@ footer {
 }
 
 .page-container {
-  width: min(980px, calc(100% - 2rem));
+  width: min(1200px, calc(100% - 2rem));
   margin: 1.5rem auto;
 }
 

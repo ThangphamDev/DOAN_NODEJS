@@ -130,6 +130,15 @@ const RoomDetailPage = () => {
   }, [fetchRoom]);
 
   useEffect(() => {
+    if (!room || !user) return;
+
+    if (user.role === "landlord" && Number(room.landlord?.id) !== Number(user.id)) {
+      notify.warning("Bạn chỉ có thể xem bài đăng của chính mình ở giao diện khách hàng.");
+      navigate("/landlord/rooms", { replace: true });
+    }
+  }, [navigate, notify, room, user]);
+
+  useEffect(() => {
     const defaultLeaseTerm =
       roomDetails?.booking?.defaultLeaseTerm || roomDetails?.booking?.leaseTerms?.[0] || "12 tháng";
     setLeaseTerm(defaultLeaseTerm);

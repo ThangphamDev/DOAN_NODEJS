@@ -2,7 +2,7 @@ import { Navigate } from "react-router-dom";
 import LoadingState from "@/components/common/LoadingState";
 import useAuth from "@/hooks/useAuth";
 
-const ProtectedRoute = ({ children, roles }) => {
+const ProtectedRoute = ({ children, roles, redirectTo = "/login" }) => {
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -10,7 +10,7 @@ const ProtectedRoute = ({ children, roles }) => {
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to={redirectTo} replace />;
   }
 
   if (roles && !roles.includes(user.role)) {

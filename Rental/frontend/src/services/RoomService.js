@@ -9,6 +9,14 @@ class RoomService {
     return api.get(`/rooms/${id}`);
   }
 
+  getMyFavorites() {
+    return api.get("/favorites/me");
+  }
+
+  getMyAppointments() {
+    return api.get("/appointments/me");
+  }
+
   toggleFavorite(id) {
     return api.post(`/favorites/${id}/toggle`);
   }

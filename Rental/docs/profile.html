@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#007bff",
+                        "background-light": "#f5f7f8",
+                        "background-dark": "#0f1923",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+<!-- Header / TopNavBar -->
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-10 py-3 sticky top-0 z-50">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-4 text-primary">
+<div class="size-8 flex items-center justify-center bg-primary/10 rounded-lg">
+<span class="material-symbols-outlined">home_work</span>
+</div>
+<h2 class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-[-0.015em]">Tìm Phòng Trọ</h2>
+</div>
+<div class="hidden md:flex items-center gap-9">
+<a class="text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary text-sm font-medium leading-normal transition-colors" href="#">Trang chủ</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary text-sm font-medium leading-normal transition-colors" href="#">Tìm phòng</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary text-sm font-medium leading-normal transition-colors" href="#">Tin tức</a>
+</div>
+</div>
+<div class="flex flex-1 justify-end gap-6 items-center">
+<label class="hidden lg:flex flex-col min-w-40 h-10 max-w-64">
+<div class="flex w-full flex-1 items-stretch rounded-lg h-full bg-slate-100 dark:bg-slate-800">
+<div class="text-slate-500 flex items-center justify-center pl-4">
+<span class="material-symbols-outlined text-xl">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 border-none bg-transparent focus:ring-0 text-slate-900 dark:text-slate-100 placeholder:text-slate-500 text-sm" placeholder="Tìm kiếm nhanh..."/>
+</div>
+</label>
+<div class="flex gap-3">
+<button class="flex items-center justify-center rounded-lg h-10 w-10 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="flex items-center justify-center rounded-lg h-10 w-10 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+<div class="h-10 w-10 rounded-full bg-primary/20 border-2 border-primary/50 overflow-hidden">
+<img class="h-full w-full object-cover" data-alt="User profile avatar placeholder" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBUW5ZKPFn14cjIj3dT5DLhscxpqUOpTNecigpZfcs2LIOoElKmy1t7hTRydm2zy9dnnqBOPTmk-X-rbj3QhbLRBRvQi1Yo4ZAU_Dm1xVz4nxV_GijEPFs3HEHFeA9Vd34HsgNn6wzLaLUQpkDfruFJhrVeYaOnZh7PlIynYKpdCkbd441604yafxoDdBmbTULvMTZgHt7je0wVfD2sb4Hc6yZ6ZNKCrGhHaYch7q-bGZU62Fv9MnJQ-wSmuJnQJzifgpJjqE20JazW"/>
+</div>
+</div>
+</header>
+<main class="flex-1 flex flex-col md:flex-row max-w-7xl mx-auto w-full px-4 md:px-10 py-8 gap-8">
+<!-- Sidebar Navigation -->
+<aside class="w-full md:w-72 flex flex-col gap-6 shrink-0">
+<div class="bg-white dark:bg-slate-900 rounded-xl p-4 border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="mb-4 px-2">
+<h3 class="text-slate-900 dark:text-slate-100 font-bold text-lg">Cài đặt tài khoản</h3>
+<p class="text-slate-500 text-xs">Quản lý tài khoản của bạn</p>
+</div>
+<nav class="flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary text-white font-medium" href="#">
+<span class="material-symbols-outlined text-xl">person</span>
+<span class="text-sm">Thông tin cá nhân</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined text-xl">lock</span>
+<span class="text-sm">Đổi mật khẩu</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined text-xl">history</span>
+<span class="text-sm">Lịch sử đặt lịch</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined text-xl">notifications</span>
+<span class="text-sm">Thông báo</span>
+</a>
+<div class="my-2 border-t border-slate-100 dark:border-slate-800"></div>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors" href="#">
+<span class="material-symbols-outlined text-xl">logout</span>
+<span class="text-sm font-medium">Đăng xuất</span>
+</a>
+</nav>
+</div>
+</aside>
+<!-- Main Content Area -->
+<section class="flex-1 flex flex-col gap-6">
+<div class="flex items-center justify-between">
+<h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100">Thông tin cá nhân</h1>
+</div>
+<!-- Section 1: Avatar -->
+<div class="bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex flex-col md:flex-row items-center gap-6">
+<div class="relative group">
+<div class="h-32 w-32 rounded-full overflow-hidden border-4 border-slate-100 dark:border-slate-800">
+<img class="h-full w-full object-cover" data-alt="Detailed user profile avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD1jA18gemIrzJT70p27Zv9p-o8ofLGOIPRGu1aYU2AN0YikI4J3ZMOmbaCYk2Pxw_gr6wsxyq-G7dNsoTzB45EOKqGAMIdXvoHE2sEIka6UFxW0MElP_jOKeX12kqZEdKRSD47RpZ96HYeZdJpC6zAawjTpH3oEs9BUrRxLIkdw-3FFEM9HZ4ygAaBCnAKInwyLbDrsj7GyqGbVIJG3_K8NwsFv0yPkomXEvP7gkw_xyfBRq3L_MF1cWlBxnafn3XO1BjrFn93whjZ"/>
+</div>
+</div>
+<div class="flex flex-col gap-4 text-center md:text-left flex-1">
+<div>
+<h3 class="text-lg font-bold text-slate-900 dark:text-slate-100">Ảnh đại diện</h3>
+<p class="text-slate-500 text-sm mt-1">Nên sử dụng ảnh rõ mặt, định dạng JPG, PNG hoặc GIF. Dung lượng tối đa 5MB.</p>
+</div>
+<div class="flex flex-wrap gap-3 justify-center md:justify-start">
+<button class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary/90 transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">upload</span>
+                                    Tải ảnh lên
+                                </button>
+<button class="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-lg text-sm font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">delete</span>
+                                    Gỡ bỏ
+                                </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Section 2: Personal Details Form -->
+<div class="bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
+<h3 class="text-lg font-bold text-slate-900 dark:text-slate-100 mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">edit_note</span>
+                        Thông tin chi tiết
+                    </h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="flex flex-col gap-2">
+<label class="text-sm font-medium text-slate-700 dark:text-slate-300">Họ và tên</label>
+<input class="w-full rounded-lg border-slate-200 dark:border-slate-800 dark:bg-slate-800 focus:border-primary focus:ring-primary text-sm" placeholder="Nhập họ tên của bạn" type="text" value="Nguyễn Văn A"/>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-sm font-medium text-slate-700 dark:text-slate-300">Email</label>
+<input class="w-full rounded-lg border-slate-200 dark:border-slate-800 dark:bg-slate-800 focus:border-primary focus:ring-primary text-sm" placeholder="Địa chỉ email của bạn" type="email" value="nguyenvana@example.com"/>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-sm font-medium text-slate-700 dark:text-slate-300">Số điện thoại</label>
+<input class="w-full rounded-lg border-slate-200 dark:border-slate-800 dark:bg-slate-800 focus:border-primary focus:ring-primary text-sm" placeholder="Số điện thoại liên hệ" type="tel" value="0901234567"/>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-sm font-medium text-slate-700 dark:text-slate-300">Ngày sinh</label>
+<input class="w-full rounded-lg border-slate-200 dark:border-slate-800 dark:bg-slate-800 focus:border-primary focus:ring-primary text-sm" type="date" value="1995-05-15"/>
+</div>
+</div>
+</div>
+<!-- Section 3: Identity Verification -->
+<div class="bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="flex items-center gap-4">
+<div class="size-12 rounded-full bg-emerald-100 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+<span class="material-symbols-outlined text-3xl">verified_user</span>
+</div>
+<div>
+<h3 class="text-base font-bold text-slate-900 dark:text-slate-100">Xác thực danh tính</h3>
+<p class="text-slate-500 text-sm">Cung cấp CCCD giúp tăng độ tin cậy của tài khoản</p>
+</div>
+</div>
+<div class="flex flex-col items-end gap-1">
+<div class="flex items-center gap-2 px-3 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-full text-xs font-bold uppercase tracking-wider">
+<span class="material-symbols-outlined text-sm">check_circle</span>
+                                Đã xác minh ID
+                            </div>
+<p class="text-sm text-slate-500 font-mono tracking-tighter">Số CCCD: 038xxxxxx123</p>
+</div>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="flex items-center justify-end gap-4 pt-4 mb-12">
+<button class="px-8 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                        Hủy bỏ
+                    </button>
+<button class="px-8 py-2.5 bg-primary text-white rounded-lg text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all">
+                        Lưu thay đổi
+                    </button>
+</div>
+</section>
+</main>
+<!-- Footer (Simple) -->
+<footer class="mt-auto border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-6 px-10">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+<p class="text-slate-500 text-sm">© 2024 Tìm Phòng Trọ. Tất cả các quyền được bảo lưu.</p>
+<div class="flex gap-6">
+<a class="text-slate-500 hover:text-primary text-sm transition-colors" href="#">Chính sách bảo mật</a>
+<a class="text-slate-500 hover:text-primary text-sm transition-colors" href="#">Điều khoản dịch vụ</a>
+</div>
+</div>
+</footer>
+</div>
+</body></html>

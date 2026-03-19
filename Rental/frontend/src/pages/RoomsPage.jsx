@@ -1,17 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
-import CtaSection from "@/components/home/components/CtaSection";
-import FeaturesSection from "@/components/home/components/FeaturesSection";
-import HeroSection from "@/components/home/components/HeroSection";
-import HowItWorksSection from "@/components/home/components/HowItWorksSection";
 import ListingsSection from "@/components/home/components/ListingsSection";
 import SearchSection from "@/components/home/components/SearchSection";
-import TestimonialsSection from "@/components/home/components/TestimonialsSection";
 import useAuth from "@/hooks/useAuth";
 import landlordService from "@/services/LandlordService";
 import roomService from "@/services/RoomService";
 import { getApiData } from "@/utils/apiResponse";
 
-const HomePage = () => {
+const RoomsPage = () => {
   const { user } = useAuth();
   const [rooms, setRooms] = useState([]);
   const [filters, setFilters] = useState({ minPrice: "", maxPrice: "", area: "" });
@@ -30,7 +25,7 @@ const HomePage = () => {
           minPrice: nextFilters.minPrice || undefined,
           maxPrice: nextFilters.maxPrice || undefined,
           area: nextFilters.area || undefined,
-          limit: 12,
+          limit: 50,
         });
         const payload = getApiData(response, {});
         setRooms(payload?.data || []);
@@ -51,47 +46,43 @@ const HomePage = () => {
 
   const handlePriceRangeChange = (value) => {
     const [min, max] = value ? value.split("-") : ["", ""];
-    setFilters((prev) => ({ ...prev, minPrice: min || "", maxPrice: max || "" }));
+    const next = { ...filters, minPrice: min || "", maxPrice: max || "" };
+    setFilters(next);
+    void loadRooms(next);
   };
 
   const handleQuickFilterChange = (chip) => {
     setActiveQuickFilter(chip);
-    setFilters((prev) => ({ ...prev, area: chip === "Tất cả" ? "" : chip }));
+    const next = { ...filters, area: chip === "Tất cả" ? "" : chip };
+    setFilters(next);
+    void loadRooms(next);
   };
 
-  if (user?.role === "landlord") {
-    return (
-      <section className="page-section">
-        <div className="mb-6">
-          <h1>Bài đăng của tôi</h1>
-          <p className="text-sm text-slate-500">
-            Giao diện khách hàng chỉ hiển thị các bài đăng thuộc tài khoản chủ trọ của bạn.
-          </p>
-        </div>
-
-        <ListingsSection rooms={rooms} />
-      </section>
-    );
-  }
-
   return (
-    <>
-      <HeroSection />
-      <SearchSection
-        filters={filters}
-        onFilterChange={handleFilterChange}
-        onPriceRangeChange={handlePriceRangeChange}
-        onSubmit={() => loadRooms(filters)}
-        activeQuickFilter={activeQuickFilter}
-        onQuickFilterChange={handleQuickFilterChange}
-      />
-      <ListingsSection rooms={rooms.slice(0, 6)} />
-      <HowItWorksSection />
-      <FeaturesSection />
-      <TestimonialsSection />
-      <CtaSection />
-    </>
+    <section className="page-section">
+      <div className="mb-6">
+        <h1>{user?.role === "landlord" ? "Bài đăng của tôi" : "Tìm phòng"}</h1>
+        <p className="text-sm text-slate-500">
+          {user?.role === "landlord"
+            ? "Chỉ hiển thị các bài đăng thuộc tài khoản chủ trọ của bạn."
+            : "Xem toàn bộ phòng đang hiển thị và lọc nhanh theo khu vực, mức giá."}
+        </p>
+      </div>
+
+      {user?.role === "landlord" ? null : (
+        <SearchSection
+          filters={filters}
+          onFilterChange={handleFilterChange}
+          onPriceRangeChange={handlePriceRangeChange}
+          onSubmit={() => loadRooms(filters)}
+          activeQuickFilter={activeQuickFilter}
+          onQuickFilterChange={handleQuickFilterChange}
+        />
+      )}
+
+      <ListingsSection rooms={rooms} />
+    </section>
   );
 };
 
-export default HomePage;
+export default RoomsPage;
