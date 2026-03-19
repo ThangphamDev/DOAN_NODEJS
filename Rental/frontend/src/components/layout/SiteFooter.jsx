@@ -1,15 +1,17 @@
+import { Link } from "react-router-dom";
+
 const SiteFooter = () => {
   return (
     <footer>
       <div className="footer-inner">
         <div className="footer-grid">
           <div className="footer-brand">
-            <a href="/" className="logo">
+            <Link to="/" className="logo">
               <div className="logo-icon">
                 <svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V21H15v-5h-6v5H3V9.5z" /></svg>
               </div>
               Livin<span className="logo-dot">X</span>
-            </a>
+            </Link>
             <p className="footer-desc footer-desc--spaced">
               Nền tảng kết nối người tìm phòng và chủ trọ uy tín, nhanh chóng, an toàn trên toàn Việt Nam.
             </p>
@@ -19,30 +21,30 @@ const SiteFooter = () => {
           <div>
             <div className="footer-col-title">Khám phá</div>
             <ul className="footer-links">
-              <li><a href="#">Tìm phòng</a></li>
-              <li><a href="#">Phòng nổi bật</a></li>
-              <li><a href="#">Bản đồ phòng trọ</a></li>
-              <li><a href="#">Phòng mới nhất</a></li>
+              <li><Link to="/">Trang chủ</Link></li>
+              <li><Link to="/rooms">Tìm phòng</Link></li>
+              <li><Link to="/favorites">Phòng yêu thích</Link></li>
+              <li><Link to="/register">Đăng tin cho thuê</Link></li>
             </ul>
           </div>
 
           <div>
             <div className="footer-col-title">Hỗ trợ</div>
             <ul className="footer-links">
-              <li><a href="#">Hướng dẫn thuê phòng</a></li>
-              <li><a href="#">Hướng dẫn đăng tin</a></li>
-              <li><a href="#">Chính sách bảo mật</a></li>
-              <li><a href="#">Điều khoản sử dụng</a></li>
+              <li><Link to="/appointments">Lịch hẹn của tôi</Link></li>
+              <li><Link to="/messages">Tin nhắn</Link></li>
+              <li><Link to="/profile">Hồ sơ cá nhân</Link></li>
+              <li><a href="mailto:support@livinx.vn">Liên hệ chúng tôi</a></li>
             </ul>
           </div>
 
           <div>
             <div className="footer-col-title">Liên hệ</div>
             <ul className="footer-links">
-              <li><a href="#">Trung tâm hỗ trợ</a></li>
-              <li><a href="#">Báo cáo vi phạm</a></li>
-              <li><a href="#">Hợp tác doanh nghiệp</a></li>
-              <li><a href="#">Blog &amp; Tin tức</a></li>
+              <li><a href="mailto:support@livinx.vn">support@livinx.vn</a></li>
+              <li><a href="tel:+84000000000">0800 000 000</a></li>
+              <li><Link to="/login">Đăng nhập</Link></li>
+              <li><Link to="/admin/login">Cổng admin</Link></li>
             </ul>
           </div>
         </div>

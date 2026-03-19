@@ -29,6 +29,7 @@ const ChatPage = () => {
     isThreadActive,
   } = useChatConversation();
   const [searchQuery, setSearchQuery] = useState("");
+  const [mobileTab, setMobileTab] = useState("inbox"); // 'inbox' | 'chat'
   const messagesContainerRef = useRef(null);
   const previousThreadKeyRef = useRef("");
   const previousLastMessageIdRef = useRef(null);
@@ -104,8 +105,11 @@ const ChatPage = () => {
 
   return (
     <div className="mx-auto flex w-full max-w-7xl px-4 py-6 md:px-6">
+      {/* Mobile tab switcher */}
+      <div className="mb-0 flex w-full md:hidden" style={{ display: 'none' }} />
       <div className="flex h-[calc(100vh-12rem)] min-h-[38rem] w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <aside className="hidden h-full min-h-0 w-80 shrink-0 flex-col border-r border-slate-200 bg-white md:flex">
+        {/* Mobile tab bar — above the panel, shown only on small screens via CSS */}
+        <aside className={`h-full min-h-0 w-full shrink-0 flex-col border-r border-slate-200 bg-white md:flex md:w-80 ${mobileTab === 'inbox' ? 'flex' : 'hidden'} md:flex`}>
           <div className="flex items-center gap-3 border-b border-slate-200 p-4">
             <div className="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary">
               <span className="material-symbols-outlined">forum</span>
@@ -142,7 +146,7 @@ const ChatPage = () => {
                       isActive ? "border-l-4 border-l-primary bg-primary/10" : "hover:bg-slate-50"
                     }`}
                     type="button"
-                    onClick={() => selectConversation(item)}
+                    onClick={() => { selectConversation(item); setMobileTab("chat"); }}
                   >
                     <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-slate-100 font-bold text-primary">
                       {(item.peerName || "C").slice(0, 1).toUpperCase()}
@@ -166,11 +170,31 @@ const ChatPage = () => {
               })
             )}
           </div>
+          {/* Mobile: switch to chat */}
+          {hasActiveConversation ? (
+            <button
+              className="mx-4 mb-4 flex items-center justify-center gap-2 rounded-xl border border-primary/20 bg-primary/5 py-2.5 text-sm font-bold text-primary md:hidden"
+              type="button"
+              onClick={() => setMobileTab('chat')}
+            >
+              <span className="material-symbols-outlined text-base">chat</span>
+              Xem tin nhắn với {activeThread?.peerName}
+              <span className="material-symbols-outlined text-base">chevron_right</span>
+            </button>
+          ) : null}
         </aside>
 
-        <main className="flex min-h-0 min-w-0 flex-1 flex-col bg-white">
+        <main className={`min-h-0 min-w-0 flex-1 flex-col bg-white ${mobileTab === 'chat' ? 'flex' : 'hidden'} md:flex`}>
           <header className="z-10 flex h-16 shrink-0 items-center justify-between border-b border-slate-200 bg-white/80 px-4 backdrop-blur-md md:px-6">
             <div className="min-w-0 flex items-center gap-3">
+              {/* Mobile back button */}
+              <button
+                className="mr-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 md:hidden"
+                type="button"
+                onClick={() => setMobileTab("inbox")}
+              >
+                <span className="material-symbols-outlined text-xl">arrow_back</span>
+              </button>
               <div className="relative shrink-0">
                 <div className="flex size-10 items-center justify-center rounded-full bg-slate-100 font-bold text-primary">
                   {(activeThread?.peerName || "C").slice(0, 1).toUpperCase()}

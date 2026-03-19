@@ -2,21 +2,42 @@ import { Link } from "react-router-dom";
 
 const HeroSection = () => {
   return (
-    <section>
-      <div className="hero">
-        {/* Left */}
+    <section className="hero-wrapper">
+      <div className="hero-inner">
+        {/* Left — Content */}
         <div className="anim-delay-1">
-          <div className="hero-label">
-            <span></span> Nền tảng tìm trọ #1 Việt Nam
+          <div className="hero-eyebrow">
+            <div className="hero-eyebrow-dot">
+              <svg viewBox="0 0 16 16" fill="none" width="10" height="10">
+                <path d="M8 1.5L14 6v8H10V10H6v4H2V6L8 1.5z" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            Nền tảng tìm trọ #1 Việt Nam
           </div>
-          <h1>Tìm phòng trọ <em>ưng ý</em> trong vài phút</h1>
+
+          <h1>
+            Tìm phòng trọ <em>ưng ý</em>
+            <br />trong vài phút
+          </h1>
+
           <p className="hero-sub">
-            Hàng nghìn phòng trọ, căn hộ dịch vụ tại TP.HCM và các tỉnh lớn. Xem thực tế, chat trực tiếp với chủ trọ — nhanh, an toàn, tiết kiệm.
+            Hàng nghìn phòng trọ, căn hộ dịch vụ tại TP.HCM và các tỉnh lớn.
+            Chat trực tiếp với chủ trọ — nhanh, an toàn, tiết kiệm.
           </p>
+
           <div className="hero-cta">
-            <a href="#search" className="btn-hero">Tìm phòng ngay</a>
-            <Link to="/register" className="btn-secondary-hero">Đăng tin cho thuê</Link>
+            <a href="#search" className="btn-hero">
+              <svg viewBox="0 0 24 24" fill="none" width="16" height="16">
+                <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2"/>
+                <path d="M21 21l-4.35-4.35" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+              Tìm phòng ngay
+            </a>
+            <Link to="/register" className="btn-secondary-hero">
+              Đăng tin cho thuê
+            </Link>
           </div>
+
           <div className="hero-stats">
             <div className="stat-item">
               <div className="stat-num">12.400+</div>
@@ -33,7 +54,7 @@ const HeroSection = () => {
           </div>
         </div>
 
-        {/* Right visual */}
+        {/* Right — Visual card */}
         <div className="hero-visual anim-delay-2">
           <div className="float-badge float-badge-1">
             <div className="badge-icon">
@@ -60,13 +81,15 @@ const HeroSection = () => {
                   <rect x="260" y="50" width="110" height="70" rx="4" fill="rgba(255,255,255,0.12)" />
                   <rect x="270" y="65" width="90" height="40" rx="3" fill="rgba(255,255,255,0.18)" />
                   <line x1="0" y1="140" x2="400" y2="140" stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
-                  <rect x="0" y="140" width="400" height="20" fill="rgba(0,0,0,0.15)" />
+                  <rect x="0" y="140" width="400" height="20" fill="rgba(0,0,0,0.12)" />
                 </svg>
               </div>
             </div>
             <div className="hero-card-body">
               <div className="card-location">
-                <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z" /></svg>
+                <svg viewBox="0 0 24 24">
+                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z" />
+                </svg>
                 Quận 3, TP.HCM
               </div>
               <div className="card-title">Căn hộ Studio sạch sẽ, đủ nội thất</div>

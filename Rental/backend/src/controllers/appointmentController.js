@@ -9,6 +9,7 @@ class AppointmentController {
 		this.service = service;
 		this.createAppointment = this.createAppointment.bind(this);
 		this.listMyAppointments = this.listMyAppointments.bind(this);
+		this.cancelAppointment = this.cancelAppointment.bind(this);
 	}
 
 	async createAppointment(req, res, next) {
@@ -43,6 +44,23 @@ class AppointmentController {
 		}
 	}
 
+	async cancelAppointment(req, res, next) {
+		try {
+			const data = await runInTransaction((tx) =>
+				this.service.cancelAppointment(
+					{
+						appointmentId: Number(req.params.id),
+						customerId: req.user.id,
+					},
+					{ transaction: tx }
+				)
+			);
+			return sendSuccess(res, { data, message: "Appointment cancelled" });
+		} catch (error) {
+			return next(error);
+		}
+	}
+
 	registerRoutes(app, prefix = "/api") {
 		app.post(
 			`${prefix}/appointments/room/:roomId`,
@@ -55,6 +73,12 @@ class AppointmentController {
 			authenticate,
 			authorize("customer", "landlord"),
 			this.listMyAppointments
+		);
+		app.patch(
+			`${prefix}/appointments/:id/cancel`,
+			authenticate,
+			authorize("customer"),
+			this.cancelAppointment
 		);
 	}
 }

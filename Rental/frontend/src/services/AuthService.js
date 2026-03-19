@@ -12,6 +12,10 @@ class AuthService {
   me() {
     return api.get("/auth/me");
   }
+
+  updateProfile(payload) {
+    return api.patch("/auth/me", payload);
+  }
 }
 
 export default new AuthService();

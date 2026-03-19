@@ -129,9 +129,49 @@ describe("AppointmentService", () => {
 
         const result = await appointmentService.updateAppointmentStatus({
           appointmentId: 1, landlordId: 10, status,
+          rejectReason: status === "rejected" ? "Không còn lịch trống" : undefined,
         });
         expect(result.appointment.status).toBe(status);
       }
+    });
+  });
+
+  describe("cancelAppointment", () => {
+    test("FAIL – throws 404 when appointment not found", async () => {
+      appointmentService.repository.getById.mockResolvedValue(null);
+      await expect(
+        appointmentService.cancelAppointment({ appointmentId: 99, customerId: 5 })
+      ).rejects.toMatchObject({ statusCode: 404 });
+    });
+
+    test("FAIL – throws 403 when customer does not own appointment", async () => {
+      appointmentService.repository.getById.mockResolvedValue({ id: 1, customerId: 7, status: "pending" });
+      await expect(
+        appointmentService.cancelAppointment({ appointmentId: 1, customerId: 5 })
+      ).rejects.toMatchObject({ statusCode: 403 });
+    });
+
+    test("FAIL – throws 400 when appointment already cancelled", async () => {
+      appointmentService.repository.getById.mockResolvedValue({ id: 1, customerId: 5, status: "cancelled" });
+      await expect(
+        appointmentService.cancelAppointment({ appointmentId: 1, customerId: 5 })
+      ).rejects.toMatchObject({ statusCode: 400 });
+    });
+
+    test("PASS – cancels pending appointment", async () => {
+      appointmentService.repository.getById
+        .mockResolvedValueOnce({ id: 1, customerId: 5, status: "pending" })
+        .mockResolvedValueOnce({ ...mockAppointment, status: "cancelled" });
+      appointmentService.repository.updateById.mockResolvedValue([1]);
+
+      const result = await appointmentService.cancelAppointment({ appointmentId: 1, customerId: 5 });
+
+      expect(appointmentService.repository.updateById).toHaveBeenCalledWith(
+        1,
+        { status: "cancelled" },
+        expect.any(Object)
+      );
+      expect(result.appointment.status).toBe("cancelled");
     });
   });
 });

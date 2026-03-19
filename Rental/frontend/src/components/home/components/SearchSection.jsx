@@ -4,6 +4,7 @@ import { quickFilters } from "@/components/home/homeData";
 const SearchSection = ({ filters, onFilterChange, onSubmit, activeQuickFilter, onQuickFilterChange, onPriceRangeChange }) => {
   const placeholderOptions = ["Quận 3, TP.HCM", "Bình Thạnh...", "Đường Nguyễn Trãi...", "Quận 7, gần RMIT..."];
   const [placeholderText, setPlaceholderText] = useState(placeholderOptions[0]);
+  const [areaInput, setAreaInput] = useState(filters.area || "");
 
   useEffect(() => {
     let placeholderIndex = 0;
@@ -16,12 +17,37 @@ const SearchSection = ({ filters, onFilterChange, onSubmit, activeQuickFilter, o
     return () => clearInterval(intervalId);
   }, []);
 
+  useEffect(() => {
+    setAreaInput(filters.area || "");
+  }, [filters.area]);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (areaInput === (filters.area || "")) return;
+
+      onFilterChange({
+        target: {
+          name: "area",
+          value: areaInput,
+        },
+      });
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [areaInput, filters.area, onFilterChange]);
+
   return (
     <section className="search-section" id="search">
       <div className="search-box">
         <div className="search-field">
           <label>Địa điểm</label>
-          <input type="text" name="area" value={filters.area} onChange={onFilterChange} placeholder={placeholderText} />
+          <input
+            type="text"
+            name="area"
+            value={areaInput}
+            onChange={(event) => setAreaInput(event.target.value)}
+            placeholder={placeholderText}
+          />
         </div>
         <div className="search-field">
           <label>Loại phòng</label>
@@ -34,7 +60,7 @@ const SearchSection = ({ filters, onFilterChange, onSubmit, activeQuickFilter, o
         </div>
         <div className="search-field">
           <label>Khoảng giá</label>
-          <select onChange={onPriceRangeChange}>
+          <select onChange={(event) => onPriceRangeChange(event.target.value)}>
             <option value="">Mọi giá</option>
             <option value="0-2000000">Dưới 2 triệu</option>
             <option value="2000000-4000000">2 – 4 triệu</option>

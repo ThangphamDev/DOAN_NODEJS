@@ -9,6 +9,7 @@ class AuthController {
 		this.register = this.register.bind(this);
 		this.login = this.login.bind(this);
 		this.me = this.me.bind(this);
+		this.updateProfile = this.updateProfile.bind(this);
 	}
 
 	async register(req, res, next) {
@@ -38,10 +39,22 @@ class AuthController {
 		}
 	}
 
+	async updateProfile(req, res, next) {
+		try {
+			const data = await runInTransaction((tx) =>
+				this.service.updateProfile(req.user.id, req.body, { transaction: tx })
+			);
+			return sendSuccess(res, { data, message: "Profile updated" });
+		} catch (error) {
+			return next(error);
+		}
+	}
+
 	registerRoutes(app, prefix = "/api") {
 		app.post(`${prefix}/auth/register`, this.register);
 		app.post(`${prefix}/auth/login`, this.login);
 		app.get(`${prefix}/auth/me`, authenticate, this.me);
+		app.patch(`${prefix}/auth/me`, authenticate, this.updateProfile);
 	}
 }
 

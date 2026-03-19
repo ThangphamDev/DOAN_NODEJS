@@ -86,6 +86,38 @@ class AppointmentService {
 
     return { message: "Appointment updated", appointment: updatedAppointment };
   }
+
+  async cancelAppointment({ appointmentId, customerId }, options = {}) {
+    const appointment = await this.repository.getById(appointmentId);
+
+    if (!appointment) {
+      throw new ApiError(404, "Appointment not found");
+    }
+
+    if (Number(appointment.customerId) !== Number(customerId)) {
+      throw new ApiError(403, "Forbidden");
+    }
+
+    if (appointment.status === "cancelled") {
+      throw new ApiError(400, "Appointment already cancelled");
+    }
+
+    if (appointment.status === "rejected") {
+      throw new ApiError(400, "Không thể hủy lịch hẹn đã bị từ chối.");
+    }
+
+    await this.repository.updateById(
+      appointmentId,
+      {
+        status: "cancelled",
+      },
+      options
+    );
+
+    const updatedAppointment = await this.repository.getById(appointmentId);
+
+    return { message: "Appointment cancelled", appointment: updatedAppointment };
+  }
 }
 
 module.exports = new AppointmentService(appointmentRepository, roomRepository);

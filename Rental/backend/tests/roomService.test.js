@@ -83,6 +83,31 @@ describe("RoomService", () => {
     });
   });
 
+  describe("getReportStatus", () => {
+    test("throws 404 when room not found", async () => {
+      roomService.repository.getById.mockResolvedValue(null);
+      await expect(roomService.getReportStatus(99, 10)).rejects.toMatchObject({ statusCode: 404 });
+    });
+
+    test("returns false when customer has not reported room", async () => {
+      roomService.repository.getById.mockResolvedValue(mockRoom);
+      roomService.reportRepository.getOne.mockResolvedValue(null);
+
+      const result = await roomService.getReportStatus(1, 10);
+
+      expect(result).toEqual({ reported: false });
+    });
+
+    test("returns true when customer already reported room", async () => {
+      roomService.repository.getById.mockResolvedValue(mockRoom);
+      roomService.reportRepository.getOne.mockResolvedValue({ id: 5, roomId: 1, reporterId: 10 });
+
+      const result = await roomService.getReportStatus(1, 10);
+
+      expect(result).toEqual({ reported: true });
+    });
+  });
+
   describe("createRoom", () => {
     test("throws 400 when required fields missing", async () => {
       await expect(roomService.createRoom({ userId: 7, body: { title: "A" }, files: [] })).rejects.toMatchObject({

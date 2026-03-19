@@ -17,6 +17,7 @@ describe("AuthService", () => {
       getOne: jest.fn(),
       insert: jest.fn(),
       getById: jest.fn(),
+      updateById: jest.fn(),
     };
     jest.clearAllMocks();
   });
@@ -129,6 +130,62 @@ describe("AuthService", () => {
       });
       const result = await authService.getMe(1);
       expect(result.user.email).toBe("a@test.com");
+    });
+  });
+
+  describe("updateProfile", () => {
+    test("FAIL – throws 404 when user not found", async () => {
+      authService.repository.getById.mockResolvedValue(null);
+      await expect(authService.updateProfile(999, { fullName: "A B", email: "a@test.com" })).rejects.toMatchObject({ statusCode: 404 });
+    });
+
+    test("FAIL – throws 400 when fullName invalid", async () => {
+      authService.repository.getById.mockResolvedValue({ id: 1, email: "old@test.com" });
+      await expect(authService.updateProfile(1, { fullName: "A", email: "a@test.com" })).rejects.toMatchObject({ statusCode: 400 });
+    });
+
+    test("FAIL – throws 409 when email already exists", async () => {
+      authService.repository.getById.mockResolvedValue({ id: 1, email: "old@test.com" });
+      authService.repository.getOne.mockResolvedValue({ id: 2, email: "new@test.com" });
+
+      await expect(
+        authService.updateProfile(1, { fullName: "Alice Nguyen", email: "new@test.com", phone: "0912345678" })
+      ).rejects.toMatchObject({ statusCode: 409 });
+    });
+
+    test("PASS – updates and returns public user", async () => {
+      authService.repository.getById
+        .mockResolvedValueOnce({ id: 1, email: "old@test.com" })
+        .mockResolvedValueOnce({
+          id: 1,
+          fullName: "Alice Nguyen",
+          email: "alice@test.com",
+          role: "customer",
+          phone: "0912345678",
+          area: "Quận 7",
+          isActive: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+
+      const result = await authService.updateProfile(1, {
+        fullName: "Alice Nguyen",
+        email: "alice@test.com",
+        phone: "0912345678",
+        area: "Quận 7",
+      });
+
+      expect(authService.repository.updateById).toHaveBeenCalledWith(
+        1,
+        {
+          fullName: "Alice Nguyen",
+          email: "alice@test.com",
+          phone: "0912345678",
+          area: "Quận 7",
+        },
+        expect.any(Object)
+      );
+      expect(result.user.fullName).toBe("Alice Nguyen");
     });
   });
 });

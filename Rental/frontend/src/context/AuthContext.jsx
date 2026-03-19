@@ -1,4 +1,4 @@
-import { createContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useEffect, useMemo, useState } from "react";
 import authService from "@/services/AuthService";
 import { clearToken, getToken, setToken } from "@/utils/storage";
 
@@ -10,7 +10,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchMe = async () => {
+  const fetchMe = useCallback(async () => {
     const token = getToken();
     if (!token) {
       setLoading(false);
@@ -27,36 +27,43 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchMe();
-  }, []);
+  }, [fetchMe]);
 
-  const login = async (email, password) => {
+  const login = useCallback(async (email, password) => {
     const response = await authService.login(email, password);
     const payload = getPayloadData(response);
     setToken(payload.token);
     setUser(payload.user);
     return payload.user;
-  };
+  }, []);
 
-  const register = async (payload) => {
+  const register = useCallback(async (payload) => {
     const response = await authService.register(payload);
     const responsePayload = getPayloadData(response);
     setToken(responsePayload.token);
     setUser(responsePayload.user);
     return responsePayload.user;
-  };
+  }, []);
 
-  const logout = () => {
+  const updateProfile = useCallback(async (payload) => {
+    const response = await authService.updateProfile(payload);
+    const responsePayload = getPayloadData(response);
+    setUser(responsePayload.user || null);
+    return responsePayload.user;
+  }, []);
+
+  const logout = useCallback(() => {
     clearToken();
     setUser(null);
-  };
+  }, []);
 
   const value = useMemo(
-    () => ({ user, loading, login, register, logout, refresh: fetchMe }),
-    [user, loading]
+    () => ({ user, loading, login, register, logout, refresh: fetchMe, updateProfile }),
+    [fetchMe, loading, login, logout, register, updateProfile, user]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { io } from "socket.io-client";
 import LoadingState from "@/components/common/LoadingState";
+import RatingStars from "@/components/common/RatingStars";
 import ReportRoomModal from "@/components/room/ReportRoomModal";
 import { useNotify } from "@/context/NotifyContext.jsx";
 import useAuth from "@/hooks/useAuth";
@@ -22,19 +23,6 @@ const formatMessageTime = (value) => {
   });
 };
 
-const renderRatingStars = (rating, sizeClass = "text-sm") => {
-  const normalizedRating = Math.max(0, Math.min(5, Math.round(Number(rating) || 0)));
-
-  return Array.from({ length: 5 }, (_, index) => (
-    <span
-      className={`material-symbols-outlined ${sizeClass} ${index < normalizedRating ? "fill-1 text-amber-500" : "text-slate-300"}`}
-      key={`${normalizedRating}-${index}`}
-    >
-      star
-    </span>
-  ));
-};
-
 const RoomDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -51,6 +39,9 @@ const RoomDetailPage = () => {
   const [chatLoading, setChatLoading] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [isReporting, setIsReporting] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [isFavoriteLoading, setIsFavoriteLoading] = useState(false);
+  const [isReported, setIsReported] = useState(false);
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const chatEndRef = useRef(null);
@@ -88,12 +79,14 @@ const RoomDetailPage = () => {
 
   const roomDetails = useMemo(() => normalizeRoomDetails(room?.details, room || {}), [room]);
 
+  const reviewCount = room?.reviews?.length || 0;
+
   const averageRating = useMemo(() => {
     const reviews = room?.reviews || [];
-    if (!reviews.length) return "0.0";
+    if (!reviews.length) return 0;
 
     const total = reviews.reduce((sum, item) => sum + Number(item.rating || 0), 0);
-    return (total / reviews.length).toFixed(1);
+    return Number((total / reviews.length).toFixed(1));
   }, [room?.reviews]);
 
   const galleryImages = useMemo(() => {
@@ -137,6 +130,45 @@ const RoomDetailPage = () => {
       navigate("/landlord/rooms", { replace: true });
     }
   }, [navigate, notify, room, user]);
+
+  useEffect(() => {
+    if (!room?.id || user?.role !== "customer") {
+      setIsFavorite(false);
+      setIsReported(false);
+      return;
+    }
+
+    let isMounted = true;
+
+    const loadCustomerRoomFlags = async () => {
+      try {
+        const [favoritesResponse, reportResponse] = await Promise.all([
+          roomService.getMyFavorites(),
+          roomService.getReportStatus(room.id),
+        ]);
+
+        if (!isMounted) return;
+
+        const favorites = getApiData(favoritesResponse, []);
+        const reportStatus = getApiData(reportResponse, { reported: false });
+
+        setIsFavorite(
+          favorites.some((item) => Number(item?.room?.id || item?.roomId || 0) === Number(room.id))
+        );
+        setIsReported(Boolean(reportStatus?.reported));
+      } catch {
+        if (!isMounted) return;
+        setIsFavorite(false);
+        setIsReported(false);
+      }
+    };
+
+    void loadCustomerRoomFlags();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [room?.id, user?.role]);
 
   useEffect(() => {
     const defaultLeaseTerm =
@@ -301,12 +333,18 @@ const RoomDetailPage = () => {
     navigate("/");
   };
 
-  const addFavorite = async () => {
+  const toggleFavorite = async () => {
+    setIsFavoriteLoading(true);
     try {
-      await roomService.toggleFavorite(id);
-      notify.success("Đã cập nhật danh sách yêu thích.");
+      const response = await roomService.toggleFavorite(id);
+      const payload = getApiData(response, {});
+      const added = Boolean(payload?.added);
+      setIsFavorite(added);
+      notify.success(added ? "Đã thêm vào danh sách yêu thích." : "Đã bỏ khỏi danh sách yêu thích.");
     } catch (err) {
       notify.error(getApiMessage(err, "Không thể cập nhật yêu thích"));
+    } finally {
+      setIsFavoriteLoading(false);
     }
   };
 
@@ -356,6 +394,7 @@ const RoomDetailPage = () => {
     try {
       setIsReporting(true);
       await roomService.reportRoom(id, payload);
+      setIsReported(true);
       notify.success("Đã gửi báo cáo bài đăng.");
       setShowReportModal(false);
     } catch (err) {
@@ -431,12 +470,21 @@ const RoomDetailPage = () => {
 
         {user?.role === "customer" ? (
           <button
-            className="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-100"
+            className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition ${
+              isReported
+                ? "cursor-not-allowed border border-amber-200 bg-amber-50 text-amber-700"
+                : "border border-red-200 bg-red-50 text-red-600 hover:bg-red-100"
+            }`}
             type="button"
-            onClick={() => setShowReportModal(true)}
+            onClick={() => {
+              if (!isReported) {
+                setShowReportModal(true);
+              }
+            }}
+            disabled={isReported}
           >
             <span className="material-symbols-outlined text-lg">flag</span>
-            Báo cáo bài đăng
+            {isReported ? "Đã báo cáo" : "Báo cáo bài đăng"}
           </button>
         ) : null}
       </div>
@@ -608,10 +656,10 @@ const RoomDetailPage = () => {
 
           <div className="border-t border-slate-200 py-8">
             <div className="mb-8 flex items-center justify-between gap-3">
-              <h3 className="text-2xl font-bold text-slate-900">Đánh giá ({(room.reviews || []).length})</h3>
+              <h3 className="text-2xl font-bold text-slate-900">Đánh giá ({reviewCount})</h3>
               <div className="flex items-center gap-2">
-                <div className="flex items-center">{renderRatingStars(averageRating, "text-base")}</div>
-                <span className="text-xl font-bold text-slate-900">{averageRating}</span>
+                <RatingStars rating={averageRating} size="lg" />
+                <span className="text-xl font-bold text-slate-900">{reviewCount ? averageRating.toFixed(1) : "Chưa có đánh giá"}</span>
                 <span className="text-sm text-slate-500">Điểm trung bình</span>
               </div>
             </div>
@@ -635,7 +683,7 @@ const RoomDetailPage = () => {
                         </div>
                       </div>
                       <div className="flex items-center gap-1">
-                        <div className="flex">{renderRatingStars(item.rating, "text-sm")}</div>
+                        <RatingStars rating={item.rating} size="sm" />
                         <span className="text-xs font-semibold text-slate-500">{Number(item.rating || 0)}/5</span>
                       </div>
                     </div>
@@ -749,9 +797,18 @@ const RoomDetailPage = () => {
                   <span className="material-symbols-outlined">chat</span>
                   Chat với chủ trọ
                 </button>
-                <button className="flex h-12 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white text-sm font-bold text-slate-700 transition-all hover:bg-slate-50" type="button" onClick={addFavorite}>
-                  <span className="material-symbols-outlined">favorite</span>
-                  Thêm vào yêu thích
+                <button
+                  className={`flex h-12 items-center justify-center gap-2 rounded-xl border text-sm font-bold transition-all ${
+                    isFavorite
+                      ? "border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100"
+                      : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                  }`}
+                  type="button"
+                  onClick={toggleFavorite}
+                  disabled={isFavoriteLoading}
+                >
+                  <span className="material-symbols-outlined">{isFavorite ? "heart_minus" : "favorite"}</span>
+                  {isFavoriteLoading ? "Đang cập nhật..." : isFavorite ? "Bỏ khỏi yêu thích" : "Thêm vào yêu thích"}
                 </button>
               </div>
             ) : (

@@ -159,6 +159,23 @@ class RoomService {
     return attachRoomDetails(room);
   }
 
+  async getReportStatus(id, userId) {
+    const room = await this.repository.getById(id);
+
+    if (!room || room.status === "deleted") {
+      throw new ApiError(404, "Room not found");
+    }
+
+    const existingReport = await this.reportRepository.getOne({
+      where: {
+        roomId: Number(id),
+        reporterId: Number(userId),
+      },
+    });
+
+    return { reported: Boolean(existingReport) };
+  }
+
   async reportRoom(id, payload = {}, options = {}) {
     const room = await this.repository.getById(id);
 

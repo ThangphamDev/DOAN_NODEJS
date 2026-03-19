@@ -105,7 +105,7 @@ const ListingsSection = ({ rooms }) => {
     <section className="section">
       <div className="section-header">
         <h2 className="section-title">Phòng <em>nổi bật</em> hôm nay</h2>
-        <a href="#" className="section-link">Xem tất cả →</a>
+        <Link to="/rooms" className="section-link">Xem tất cả →</Link>
       </div>
       <div className="listings-grid">
         {rooms.map((room, index) => (

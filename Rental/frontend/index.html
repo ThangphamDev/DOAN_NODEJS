@@ -1,11 +1,25 @@
 <!doctype html>
-<html lang="en">
+<html lang="vi">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="LivinX là nền tảng tìm phòng trọ và căn hộ dịch vụ uy tín tại Việt Nam. Tìm phòng nhanh, chat trực tiếp với chủ trọ và đặt lịch xem phòng dễ dàng."
+    />
+    <meta
+      name="keywords"
+      content="tìm phòng trọ, cho thuê phòng, căn hộ dịch vụ, phòng trọ TPHCM, LivinX"
+    />
+    <meta property="og:title" content="LivinX – Tìm phòng trọ dễ dàng" />
+    <meta
+      property="og:description"
+      content="Hàng nghìn phòng trọ, căn hộ dịch vụ tại TP.HCM và các tỉnh lớn. Chat trực tiếp với chủ trọ, đặt lịch xem phòng ngay."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="vi_VN" />
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" />
     <script>
       tailwind.config = {
@@ -13,17 +27,24 @@
         theme: {
           extend: {
             colors: {
-              primary: "#007bff",
-              "background-light": "#f5f7f8",
+              primary: "#0D6E4A",
+              "primary-mid": "#25A97A",
+              "primary-light": "#E8F5EF",
+              "primary-dark": "#0A5438",
+              accent: "#FF5C35",
+              "background-light": "#F8F9FA",
               "background-dark": "#0f1923",
             },
             fontFamily: {
-              display: ["Inter"],
+              display: ["Plus Jakarta Sans", "Be Vietnam Pro", "sans-serif"],
+              body: ["Be Vietnam Pro", "sans-serif"],
             },
             borderRadius: {
               DEFAULT: "0.25rem",
-              lg: "0.5rem",
-              xl: "0.75rem",
+              sm: "0.5rem",
+              lg: "0.75rem",
+              xl: "1rem",
+              "2xl": "1.25rem",
               full: "9999px",
             },
           },
@@ -38,7 +59,7 @@
     <link rel="stylesheet" href="/css/customer.css" />
     <link rel="stylesheet" href="/admin/css/style.css" />
     <link rel="stylesheet" href="/landlord/css/style.css" />
-    <title>LivinX - Tim phong tro de dang</title>
+    <title>LivinX – Tìm phòng trọ dễ dàng</title>
   </head>
   <body>
     <div id="root"></div>

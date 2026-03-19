@@ -10,6 +10,11 @@ class AuthService {
     this.repository = repository;
   }
 
+  validateEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+
   async register({ fullName, email, password, role = "customer", phone, area }, options = {}) {
     if (!fullName || !email || !password) {
       throw new ApiError(400, "Missing required fields");
@@ -73,6 +78,59 @@ class AuthService {
     }
 
     return { user: toPublicUserModel(user) };
+  }
+
+  async updateProfile(userId, { fullName, email, phone, area }, options = {}) {
+    const user = await this.repository.getById(userId);
+
+    if (!user) {
+      throw new ApiError(404, "User not found");
+    }
+
+    const nextFullName = fullName?.trim();
+    const nextEmail = email?.trim().toLowerCase();
+    const nextPhone = phone?.trim();
+    const nextArea = area?.trim();
+
+    if (!nextFullName || nextFullName.length < 2) {
+      throw new ApiError(400, "Full name must be at least 2 characters");
+    }
+
+    if (!nextEmail || !this.validateEmail(nextEmail)) {
+      throw new ApiError(400, "Invalid email");
+    }
+
+    if (nextPhone) {
+      const phoneRegex = /^(0|\+84)(3|5|7|8|9)[0-9]{8}$/;
+      if (!phoneRegex.test(nextPhone)) {
+        throw new ApiError(400, "Invalid phone");
+      }
+    }
+
+    if (nextEmail !== user.email) {
+      const existedUser = await this.repository.getOne({
+        where: {
+          email: { [Op.eq]: nextEmail },
+        },
+      });
+
+      if (existedUser && Number(existedUser.id) !== Number(userId)) {
+        throw new ApiError(409, "Email already exists");
+      }
+    }
+
+    const updatePayload = {
+      fullName: nextFullName,
+      email: nextEmail,
+      phone: nextPhone || null,
+      area: nextArea || null,
+    };
+
+    await this.repository.updateById(userId, updatePayload, options);
+
+    const updatedUser = await this.repository.getById(userId);
+
+    return { user: toPublicUserModel(updatedUser) };
   }
 }
 

@@ -17,8 +17,16 @@ class RoomService {
     return api.get("/appointments/me");
   }
 
+  cancelAppointment(id) {
+    return api.patch(`/appointments/${id}/cancel`);
+  }
+
   toggleFavorite(id) {
     return api.post(`/favorites/${id}/toggle`);
+  }
+
+  getReportStatus(id) {
+    return api.get(`/rooms/${id}/report-status`);
   }
 
   createAppointment(id, payload) {
