@@ -1,225 +1,159 @@
-# 🏠 Rental Platform – Room Rental & Booking System
+# 🏠 Rental Platform – Fullstack Room Rental System
 
-A full-stack web application that connects **tenants and landlords** through a modern rental platform, supporting room browsing, booking appointments, real-time chat, and administrative management.
-
----
-
-## 📌 Overview
-
-**Rental Platform** is a web-based system designed to simplify the process of finding and managing rental rooms. The system supports three main roles:
-
-- 👤 **Customer** – Browse rooms, book appointments, chat with landlords  
-- 🏠 **Landlord** – Manage rooms, handle bookings, communicate with customers  
-- 🛠 **Admin** – Moderate system, manage users, rooms, and reports  
-
-This project is built as a **fullstack application** using modern technologies with a scalable architecture.
+> A fullstack web application for managing rental rooms, supporting booking, real-time chat, and role-based system management.
 
 ---
 
-## 🚀 Key Features
+## 🚀 Project Overview
 
-### 👤 Customer
-- Browse and search rental rooms
-- View room details (images, price, location)
-- Add/remove favorites
-- Book viewing appointments
-- Chat with landlords (real-time)
-- Leave reviews after booking
+Rental Platform is a fullstack application that connects **tenants and landlords** in a centralized system.  
+Users can search rooms, book appointments, and communicate in real-time.
 
-### 🏠 Landlord
-- Create, update, delete rooms
-- Manage room images
-- View and manage appointments
-- Chat with customers
-- Respond to reviews
-
-### 🛠 Admin
-- Manage users (ban/unban)
-- Manage rooms (approve/remove)
-- Handle reports (room/user reports)
-- Monitor system activity
-
----
-
-## 🧱 System Architecture
-
-The backend follows a **layered architecture**:
-
-Controller -> Service -> Repository -> Entity (Sequelize)
-
-- **Controller**: Handle HTTP requests  
-- **Service**: Business logic  
-- **Repository**: Data access  
-- **Entity**: Database models  
+The system supports **3 main roles**:
+- 👤 Customer
+- 🏠 Landlord
+- 🛠 Admin
 
 ---
 
 ## 🛠 Tech Stack
 
 ### Backend
-- Node.js
-- Express.js (v5)
+- Node.js, Express.js
 - Sequelize ORM
 - MySQL
-- Socket.IO (real-time chat)
 - JWT Authentication
+- Socket.IO
 
 ### Frontend
-- React 19
-- Vite
-- React Router v7
+- React (Vite)
+- React Router
 - Axios
 - Socket.IO Client
 
-### Tools
-- ESLint
-- Nodemon
-- Jest (unit testing)
+---
+
+## 🧠 My Contributions
+
+- Designed and implemented **RESTful APIs**
+- Built **layered architecture** (Controller → Service → Repository)
+- Implemented **JWT authentication & RBAC**
+- Developed **real-time chat system (Socket.IO)**
+- Designed database schema using Sequelize
+- Integrated frontend with backend APIs
+- Wrote unit tests for core modules
+
+---
+
+## ✨ Key Features
+
+### Customer
+- Browse & search rooms
+- View room details
+- Add to favorites
+- Book appointments
+- Chat with landlords
+- Leave reviews
+
+### Landlord
+- Manage rooms (CRUD)
+- Manage bookings
+- Chat with customers
+- Reply to reviews
+
+### Admin
+- Manage users
+- Moderate rooms
+- Handle reports
+- Monitor system
+
+---
+
+## 🧱 Architecture
+
+Controller → Service → Repository → Entity
+
+- Clean separation of concerns
+- Scalable and maintainable design
 
 ---
 
 ## 📁 Project Structure
 
+```bash
 Rental/
-│
 ├── backend/
 │   ├── src/
-│   │   ├── controllers/
-│   │   ├── services/
-│   │   ├── repositories/
-│   │   ├── entities/
-│   │   ├── middlewares/
-│   │   ├── routes/
-│   │   └── sockets/
-│   ├── tests/
-│   └── uploads/
+│   │   ├── controllers/      # Handle request/response
+│   │   ├── services/         # Business logic
+│   │   ├── repositories/     # Database layer
+│   │   ├── entities/         # Sequelize models
+│   │   ├── middlewares/      # Auth, validation
+│   │   ├── routes/           # API routes
+│   │   └── sockets/          # Real-time chat
+│   ├── tests/                # Unit tests
+│   └── uploads/              # Images
 │
 ├── frontend/
-│   ├── src/
-│   ├── public/
+│   ├── src/                  # React code
+│   ├── public/               # Static files
 │   └── config files
 │
 ├── docs/
-│   ├── mockups (HTML)
+│   ├── mockups/
 │   └── audit & planning
 │
 └── README.md
+```
 
 ---
 
-## ⚙️ Installation & Setup
+## 🔌 System Design
 
-### 1. Clone repository
-git clone https://github.com/ThangphamDev/DOAN_NODEJS.git  
-cd DOAN_NODEJS/Rental  
-
----
-
-### 2. Backend Setup
-
-cd backend  
-npm install  
-
-Create `.env` file:
-
-PORT=5000  
-DB_HOST=localhost  
-DB_USER=root  
-DB_PASSWORD=your_password  
-DB_NAME=rental_db  
-JWT_SECRET=your_secret_key  
-
-Run backend:
-
-npm run dev  
-
----
-
-### 3. Frontend Setup
-
-cd frontend  
-npm install  
-npm run dev  
-
-Frontend URL:
-
-http://localhost:5173  
+- RESTful API (`/api/...`)
+- JWT Authentication
+- Role-based access control (RBAC)
+- Real-time messaging (Socket.IO)
+- File upload support
 
 ---
 
 ## 🧪 Testing
 
-cd backend  
-npm test  
+- Jest unit tests
+- Covered:
+  - Auth Service
+  - Room Service
+  - Appointment Service
 
 ---
 
-## 🔑 Demo Accounts
+## ⚠️ Challenges & Improvements
 
-| Role       | Email              | Password |
-|------------|--------------------|----------|
-| Customer   | customer@test.com  | 123456   |
-| Landlord   | landlord@test.com  | 123456   |
-| Admin      | admin@test.com     | 123456   |
+### Challenges
+- Real-time communication handling
+- Role-based authorization logic
+- Structuring scalable backend
 
----
-
-## 🔌 API Base URL
-
-http://localhost:5000/api
-
----
-
-## 💬 Real-time Features
-
-- Chat system using Socket.IO  
-- Real-time messaging  
-- Basic online/offline tracking  
+### Improvements
+- Add validation (Joi/Zod)
+- Improve security (rate limit, upload filter)
+- Add pagination & search
+- Notification system
+- Deployment (Docker, AWS)
 
 ---
 
-## ⚠️ Current Limitations
+## 📌 Highlights
 
-- Missing input validation  
-- Upload chưa secure  
-- Chưa có rate limit  
-- Admin thiếu pagination/search  
-- Docs frontend chưa hoàn chỉnh  
-- Mockup HTML cũ  
-- sequelize.sync alter chưa phù hợp production  
-
----
-
-## 🛣 Roadmap
-
-- Validation (Joi/Zod)  
-- Security improvements  
-- Docker  
-- Notification system  
-- UI responsive  
-- Forgot password  
-- Deploy cloud  
+- Fullstack real-world project
+- Clean architecture design
+- Real-time feature implemented
+- Role-based system
 
 ---
 
 ## 👨‍💻 Author
 
-Thắng Phạm Xuân  
-GitHub: https://github.com/ThangphamDev  
-
----
-
-## 📄 License
-
-Educational purpose
-
----
-
-## ⭐ Final Notes
-
-Project demonstrates:
-- Fullstack development  
-- REST API design  
-- WebSocket (real-time)  
-- RBAC (role-based access control)  
-- Scalable architecture  
+**Thắng Phạm Xuân**  
+GitHub: https://github.com/ThangphamDev
