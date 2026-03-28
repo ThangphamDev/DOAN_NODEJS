@@ -210,7 +210,7 @@ const AppointmentsPage = () => {
           {filteredAppointments.map((item) => {
             const status = STATUS_CONFIG[item.status] || STATUS_CONFIG.pending;
             const imageUrl = resolveRoomImageUrl(item.room?.images?.[0]?.imageUrl || "", uploadBaseUrl);
-            const canCancel = item.status === "pending" || item.status === "approved";
+            const canCancel = item.status === "pending";
             const isCancelling = Number(cancellingId) === Number(item.id);
 
             return (

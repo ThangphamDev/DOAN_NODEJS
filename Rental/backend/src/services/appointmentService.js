@@ -2,6 +2,7 @@ const { Room, User } = require("@/entities");
 const appointmentRepository = require("@/repositories/appointmentRepository");
 const roomRepository = require("@/repositories/roomRepository");
 const ApiError = require("@/utils/ApiError");
+const { Op } = require("sequelize");
 
 class AppointmentService {
   constructor(repository, roomRepo) {
@@ -17,6 +18,29 @@ class AppointmentService {
     const room = await this.roomRepository.getById(roomId);
     if (!room || room.status !== "active") {
       throw new ApiError(404, "Room not found");
+    }
+
+    const scheduleDate = new Date(scheduledAt);
+    const startOfDay = new Date(scheduleDate);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(scheduleDate);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const existingAppointments = await this.repository.getList({
+      where: {
+        roomId,
+        customerId: userId,
+        scheduledAt: {
+          [Op.between]: [startOfDay, endOfDay]
+        },
+        status: {
+          [Op.notIn]: ["cancelled", "rejected"]
+        }
+      }
+    });
+
+    if (existingAppointments && existingAppointments.length > 0) {
+      throw new ApiError(400, "Bạn đã đặt lịch cho phòng trọ này trong ngày hôm nay rồi.");
     }
 
     const appointment = await this.repository.insert({
@@ -45,7 +69,7 @@ class AppointmentService {
   }
 
   async updateAppointmentStatus({ appointmentId, landlordId, status, rejectReason }, options = {}) {
-    const appointment = await this.repository.getById(appointmentId);
+    const appointment = await this.repository.getById(appointmentId, options);
 
     if (!appointment) {
       throw new ApiError(404, "Appointment not found");
@@ -82,13 +106,13 @@ class AppointmentService {
 
     await this.repository.updateById(appointmentId, updatePayload, options);
 
-    const updatedAppointment = await this.repository.getById(appointmentId);
+    const updatedAppointment = await this.repository.getById(appointmentId, options);
 
     return { message: "Appointment updated", appointment: updatedAppointment };
   }
 
   async cancelAppointment({ appointmentId, customerId }, options = {}) {
-    const appointment = await this.repository.getById(appointmentId);
+    const appointment = await this.repository.getById(appointmentId, options);
 
     if (!appointment) {
       throw new ApiError(404, "Appointment not found");
@@ -106,6 +130,10 @@ class AppointmentService {
       throw new ApiError(400, "Không thể hủy lịch hẹn đã bị từ chối.");
     }
 
+    if (appointment.status === "approved") {
+      throw new ApiError(400, "Không thể hủy lịch hẹn khi chủ trọ đã xác nhận.");
+    }
+
     await this.repository.updateById(
       appointmentId,
       {
@@ -114,7 +142,7 @@ class AppointmentService {
       options
     );
 
-    const updatedAppointment = await this.repository.getById(appointmentId);
+    const updatedAppointment = await this.repository.getById(appointmentId, options);
 
     return { message: "Appointment cancelled", appointment: updatedAppointment };
   }

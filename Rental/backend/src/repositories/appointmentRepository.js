@@ -5,8 +5,8 @@ class AppointmentRepository {
     this.appointmentEntity = appointmentEntity;
   }
 
-  getById(id) {
-    return this.appointmentEntity.findByPk(id);
+  getById(id, options = {}) {
+    return this.appointmentEntity.findByPk(id, options);
   }
 
   getList(query) {
